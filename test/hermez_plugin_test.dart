@@ -20,4 +20,8 @@ void main() {
   test('getPlatformVersion', () async {
     expect(await HermezPlugin.platformVersion, '42');
   });
+
+  test('decompressSignature', () async {
+    expect(nativeDecompressSignature(""), '');
+  });
 }
