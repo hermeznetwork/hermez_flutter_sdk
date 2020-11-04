@@ -5,15 +5,18 @@
 Pod::Spec.new do |s|
   s.name             = 'hermez_plugin'
   s.version          = '0.0.1'
-  s.summary          = 'Hermez library plugin.'
+  s.summary          = 'Hermez library flutter plugin project.'
   s.description      = <<-DESC
-Hermez library plugin.
+Hermez library flutter plugin project.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://hermez.io'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Hermez' }
   s.source           = { :path => '.' }
+  s.public_header_files = 'Classes**/*.h'
   s.source_files = 'Classes/**/*'
+  s.static_framework = true
+  s.vendored_libraries = "**/*.a"
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
 

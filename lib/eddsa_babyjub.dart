@@ -1,3 +1,5 @@
+import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 /// Class representing EdDSA Baby Jub signature
