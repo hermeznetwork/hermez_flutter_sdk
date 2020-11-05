@@ -1,6 +1,6 @@
-import 'dart:ffi';
-import 'dart:io';
 import 'dart:typed_data';
+
+import 'hermez_plugin.dart';
 
 /// Class representing EdDSA Baby Jub signature
 class Signature {
@@ -22,7 +22,8 @@ class Signature {
     if (buf.length != 64) {
       throw new Error(); // buf must be 64 bytes
     }
-    final sig = circomlib.eddsa.unpackSignature(buf);
+    final sig = nativeDecompressSignature(buf);
+    //final sig = //circomlib.eddsa.unpackSignature(buf);
     if (sig.R8 == null) {
       throw new Error(); // unpackSignature failed
     }

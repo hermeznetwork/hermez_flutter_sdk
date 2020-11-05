@@ -11,4 +11,10 @@ public class SwiftHermezPlugin: NSObject, FlutterPlugin {
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     result("iOS " + UIDevice.current.systemVersion)
   }
+
+  public func dummyMethodToEnforceBundling() {
+      decompress_signature();
+      // ...
+      // This code will force the bundler to use these functions, but will never be called
+    }
 }

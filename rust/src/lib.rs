@@ -22,6 +22,8 @@ use rand6::Rng;
 use blake2::{Blake2b, Digest};
 use mimc_rs::Mimc7;
 use std::cmp::min;
+use std::os::raw::{c_char};
+use std::ffi::{CString, CStr};
 
 use num_bigint::{BigInt, RandBigInt, RandomBits, Sign, ToBigInt};
 use num_traits::{One, Zero};
@@ -274,6 +276,17 @@ pub extern fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
             s: s,
         }),
     }
+}
+
+#[no_mangle]
+pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
+    let c_str = unsafe { CStr::from_ptr(to) };
+    let recipient = match c_str.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+
+    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()
 }
 
 pub struct PrivateKey {
