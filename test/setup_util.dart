@@ -4,7 +4,7 @@ import 'dart:io';
 final _dylibPrefix = Platform.isWindows ? '' : 'lib';
 final _dylibExtension =
     Platform.isWindows ? '.dll' : (Platform.isMacOS ? '.dylib' : '.so');
-final _dylibName = '${_dylibPrefix}libbabyjubjub$_dylibExtension';
+final _dylibName = '${_dylibPrefix}babyjubjub$_dylibExtension';
 DynamicLibrary _dylib;
 
 class SetupUtil {

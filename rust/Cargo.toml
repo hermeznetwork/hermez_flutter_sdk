@@ -10,7 +10,7 @@ readme = "README.md"
 
 [lib]
 name = "babyjubjub"
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["lib","staticlib", "cdylib"]
 
 [dependencies]
 ff = {package="ff_ce" , version="0.11", features = ["derive"]}
