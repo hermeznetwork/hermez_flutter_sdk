@@ -279,6 +279,36 @@ pub extern fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
 }
 
 #[no_mangle]
+pub extern fn new_method(b: &[u8; 64]) -> Signature {
+    let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
+    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
+    let r_b8 = decompress_point(r_b8_bytes);
+    return Signature {
+        r_b8: res.clone(),
+        s: s,
+    };
+    /*match r_b8 {
+        Result::Err(err) => return Err(err.to_string()),
+        Result::Ok(res) => Ok(Signature {
+            r_b8: res.clone(),
+            s: s,
+        }),
+    }*/
+
+    /*let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
+    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
+    let r_b8 = decompress_point(r_b8_bytes);
+    //let c_buf: *const c_char = unsafe { "hello".as_parallel_string() };
+    let c_str_1 = CString::new("hello").unwrap();
+    let c_str_2 = CString::new(b"world" as &[u8]).unwrap(); // from a &[u8], creates a new allocation
+    let recipient = match c_str_1.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()*/
+}
+
+#[no_mangle]
 pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
     let c_str = unsafe { CStr::from_ptr(to) };
     let recipient = match c_str.to_str() {
@@ -289,12 +319,14 @@ pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
     CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()
 }
 
+
 pub struct PrivateKey {
     key: BigInt,
 }
 
 impl PrivateKey {
-    pub fn public(&self) -> Result<Point, String> {
+    #[no_mangle]
+    pub extern fn public(&self) -> Result<Point, String> {
         // https://tools.ietf.org/html/rfc8032#section-5.1.5
         let pk = B8.mul_scalar(&self.key)?;
         Ok(pk.clone())
@@ -426,6 +458,16 @@ pub fn verify(pk: Point, sig: Signature, msg: BigInt) -> bool {
         Result::Ok(r) => r,
     };
     l.equals(r.affine())
+
+}
+
+
+#[no_mangle]
+pub extern fn rust_cstr_free(s: *mut c_char) {
+    unsafe {
+        if s.is_null() { return }
+        CString::from_raw(s)
+    };
 }
 
 #[cfg(test)]

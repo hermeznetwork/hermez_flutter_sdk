@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/hermez_plugin.dart';
@@ -23,7 +21,7 @@ void main() {
     expect(await HermezPlugin.platformVersion, '42');
   });
 
-  test('decompressSignature', () async {
+  /*test('decompressSignature', () async {
     // Allocate and free some native memory with malloc and free.
     /*final pointer = allocate<IntPtr>();
     pointer.value = 3;
@@ -38,9 +36,9 @@ void main() {
     free(charPointer);*/
     Uint8List param = new Uint8List.fromList("prueba".codeUnits);
     expect(nativeDecompressSignature(param), '');
-  });
+  });*/
 
   test('nativeGreeting', () async {
-    expect(nativeGreeting("param"), '');
+    expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });
 }

@@ -85,8 +85,8 @@ ndk-home:
 bindings: target/bindings.h
 
 target/bindings.h: $(SOURCES)
-	cbindgen $^ -c cbindgen.toml | grep -v \#include | uniq > $@
-
+	## cbindgen $^ -c cbindgen.toml | grep -v \#include | uniq > $@
+	cbindgen ./src/lib.rs -c cbindgen.toml | grep -v \#include | uniq > $@
 ## :
 
 # ##############################################################################

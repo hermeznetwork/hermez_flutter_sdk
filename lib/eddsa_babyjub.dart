@@ -1,6 +1,32 @@
+import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'hermez_plugin.dart';
+import 'package:ffi/ffi.dart';
+import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+
+import 'utils/structs.dart' as Structs;
+
+///////////////////////////////////////////////////////////////////////////////
+// Load the library
+///////////////////////////////////////////////////////////////////////////////
+
+final DynamicLibrary nativeExampleLib = Platform.isAndroid
+    ? DynamicLibrary.open("libbabyjubjub.so")
+    : DynamicLibrary.process();
+
+// babyJub.unpackPoint
+// eddsa.unpackSignature -> decompress_signature
+// eddsa.prv2pub ->
+// Result<Signature,String>
+typedef DecompressSignatureFunc = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>);
+typedef DecompressSignatureFuncNative = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>);
+final DecompressSignatureFunc decompressSignature = nativeExampleLib
+    .lookup<NativeFunction<DecompressSignatureFuncNative>>(
+        "decompress_signature")
+    .asFunction();
 
 /// Class representing EdDSA Baby Jub signature
 class Signature {
@@ -22,12 +48,14 @@ class Signature {
     if (buf.length != 64) {
       throw new Error(); // buf must be 64 bytes
     }
-    final sig = nativeDecompressSignature(buf);
-    //final sig = //circomlib.eddsa.unpackSignature(buf);
-    if (sig.R8 == null) {
+    Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(buf);
+    final sigPointer = decompressSignature(pointer);
+    final Structs.Signature sig = sigPointer.ref;
+    if (sig.r_b8 == null) {
       throw new Error(); // unpackSignature failed
     }
-    return new Signature(sig.R8, sig.S);
+    //return new Signature(sig.r_b8, sig.s);
+    return null;
   }
 }
 
@@ -60,8 +88,8 @@ class PublicKey {
   }
 
   /// Compress the PublicKey
-  /// @returns {Buffer} - point compressed into a buffer
-  dynamic compress() {
+  /// @returns {Uint8List} - point compressed into a buffer
+  Uint8List compress() {
     //return utils.leBuff2int(circomlib.babyJub.packPoint(this.p));
   }
 }
@@ -71,8 +99,8 @@ class PrivateKey {
   dynamic sk;
 
   /// Create a PrivateKey from a 32 byte Buffer
-  /// @param {Buffer} buf - private key
-  PrivateKey(buf) {
+  /// @param {Uint8List} buf - private key
+  PrivateKey(Uint8List buf) {
     if (buf.length != 32) {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
@@ -82,6 +110,6 @@ class PrivateKey {
   /// Retrieve PublicKey of the PrivateKey
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   public() {
-    //return new PublicKey(circomlib.eddsa.prv2pub(this.sk));
+    return new PublicKey(circomlib.eddsa.prv2pub(this.sk));
   }
 }

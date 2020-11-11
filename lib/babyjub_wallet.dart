@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
@@ -6,6 +7,7 @@ import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 
+import 'eddsa_babyjub.dart' as eddsaBabyJub;
 import 'utils/hd_key.dart';
 
 /// @class
@@ -22,9 +24,14 @@ class BabyJubWallet {
   /// Initialize Babyjubjub wallet from private key
   /// @param {Buffer} privateKey - 32 bytes buffer
   /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
-  BabyJubWallet(privateKey, String hermezEthereumAddress) {
-    //eddsaBabyJub
+  BabyJubWallet(Uint8List privateKey, String hermezEthereumAddress) {
+    final priv = eddsaBabyJub.PrivateKey(privateKey);
+    final pub = priv.public();
     this.privateKey = privateKey;
+    this.publicKey = [pub.p[0].toString(), pub.p[1].toString()];
+    this.publicKeyHex = [pub.p[0].toString(16), pub.p[1].toString(16)];
+    this.publicKeyCompressed = pub.compress().toString();
+    this.publicKeyCompressedHex = pub.compress().toString(16);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
