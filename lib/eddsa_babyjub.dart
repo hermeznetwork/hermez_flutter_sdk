@@ -17,7 +17,7 @@ final DynamicLibrary nativeExampleLib = Platform.isAndroid
 
 // babyJub.unpackPoint
 // eddsa.unpackSignature -> decompress_signature
-// eddsa.prv2pub ->
+
 // Result<Signature,String>
 typedef DecompressSignatureFunc = Pointer<Structs.Signature> Function(
     Pointer<Uint8>);
@@ -26,6 +26,13 @@ typedef DecompressSignatureFuncNative = Pointer<Structs.Signature> Function(
 final DecompressSignatureFunc decompressSignature = nativeExampleLib
     .lookup<NativeFunction<DecompressSignatureFuncNative>>(
         "decompress_signature")
+    .asFunction();
+
+// eddsa.prv2pub -> prv2pub
+typedef Prv2pubFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
+typedef Prv2pubFuncNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
+final Prv2pubFunc prv2pub = nativeExampleLib
+    .lookup<NativeFunction<Prv2pubFuncNative>>("prv2pub")
     .asFunction();
 
 /// Class representing EdDSA Baby Jub signature
@@ -54,7 +61,10 @@ class Signature {
     if (sig.r_b8 == null) {
       throw new Error(); // unpackSignature failed
     }
-    //return new Signature(sig.r_b8, sig.s);
+    List<BigInt> r8 = List<BigInt>(2);
+    r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.x))));
+    r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.y))));
+    //return new Signature(r8, sig.s);
     return null;
   }
 }
@@ -74,15 +84,17 @@ class PublicKey {
   /// @param {BigInt} compressedBigInt - compressed public key in a bigInt
   ///
   /// @returns {PublicKey} public key class
-  static PublicKey newFromCompressed(compressedBigInt) {
-    /*const compressedBuffLE = utils.leInt2Buff(compressedBigInt, 32)
-    if (compressedBuffLE.length !== 32) {
-      throw new Error('buf must be 32 bytes')
+  static PublicKey newFromCompressed(Pointer<Uint8> compressedBigInt) {
+    final Uint8List compressedBuffLE =
+        Uint8ArrayUtils.fromPointer(compressedBigInt, 32);
+    //leInt2Buff(compressedBigInt, 32);
+    if (compressedBuffLE.length != 32) {
+      throw new Error(/*'buf must be 32 bytes'*/);
     }
 
-    const p = circomlib.babyJub.unpackPoint(compressedBuffLE)
-    if (p == null) {
-      throw new Error('unpackPoint failed')
+    //const p = circomlib.babyJub.unpackPoint(compressedBuffLE)
+    /*if (p == null) {
+      throw new Error(/*'unpackPoint failed'*/);
     }*/
     //return new PublicKey(p);
   }
@@ -90,13 +102,14 @@ class PublicKey {
   /// Compress the PublicKey
   /// @returns {Uint8List} - point compressed into a buffer
   Uint8List compress() {
+    //return Uint8ArrayUtils.fromPointer(this.p);
     //return utils.leBuff2int(circomlib.babyJub.packPoint(this.p));
   }
 }
 
 /// Class representing EdDSA Baby Jub private key
 class PrivateKey {
-  dynamic sk;
+  Uint8List sk;
 
   /// Create a PrivateKey from a 32 byte Buffer
   /// @param {Uint8List} buf - private key
@@ -109,7 +122,12 @@ class PrivateKey {
 
   /// Retrieve PublicKey of the PrivateKey
   /// @returns {PublicKey} PublicKey derived from PrivateKey
-  public() {
-    return new PublicKey(circomlib.eddsa.prv2pub(this.sk));
+  PublicKey public() {
+    Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
+    Pointer<Structs.Point> publicKey = prv2pub(pointer);
+    List<BigInt> p = List<BigInt>(2);
+    p.add(BigInt.from(num.parse(Utf8.fromUtf8(publicKey.ref.x))));
+    p.add(BigInt.from(num.parse(Utf8.fromUtf8(publicKey.ref.y))));
+    return new PublicKey(p);
   }
 }

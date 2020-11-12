@@ -51,8 +51,14 @@ pub extern fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
     }
 }
 
+Result<Point, String>
+pub extern fn unpack_point() -> Result<Point, String> {
+
+}
+
 #[no_mangle]
-pub extern fn prv2pub(key: BigInt) -> Result<Point, String> {
-    let pk = B8.mul_scalar(&key)?;
+pub extern fn prv2pub(key: &[u8; 32]) -> Result<Point, String> {
+    let prv: BigInt = BigInt::from_bytes_le(Sign::Plus, &key[..32]);
+    let pk = B8.mul_scalar(&prv)?;
     Ok(pk.clone())
 }

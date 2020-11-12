@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
+import 'package:hermez_plugin/utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
@@ -26,7 +27,7 @@ class BabyJubWallet {
   /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
   BabyJubWallet(Uint8List privateKey, String hermezEthereumAddress) {
     final priv = eddsaBabyJub.PrivateKey(privateKey);
-    final pub = priv.public();
+    final eddsaBabyJub.PublicKey pub = priv.public();
     this.privateKey = privateKey;
     this.publicKey = [pub.p[0].toString(), pub.p[1].toString()];
     this.publicKeyHex = [pub.p[0].toString(16), pub.p[1].toString(16)];
@@ -38,7 +39,12 @@ class BabyJubWallet {
   /// Signs message with private key
   /// @param {String} messageStr - message to sign
   /// @returns {String} - Babyjubjub signature packed and encoded as an hex string
-  String signMessage(String messageStr) {}
+  String signMessage(String messageStr) {
+    final messBuff = getUint8ListFromString(messageStr);
+    final messHash = hashBuffer(messBuff);
+    final privKey = new eddsaBabyJub.PrivateKey(messHash);
+    final sig = privKey.signPoseidon(messHash);
+  }
 
   /// To sign transaction with babyjubjub keys
   /// @param {Object} tx -transaction

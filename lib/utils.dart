@@ -20,6 +20,24 @@ BigInt multiHash(List arr) {
   //return F.normalize(r);
 }
 
+/// Poseidon hash of a generic buffer
+/// @param {Uint8List} msgBuff
+/// @returns {BigInt} - final hash
+BigInt hashBuffer (Uint8List msgBuff) {
+  const n = 31;
+  const msgArray = [];
+  final fullParts = (msgBuff.length / n).floor();
+  for (int i = 0; i < fullParts; i++) {
+    const v = ffUtils.leBuff2int(msgBuff.slice(n * i, n * (i + 1)))
+    msgArray.add(v);
+  }
+  if (msgBuff.length % n != 0) {
+    const v = ffUtils.leBuff2int(msgBuff.slice(fullParts * n))
+    msgArray.add(v);
+  }
+  return multiHash(msgArray);
+}
+
 /// Converts an amount in BigInt and decimals to a String with correct decimal point placement
 ///
 /// @param {String} amountBigInt - String representing the amount as a BigInt with no decimals

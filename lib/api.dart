@@ -1,5 +1,7 @@
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
 
+import 'constants.dart' show DEFAULT_PAGE_SIZE;
+
 const baseApiUrl = 'http://167.71.59.190:4010';
 
 const REGISTER_AUTH_URL = "/account-creation-authorization";
@@ -14,13 +16,21 @@ const TOKENS_URL = "/tokens";
 const RECOMMENDED_FEES_URL = "/recommendedFee";
 const COORDINATORS_URL = "/coordinators";
 
-Future<String> getAccounts(
-    String hermezEthereumAddress, List<dynamic> tokenIds) async {
+Map<String, dynamic> getPageData(dynamic fromItem) {
+  return {
+    "fromItem": fromItem.isNotEmpty ? fromItem : {},
+    "limit": DEFAULT_PAGE_SIZE
+  };
+}
+
+Future<String> getAccounts(String hermezEthereumAddress, List<dynamic> tokenIds,
+    dynamic fromItem) async {
   Map<String, String> params = {
     "hermezEthereumAddress":
         hermezEthereumAddress.isNotEmpty ? hermezEthereumAddress : '',
-    "tokenIds": tokenIds.isNotEmpty ? tokenIds.join(',') : ''
+    "tokenIds": tokenIds.isNotEmpty ? tokenIds.join(',') : '',
   };
+  params.addAll(getPageData(fromItem));
   return extractJSON(get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
 }
 

@@ -49,9 +49,9 @@ class Signature extends Struct {
   Pointer<Point> r_b8;
 
   //@Pointer()
-  Pointer<Uint32> s;
+  Pointer<Uint8> s;
 
-  factory Signature.allocate(Pointer<Point> r_b8, Pointer<Uint32> s) =>
+  factory Signature.allocate(Pointer<Point> r_b8, Pointer<Uint8> s) =>
       allocate<Signature>().ref
         ..r_b8 = r_b8
         ..s = s;
