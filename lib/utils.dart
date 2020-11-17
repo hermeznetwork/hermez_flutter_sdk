@@ -1,9 +1,24 @@
+import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:hermez_plugin/eddsa_babyjub.dart';
+
+final hash = poseidon(Uint8List.fromList([6, 8, 57]));
+//final F =
+
+/// Converts a buffer to a hexadecimal representation
+///
+/// @param {Uint8List} buf
+///
+/// @returns {String}
+String bufToHex (Uint8List buf) {
+  return Utf8Decoder().convert(buf);
+}
 
 /// Chunks inputs in five elements and hash with Poseidon all them togheter
 /// @param {Array} arr - inputs hash
 /// @returns {BigInt} - final hash
-BigInt multiHash(List arr) {
+BigInt multiHash(List<BigInt> arr) {
   BigInt r = BigInt.zero;
   for (int i = 0; i < arr.length; i += 5) {
     const fiveElems = [];
@@ -14,7 +29,7 @@ BigInt multiHash(List arr) {
         fiveElems.add(BigInt.zero);
       }
     }
-    //const ph = hash(fiveElems)
+    final ph = poseidon(Uint8List.fromList(fiveElems));
     //r = F.add(r, ph);
   }
   //return F.normalize(r);
@@ -48,7 +63,7 @@ String getTokenAmountString(amountBigInt, decimals) {
   //return ethers.utils.formatUnits(amountBigInt, decimals)
 }
 
-Uint8List getUint8ListFromString(String source) {
+Uint8List hexToBuffer(String source) {
   // Source
   print(source.length.toString() +
       ': "' +

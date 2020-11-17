@@ -1,8 +1,21 @@
+import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:hex/hex.dart';
+
 import 'fee_factors.dart' show feeFactors;
+import 'eddsa_babyjub.dart' show hashPoseidon;
+
+import 'libs/circomlib.dart';
 
 const String hermezPrefix = "hez:";
+
+final DynamicLibrary nativeExampleLib = Platform.isAndroid
+    ? DynamicLibrary.open("libbabyjubjub.so")
+    : DynamicLibrary.process();
+
+final circomlib = CircomLib(lib: await SetupUtil.getDylibAsync());
 
 class TxUtils {
   /// Encodes the transaction object to be in a format supported by the Smart Contracts and Circuits.
@@ -56,6 +69,26 @@ class TxUtils {
     }
 
     return high;
+  }
+
+  /// Builds the message to hash
+  ///
+  /// @param {Object} encodedTransaction - Transaction object
+  ///
+  /// @returns {Scalar} message to sign
+  BigInt buildTransactionHashMessage(encodedTransaction) {
+    const txCompressedData = buildTxCompressedData(encodedTransaction);
+
+    const h = hashPoseidon(
+      txCompressedData,
+      encodedTransaction.to_eth_addr,
+      encodedTransaction.toBjjAy,
+      encodedTransaction.rqTxCompressedDataV2,
+      encodedTransaction.rqToEthAddr,
+      encodedTransaction.rqToBjjAy
+    )
+    BigInt.from(HEX.decode(encoded));
+    return h;
   }
 
   /// Prepares a transaction to be ready to be sent to a Coordinator.

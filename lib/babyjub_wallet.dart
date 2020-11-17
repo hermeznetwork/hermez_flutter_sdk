@@ -4,12 +4,15 @@ import 'dart:typed_data';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
 import 'package:hermez_plugin/utils.dart';
+import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
+import "tx_utils.dart" show buildTransactionHashMessage;
 import 'utils/hd_key.dart';
+import 'utils.dart' show hashBuffer, hexToBuffer;
 
 /// @class
 /// Manage Babyjubjub keys
@@ -30,7 +33,10 @@ class BabyJubWallet {
     final eddsaBabyJub.PublicKey pub = priv.public();
     this.privateKey = privateKey;
     this.publicKey = [pub.p[0].toString(), pub.p[1].toString()];
-    this.publicKeyHex = [pub.p[0].toString(16), pub.p[1].toString(16)];
+    this.publicKeyHex = [
+      pub.p[0].toString(16),
+      pub.p[1].toString(16)
+    ]; // HEX.enconde(list<int> input)
     this.publicKeyCompressed = pub.compress().toString();
     this.publicKeyCompressedHex = pub.compress().toString(16);
     this.hermezEthereumAddress = hermezEthereumAddress;
@@ -40,23 +46,39 @@ class BabyJubWallet {
   /// @param {String} messageStr - message to sign
   /// @returns {String} - Babyjubjub signature packed and encoded as an hex string
   String signMessage(String messageStr) {
-    final messBuff = getUint8ListFromString(messageStr);
+    final messBuff = hexToBuffer(messageStr);
     final messHash = hashBuffer(messBuff);
-    final privKey = new eddsaBabyJub.PrivateKey(messHash);
-    final sig = privKey.signPoseidon(messHash);
+    final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
+    final sig = privKey.sign(messHash);
+    return HEX.encode(sig); //sig.toString(16);
   }
 
   /// To sign transaction with babyjubjub keys
   /// @param {Object} tx -transaction
-  void signTransaction(transaction, encodedTransaction) {}
+  dynamic signTransaction(transaction, encodedTransaction) {
+    final hashMessage = buildTransactionHashMessage(transaction);
+    final signature = eddsaBabyJub.signPoseidon(this.privateKey, hashMessage);
+    final packedSignature = eddsaBabyJub.packSignature(signature);
+    Uint8List.fromList(elements)
+    transaction.signature = HEX.encode(packedSignature);
+    return transaction;
+  }
 }
 
 /// Verifies signature for a given message using babyjubjub
 /// @param {String} publicKeyHex - Babyjubjub public key encoded as hex string
 /// @param {String} messStr - clear message data
 /// @param {String} signatureHex - Ecdsa signature compressed and encoded as hex string
-/// @returns {boolean} True if validation is successful; otherwise false
+/// @returns {bool} True if validation is successful; otherwise false
 bool verifyBabyJub(String publicKeyHex, String messStr, String signatureHex) {
+  final pkBuff = getUint8ListFromString(publicKeyHex);
+  final pkBuffPointer = Uint8ArrayUtils.toPointer(pkBuff);
+  final pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuffPointer);
+  final msgBuff = getUint8ListFromString(messStr);
+  final hash = hashBuffer(msgBuff);
+  final sigBuff = getUint8ListFromString(signatureHex);
+  final sig = eddsaBabyJub.Signature.newFromCompressed(sigBuff);
+  return pk.verifyPoseidon(hash, sig);
   /*const pkBuff = Buffer.from(publicKeyHex, 'hex')
   const pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuff)
   const msgBuff = Buffer.from(messStr)

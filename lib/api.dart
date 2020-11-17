@@ -1,5 +1,7 @@
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
 
+import 'addresses.dart'
+    show isHermezEthereumAddress, isHermezBjjEthereumAddress;
 import 'constants.dart' show DEFAULT_PAGE_SIZE;
 
 const baseApiUrl = 'http://167.71.59.190:4010';
@@ -23,13 +25,15 @@ Map<String, dynamic> getPageData(dynamic fromItem) {
   };
 }
 
-Future<String> getAccounts(String hermezEthereumAddress, List<dynamic> tokenIds,
-    dynamic fromItem) async {
-  Map<String, String> params = {
-    "hermezEthereumAddress":
-        hermezEthereumAddress.isNotEmpty ? hermezEthereumAddress : '',
-    "tokenIds": tokenIds.isNotEmpty ? tokenIds.join(',') : '',
-  };
+Future<String> getAccounts(
+    String address, List<dynamic> tokenIds, dynamic fromItem) async {
+  Map<String, String> params = {};
+  if (isHermezEthereumAddress(address) && address.isNotEmpty)
+    params.putIfAbsent('hezEthereumAddress', () => address);
+  if (isHermezBjjEthereumAddress(address) && address.isNotEmpty)
+    params.putIfAbsent('BJJ', () => address);
+  if (tokenIds.isNotEmpty)
+    params.putIfAbsent('tokenIds', () => tokenIds.join(','));
   params.addAll(getPageData(fromItem));
   return extractJSON(get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
 }

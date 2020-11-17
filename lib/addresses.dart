@@ -1,4 +1,6 @@
 const String hermezPrefix = 'hez:';
+final hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}\$'); //
+final bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}\$');
 
 /// Get the hermez address representation of an ethereum address
 ///
@@ -21,6 +23,30 @@ String getEthereumAddress(String hezEthereumAddress) {
   } else {
     return hezEthereumAddress;
   }
+}
+
+/// Checks if given string matches regex of a Hermez address
+///
+/// @param {String} test
+///
+/// @returns {bool}
+bool isHermezEthereumAddress(String test) {
+  if (hezEthereumAddressPattern.hasMatch(test)) {
+    return true;
+  }
+  return false;
+}
+
+/// Checks if given string matches regex of a Hermez BJJ address
+///
+/// @param {String} test
+///
+/// @returns {bool}
+bool isHermezBjjEthereumAddress(String test) {
+  if (bjjAddressPattern.hasMatch(test)) {
+    return true;
+  }
+  return false;
 }
 
 /// Extracts the account index from the address with the hez prefix

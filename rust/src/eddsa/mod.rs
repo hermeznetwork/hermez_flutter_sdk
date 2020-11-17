@@ -235,7 +235,7 @@ pub fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Signature {
+pub(crate) struct Signature {
     pub(crate) r_b8: Point,
     pub(crate) s: BigInt,
 }
@@ -311,12 +311,11 @@ pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
 }*/
 
 pub struct PrivateKey {
-    key: BigInt,
+    pub key: BigInt,
 }
 
 impl PrivateKey {
-    //#[no_mangle]
-    pub /*extern*/ fn public(&self) -> Result<Point, String> {
+    pub fn public(&self) -> Result<Point, String> {
         // https://tools.ietf.org/html/rfc8032#section-5.1.5
         let pk = B8.mul_scalar(&self.key)?;
         Ok(pk.clone())

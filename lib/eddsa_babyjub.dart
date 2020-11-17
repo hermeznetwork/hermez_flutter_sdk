@@ -16,16 +16,37 @@ final DynamicLibrary nativeExampleLib = Platform.isAndroid
     : DynamicLibrary.process();
 
 // babyJub.unpackPoint
-// eddsa.unpackSignature -> decompress_signature
-
 // Result<Signature,String>
-typedef DecompressSignatureFunc = Pointer<Structs.Signature> Function(
+
+// eddsa.packSignature -> pack_signature
+typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Structs.Signature>);
+typedef PackSignatureFuncNative = Pointer<Uint8> Function(
+    Pointer<Structs.Signature>);
+final PackSignatureFunc packSignature = nativeExampleLib
+    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
+    .asFunction();
+
+// eddsa.unpackSignature -> unpack_signature
+typedef UnpackSignatureFunc = Pointer<Structs.Signature> Function(
     Pointer<Uint8>);
-typedef DecompressSignatureFuncNative = Pointer<Structs.Signature> Function(
+typedef UnpackSignatureFuncNative = Pointer<Structs.Signature> Function(
     Pointer<Uint8>);
-final DecompressSignatureFunc decompressSignature = nativeExampleLib
-    .lookup<NativeFunction<DecompressSignatureFuncNative>>(
-        "decompress_signature")
+final UnpackSignatureFunc unpackSignature = nativeExampleLib
+    .lookup<NativeFunction<UnpackSignatureFuncNative>>("unpack_signature")
+    .asFunction();
+
+// eddsa.packPoint -> pack_point
+typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Structs.Point>);
+typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Structs.Point>);
+final PackPointFunc packPoint = nativeExampleLib
+    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
+    .asFunction();
+
+// eddsa.unpackPoint -> unpack_point
+typedef UnpackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
+typedef UnpackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
+final UnpackPointFunc unpackPoint = nativeExampleLib
+    .lookup<NativeFunction<UnpackPointFuncNative>>("unpack_point")
     .asFunction();
 
 // eddsa.prv2pub -> prv2pub
@@ -33,6 +54,21 @@ typedef Prv2pubFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
 typedef Prv2pubFuncNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
 final Prv2pubFunc prv2pub = nativeExampleLib
     .lookup<NativeFunction<Prv2pubFuncNative>>("prv2pub")
+    .asFunction();
+
+// circomlib.poseidon -> hashPoseidon
+typedef hashPoseidonFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
+typedef hashPoseidonFuncNative = Pointer<Structs.Point> Function(
+    Pointer<Uint8>);
+final hashPoseidonFunc hashPoseidon = nativeExampleLib
+    .lookup<NativeFunction<hashPoseidonFuncNative>>("hashPoseidon")
+    .asFunction();
+
+// circomlib.poseidon -> poseidon
+typedef signPoseidonFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
+typedef signPoseidonNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
+final signPoseidonFunc signPoseidon = nativeExampleLib
+    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
     .asFunction();
 
 /// Class representing EdDSA Baby Jub signature
@@ -56,7 +92,7 @@ class Signature {
       throw new Error(); // buf must be 64 bytes
     }
     Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(buf);
-    final sigPointer = decompressSignature(pointer);
+    final sigPointer = unpackSignature(pointer);
     final Structs.Signature sig = sigPointer.ref;
     if (sig.r_b8 == null) {
       throw new Error(); // unpackSignature failed
@@ -64,7 +100,7 @@ class Signature {
     List<BigInt> r8 = List<BigInt>(2);
     r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.x))));
     r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.y))));
-    //return new Signature(r8, sig.s);
+    return new Signature(r8, sig.s);
     return null;
   }
 }
@@ -75,7 +111,7 @@ class PublicKey {
 
   /// Create a PublicKey from a curve point p
   /// @param {List[BigInt]} p - curve point
-  PublicKey(p) {
+  PublicKey(List<BigInt> p) {
     this.p = p;
   }
 
@@ -91,19 +127,19 @@ class PublicKey {
     if (compressedBuffLE.length != 32) {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
-
-    //const p = circomlib.babyJub.unpackPoint(compressedBuffLE)
-    /*if (p == null) {
+    final ptr = Uint8ArrayUtils.toPointer(compressedBuffLE);
+    final p = unpackPoint(ptr);
+    if (p == null) {
       throw new Error(/*'unpackPoint failed'*/);
-    }*/
-    //return new PublicKey(p);
+    }
+    Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
+    return new PublicKey(p);
   }
 
   /// Compress the PublicKey
   /// @returns {Uint8List} - point compressed into a buffer
   Uint8List compress() {
-    //return Uint8ArrayUtils.fromPointer(this.p);
-    //return utils.leBuff2int(circomlib.babyJub.packPoint(this.p));
+    return Uint8ArrayUtils.fromPointer(packPoint(this.p), 32);
   }
 }
 
@@ -130,4 +166,14 @@ class PrivateKey {
     p.add(BigInt.from(num.parse(Utf8.fromUtf8(publicKey.ref.y))));
     return new PublicKey(p);
   }
+
+  Signature sign(BigInt messageHash) {
+    Pointer<Structs.Signature> signature = signPoseidon()
+  }
 }
+
+/*Point poseidon(Uint8List input) {
+  final ptr = Uint8ArrayUtils.toPointer(input);
+  final resultPtr = hashPoseidon(ptr);
+  return resultPtr.ref;
+}*/
