@@ -18,4 +18,13 @@ class Uint8ArrayUtils {
     byteList.setAll(0, bytes);
     return ptr.cast();
   }
+
+  static Uint8List uint8ListfromString(String text) {
+    List<int> list = text.codeUnits;
+    return Uint8List.fromList(list);
+  }
+
+  static String uint8ListToString(Uint8List bytes) {
+    return String.fromCharCodes(bytes);
+  }
 }

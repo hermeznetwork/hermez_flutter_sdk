@@ -5,6 +5,7 @@ import 'package:hermez_plugin/contracts.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'addresses.dart' show getEthereumAddress, getAccountIndex;
+import 'api.dart' show getAccounts;
 import 'constants.dart' show GAS_LIMIT, GAS_MULTIPLIER, contractAddresses;
 import 'providers.dart' show getProvider;
 import 'tokens.dart' show approve;
@@ -58,7 +59,8 @@ class Tx {
         getContract(contractAddresses["Hermez"], hermezABI);
 
     dynamic ethereumAddress = getEthereumAddress(hezEthereumAddress);
-    //dynamic account = (await getAccounts(ethereumAddress, token.id)).accounts[0]
+    dynamic account =
+        (await getAccounts(ethereumAddress, token.id)).accounts[0];
 
     String gasPrice = await getGasPrice(gasMultiplier);
 

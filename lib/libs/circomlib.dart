@@ -34,12 +34,12 @@ class CircomLib {
         .asFunction();
 
     _signPoseidon = lib
-        .lookup<NativeFunction<Pointer<Point> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Signature> Function(Pointer<Uint8>)>>(
             "sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
-        .lookup<NativeFunction<Pointer<Point> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
             "verify_poseidon")
         .asFunction();
   }
@@ -103,7 +103,7 @@ class CircomLib {
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
-  Pointer<Point> Function(Pointer<Uint8>) _verifyPoseidon;
+  Pointer<Uint8> Function(Pointer<Uint8>) _verifyPoseidon;
   Point verifyPoseidon(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _verifyPoseidon(ptr);

@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:hex/hex.dart';
 
@@ -46,6 +47,30 @@ class TxUtils {
     return encodedTransaction
   }*/
 
+  /// TxID (12 bytes) for L2Tx is:
+  /// bytes:  |  1   |    6    |   5   |
+  /// values: | type | FromIdx | Nonce |
+  /// where type for L2Tx is '2'
+  ///
+  /// @param {Number} fromIdx
+  /// @param {Number} nonce
+  ///
+  /// @returns {String}
+  String getTxId (int fromIdx, int nonce) {
+    Uint64List.fromList(elements)
+    const fromIdxBytes = new ArrayBuffer(8)
+    const fromIdxView = new DataView(fromIdxBytes)
+    fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
+
+    const nonceBytes = new ArrayBuffer(8)
+    const nonceView = new DataView(nonceBytes)
+    nonceView.setBigUint64(0, BigInt(nonce).value, false)
+
+    const fromIdxHex = HEX.encode(input) bufToHex(fromIdxView.buffer.slice(2, 8))
+    const nonceHex = bufToHex(nonceView.buffer.slice(3, 8))
+    return '0x02' + fromIdxHex + nonceHex
+  }
+
   /// Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
   ///
   /// @param {Number} fee - The fee in token value
@@ -71,6 +96,22 @@ class TxUtils {
     return high;
   }
 
+  /// Gets the transaction type depending on the information in the transaction object
+  /// If an account index is used, it will be 'Transfer'
+  /// If a Hermez address is used, it will be 'TransferToEthAddr'
+  /// If a BabyJubJub is used, it will be 'TransferToBjj'
+  ///
+  /// @param {Object} transaction - Transaction object sent to generateL2Transaction
+  ///
+  /// @return {String} transactionType
+  String getTransactionType(dynamic transaction) {
+    if (transaction.to && transaction.to.includes('hez:')) {
+      return 'Transfer';
+    } else {
+      return 'Exit';
+    }
+  }
+
   /// Builds the message to hash
   ///
   /// @param {Object} encodedTransaction - Transaction object
@@ -79,7 +120,7 @@ class TxUtils {
   BigInt buildTransactionHashMessage(encodedTransaction) {
     const txCompressedData = buildTxCompressedData(encodedTransaction);
 
-    const h = hashPoseidon(
+    const h = eddsababyjubjub.hashPoseidon(
       txCompressedData,
       encodedTransaction.to_eth_addr,
       encodedTransaction.toBjjAy,
@@ -104,11 +145,30 @@ class TxUtils {
   ///
   /// @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 
-  static Future<dynamic> generateL2Transaction(
-      dynamic transaction, dynamic bjj, dynamic token) async {
-    /*dynamic transaction = {
-      tokenId: token.id,
-    };*/
+  Future<dynamic> generateL2Transaction(
+      dynamic tx, dynamic bjj, dynamic token) async {
+    Map<String, dynamic> transaction = {};
+    transaction.putIfAbsent('type', () => getTransactionType(tx));
+    transaction.putIfAbsent('tokenId', () => token.id);
+    transaction.putIfAbsent('fromAccountIndex', () => tx.from);
+    transaction.putIfAbsent('toAccountIndex', () => tx.to || null);
+    transaction.putIfAbsent('toHezEthereumAddress', () => null);
+    transaction.putIfAbsent('toBjj', () => null);
+    transaction.putIfAbsent('amount', () => tx.amount.toString());
+    transaction.putIfAbsent('fee', () => getFee(tx.fee, tx.amount, token.decimals));
+    transaction.putIfAbsent('nonce', () async => await getNonce(tx.nonce, tx.from, bjj, token.id));
+    transaction.putIfAbsent('requestFromAccountIndex', () => null);
+    transaction.putIfAbsent('requestToAccountIndex', () => null);
+    transaction.putIfAbsent('requestToHezEthereumAddress', () => null);
+    transaction.putIfAbsent('requestToBJJ', () => null);
+    transaction.putIfAbsent('requestTokenId', () => null);
+    transaction.putIfAbsent('requestAmount', () => null);
+    transaction.putIfAbsent('requestFee', () => null);
+    transaction.putIfAbsent('requestNonce', () => null);
     dynamic encodedTransaction = await encodeTransaction(transaction);
+    transaction.putIfAbsent('id', () => getTxId(encodedTransaction.fromAccountIndex, encodedTransaction.nonce));
+    return {
+      transaction, encodedTransaction
+    };
   }
 }

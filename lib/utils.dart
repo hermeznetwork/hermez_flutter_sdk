@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/eddsa_babyjub.dart';
+import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
-final hash = poseidon(Uint8List.fromList([6, 8, 57]));
+import 'eddsa_babyjub.dart' as eddsaBabyJub;
+
+final hash = eddsaBabyJub
+    .hashPoseidon(Uint8ArrayUtils.toPointer(Uint8List.fromList([6, 8, 57])));
 //final F =
 
 /// Converts a buffer to a hexadecimal representation
@@ -11,7 +15,7 @@ final hash = poseidon(Uint8List.fromList([6, 8, 57]));
 /// @param {Uint8List} buf
 ///
 /// @returns {String}
-String bufToHex (Uint8List buf) {
+String bufToHex(Uint8List buf) {
   return Utf8Decoder().convert(buf);
 }
 
@@ -29,7 +33,9 @@ BigInt multiHash(List<BigInt> arr) {
         fiveElems.add(BigInt.zero);
       }
     }
-    final ph = poseidon(Uint8List.fromList(fiveElems));
+    Pointer<Uint8> ptr =
+        Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems));
+    final ph = eddsaBabyJub.hashPoseidon(ptr);
     //r = F.add(r, ph);
   }
   //return F.normalize(r);
@@ -38,17 +44,17 @@ BigInt multiHash(List<BigInt> arr) {
 /// Poseidon hash of a generic buffer
 /// @param {Uint8List} msgBuff
 /// @returns {BigInt} - final hash
-BigInt hashBuffer (Uint8List msgBuff) {
+BigInt hashBuffer(Uint8List msgBuff) {
   const n = 31;
   const msgArray = [];
   final fullParts = (msgBuff.length / n).floor();
   for (int i = 0; i < fullParts; i++) {
-    const v = ffUtils.leBuff2int(msgBuff.slice(n * i, n * (i + 1)))
-    msgArray.add(v);
+    final v = msgBuff.sublist(n * i, n * (i + 1)).toList();
+    msgArray.addAll(v);
   }
   if (msgBuff.length % n != 0) {
-    const v = ffUtils.leBuff2int(msgBuff.slice(fullParts * n))
-    msgArray.add(v);
+    final v = msgBuff.sublist(fullParts * n).toList();
+    msgArray.addAll(v);
   }
   return multiHash(msgArray);
 }
@@ -59,7 +65,7 @@ BigInt hashBuffer (Uint8List msgBuff) {
 /// @param {Number} decimals - Number of decimal points the amount actually has
 ///
 /// @returns {String}
-String getTokenAmountString(amountBigInt, decimals) {
+String getTokenAmountString(String amountBigInt, int decimals) {
   //return ethers.utils.formatUnits(amountBigInt, decimals)
 }
 

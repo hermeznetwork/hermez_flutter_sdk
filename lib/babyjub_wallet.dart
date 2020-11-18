@@ -33,10 +33,10 @@ class BabyJubWallet {
     final eddsaBabyJub.PublicKey pub = priv.public();
     this.privateKey = privateKey;
     this.publicKey = [pub.p[0].toString(), pub.p[1].toString()];
-    this.publicKeyHex = [
+    this.publicKeyHex = HEX.encode(pub.p) [
       pub.p[0].toString(16),
       pub.p[1].toString(16)
-    ]; // HEX.enconde(list<int> input)
+    ]; // HEX.encode(list<int> input)
     this.publicKeyCompressed = pub.compress().toString();
     this.publicKeyCompressedHex = pub.compress().toString(16);
     this.hermezEthereumAddress = hermezEthereumAddress;
@@ -59,7 +59,6 @@ class BabyJubWallet {
     final hashMessage = buildTransactionHashMessage(transaction);
     final signature = eddsaBabyJub.signPoseidon(this.privateKey, hashMessage);
     final packedSignature = eddsaBabyJub.packSignature(signature);
-    Uint8List.fromList(elements)
     transaction.signature = HEX.encode(packedSignature);
     return transaction;
   }
@@ -71,14 +70,15 @@ class BabyJubWallet {
 /// @param {String} signatureHex - Ecdsa signature compressed and encoded as hex string
 /// @returns {bool} True if validation is successful; otherwise false
 bool verifyBabyJub(String publicKeyHex, String messStr, String signatureHex) {
-  final pkBuff = getUint8ListFromString(publicKeyHex);
+
+  final pkBuff = Uint8ArrayUtils.uint8ListfromString(publicKeyHex);
   final pkBuffPointer = Uint8ArrayUtils.toPointer(pkBuff);
   final pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuffPointer);
-  final msgBuff = getUint8ListFromString(messStr);
+  final msgBuff = Uint8ArrayUtils.uint8ListfromString(messStr);
   final hash = hashBuffer(msgBuff);
-  final sigBuff = getUint8ListFromString(signatureHex);
+  final sigBuff = Uint8ArrayUtils.uint8ListfromString(signatureHex);
   final sig = eddsaBabyJub.Signature.newFromCompressed(sigBuff);
-  return pk.verifyPoseidon(hash, sig);
+  return pk.verify(hash, sig);
   /*const pkBuff = Buffer.from(publicKeyHex, 'hex')
   const pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuff)
   const msgBuff = Buffer.from(messStr)
@@ -128,22 +128,3 @@ dynamic createWalletFromMnemonic(String mnemonic) async {
   const hermezWallet = new BabyJubWallet(bufferSignature, hermezEthereumAddress);
   return {hermezWallet, hermezEthereumAddress};*/
 }
-
-/*void method(String mnemonic) {
-  String seed = bip39.mnemonicToSeedHex(mnemonic);
-  KeyData master = HDKey.getMasterKeyFromSeed(seed);
-  print(HEX.encode(master
-      .key)); // 171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012
-  print(HEX.encode(master
-      .chainCode)); // ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b
-  // "m/44'/60'/0'/0/0"
-  // m / purpose' / coin_type' / account' / change / address_index
-  KeyData data = HDKey.derivePath("m/0'/2147483647'", seed);
-  var pb = HDKey.getBublickKey(data.key);
-  print(HEX.encode(data
-      .key)); // ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4
-  print(HEX.encode(data
-      .chainCode)); // 138f0b2551bcafeca6ff2aa88ba8ed0ed8de070841f0c4ef0165df8181eaad7f
-  print(HEX.encode(
-      pb)); // 005ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d
-}*/

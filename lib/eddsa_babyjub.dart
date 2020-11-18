@@ -64,11 +64,22 @@ final hashPoseidonFunc hashPoseidon = nativeExampleLib
     .lookup<NativeFunction<hashPoseidonFuncNative>>("hashPoseidon")
     .asFunction();
 
-// circomlib.poseidon -> poseidon
-typedef signPoseidonFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
-typedef signPoseidonNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
+// circomlib.poseidon -> signPoseidon
+typedef signPoseidonFunc = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
+typedef signPoseidonNative = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
 final signPoseidonFunc signPoseidon = nativeExampleLib
     .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
+    .asFunction();
+
+// circomlib.poseidon -> poseidon
+typedef verifyPoseidonFunc = Pointer<Uint8> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
+typedef verifyPoseidonNative = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
+final verifyPoseidonFunc verifyPoseidon = nativeExampleLib
+    .lookup<NativeFunction<signPoseidonNative>>("verifyPoseidon")
     .asFunction();
 
 /// Class representing EdDSA Baby Jub signature
@@ -141,6 +152,11 @@ class PublicKey {
   Uint8List compress() {
     return Uint8ArrayUtils.fromPointer(packPoint(this.p), 32);
   }
+
+  bool verify(String messageHash, Signature signature) {
+    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash);
+    verifyPoseidon();
+  }
 }
 
 /// Class representing EdDSA Baby Jub private key
@@ -167,8 +183,12 @@ class PrivateKey {
     return new PublicKey(p);
   }
 
-  Signature sign(BigInt messageHash) {
-    Pointer<Structs.Signature> signature = signPoseidon()
+  Signature sign(String messageHash) {
+    Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
+    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash);
+    Pointer<Structs.Signature> signature = signPoseidon(pointer, msgPtr);
+    //sign = Signature(signature.ref.r_b8, signature.ref.s.)
+    return sign;
   }
 }
 
