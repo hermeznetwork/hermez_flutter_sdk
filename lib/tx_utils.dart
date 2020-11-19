@@ -112,6 +112,29 @@ class TxUtils {
     }
   }
 
+  /// Calculates the appropriate nonce based on the current token account nonce and existing transactions in the Pool.
+  /// It needs to find the lowest nonce available as transactions in the pool may fail and the Coordinator only forges
+  /// transactions in the order set by nonces.
+  ///
+  /// @param {Number} currentNonce - The current token account nonce
+  /// @param {String} bjj - The account's BabyJubJub
+  /// @param {Number} tokenId - The token id of the token in the transaction
+  ///
+  /// @return {Number} nonce
+  Future<num> getNonce(num currentNonce, num accountIndex, String bjj, num tokenId) async {
+    const poolTxs = await getPoolTransactions(accountIndex, bjj)
+    const poolTxsNonces = poolTxs.filter(tx => tx.token.id === tokenId)
+        .map(tx => tx.nonce)
+        .sort()
+
+    final nonce = currentNonce + 1;
+    while (poolTxsNonces.indexOf(nonce) !== -1) {
+      nonce++
+    }
+
+    return nonce
+  }
+
   /// Builds the message to hash
   ///
   /// @param {Object} encodedTransaction - Transaction object
