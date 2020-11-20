@@ -64,7 +64,139 @@ class Tx {
 
     String gasPrice = await getGasPrice(gasMultiplier);
 
+    final Map<String, dynamic> overrides = {
+      'gasLimit': gasLimit,
+      'gasPrice': gasPrice
+    };
+
+    final List<dynamic> transactionParameters = [
+      account ? 0 : '0x$babyJubJub',
+      account ? getAccountIndex(account.accountIndex) : 0
+      fix2Float(amount),
+      0,
+      token.id,
+      0,
+      '0x'
+    ];
+
+    if (token.id == 0) {
+      overrides['value'] = amount;
+      final l1Tx = new List()..addAll(transactionParameters);
+      l1Tx.add(overrides);
+      return hermezContract.addL1Transaction(l1Tx);
+    }
+
     await approve(amount, ethereumAddress, token.ethereumAddress);
+    final l1Transaction = new List()..addAll(transactionParameters);
+    l1Transaction.add(overrides);
+    return hermezContract.addL1Transaction(l1Transaction);
+  }
+
+  /// Makes a force Exit. This is the L1 transaction equivalent of Exit.
+  ///
+  /// @param {BigInt} amount - The amount to be withdrawn
+  /// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+  /// @param {Object} token - The token information object as returned from the API
+  /// @param {Number} gasLimit - Optional gas limit
+  /// @param {Bumber} gasMultiplier - Optional gas multiplier
+  static void forceExit(BigInt amount, String accountIndex, dynamic token, {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+    Map hermezABI =
+    json.decode(await new File('abis/HermezABI.json').readAsString());
+
+    dynamic hermezContract =
+    getContract(contractAddresses["Hermez"], hermezABI);
+
+    String gasPrice = await getGasPrice(gasMultiplier);
+
+    final Map<String, dynamic> overrides = {
+      'gasLimit': gasLimit,
+      'gasPrice': gasPrice
+    };
+
+    final List<dynamic> transactionParameters = [
+      0,
+      getAccountIndex(accountIndex),
+      0,
+      fix2Float(amount),
+      token.id,
+      1,
+      '0x'
+    ];
+
+    final l1Transaction = new List()..addAll(transactionParameters);
+    l1Transaction.add(overrides);
+    return hermezContract.addL1Transaction(l1Transaction);
+  }
+
+  /// Finalise the withdraw. This a L1 transaction.
+  ///
+  /// @param {BigInt} amount - The amount to be withdrawn
+  /// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+  /// @param {Object} token - The token information object as returned from the API
+  /// @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+  /// @param {BigInt} merkleRoot - The merkle root of the exit being withdrawn.
+  /// @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
+  /// @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
+  /// @param {Number} gasLimit - Optional gas limit
+  /// @param {Bumber} gasMultiplier - Optional gas multiplier
+  static void withdraw(BigInt amount, String accountIndex, dynamic token, String babyJubJub, BigInt merkleRoot, List<BigInt> merkleSiblings, {isInstant = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+    Map hermezABI =
+    json.decode(await new File('abis/HermezABI.json').readAsString());
+
+    dynamic hermezContract =
+    getContract(contractAddresses["Hermez"], hermezABI);
+
+    String gasPrice = await getGasPrice(gasMultiplier);
+
+    final Map<String, dynamic> overrides = {
+      'gasLimit': gasLimit,
+      'gasPrice': gasPrice
+    };
+
+    final List<dynamic> transactionParameters = [
+      token.id,
+      amount,
+      '0x$babyJubJub',
+      merkleRoot,
+      merkleSiblings,
+      getAccountIndex(accountIndex),
+      isInstant,
+    ];
+    final l1Transaction = new List()..addAll(transactionParameters);
+    l1Transaction.add(overrides);
+    return hermezContract.withdrawMerkleProof(l1Transaction);
+  }
+
+  /// Makes the final withdrawal from the WithdrawalDelayer smart contract after enough time has passed.
+  ///
+  /// @param {String} hezEthereumAddress - The Hermez address of the transaction sender
+  /// @param {Object} token - The token information object as returned from the API
+  /// @param {Number} gasLimit - Optional gas limit
+  /// @param {Bumber} gasMultiplier - Optional gas multiplier
+  static void delayWithdraw(String hezEthereumAddress, dynamic token, {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+    Map withdrawalDelayerABI =
+    json.decode(await new File('abis/WithdrawalDelayerABI.json').readAsString());
+
+    dynamic delayedWithdrawalContract =
+    getContract(contractAddresses["WithdrawalDelayer"], withdrawalDelayerABI);
+
+    String gasPrice = await getGasPrice(gasMultiplier);
+
+    final String ethereumAddress = getEthereumAddress(hezEthereumAddress);
+
+    final Map<String, dynamic> overrides = {
+      'gasLimit': gasLimit,
+      'gasPrice': gasPrice
+    };
+
+    final List<dynamic> transactionParameters = [
+      ethereumAddress,
+      token.id == 0 ? 0x0 : token.ethereumAddress
+    ];
+
+    final l1Transaction = new List()..addAll(transactionParameters);
+    l1Transaction.add(overrides);
+    return delayedWithdrawalContract.withdrawal(l1Transaction);
   }
 
   /// Sends a L2 transaction to the Coordinator
