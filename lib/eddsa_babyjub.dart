@@ -76,10 +76,10 @@ final signPoseidonFunc signPoseidon = nativeExampleLib
 // circomlib.poseidon -> poseidon
 typedef verifyPoseidonFunc = Pointer<Uint8> Function(
     Pointer<Uint8>, Pointer<Utf8>);
-typedef verifyPoseidonNative = Pointer<Structs.Signature> Function(
+typedef verifyPoseidonNative = Pointer<Uint8> Function(
     Pointer<Uint8>, Pointer<Utf8>);
 final verifyPoseidonFunc verifyPoseidon = nativeExampleLib
-    .lookup<NativeFunction<signPoseidonNative>>("verifyPoseidon")
+    .lookup<NativeFunction<verifyPoseidonNative>>("verifyPoseidon")
     .asFunction();
 
 /// Class representing EdDSA Baby Jub signature

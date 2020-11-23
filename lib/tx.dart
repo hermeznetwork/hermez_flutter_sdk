@@ -59,8 +59,8 @@ class Tx {
         getContract(contractAddresses["Hermez"], hermezABI);
 
     dynamic ethereumAddress = getEthereumAddress(hezEthereumAddress);
-    dynamic account =
-        (await getAccounts(ethereumAddress, token.id)).accounts[0];
+    dynamic account = (await getAccounts(ethereumAddress,
+        [token.id])); //.accounts[0]; parse json string to accounts
 
     String gasPrice = await getGasPrice(gasMultiplier);
 
@@ -71,8 +71,8 @@ class Tx {
 
     final List<dynamic> transactionParameters = [
       account ? 0 : '0x$babyJubJub',
-      account ? getAccountIndex(account.accountIndex) : 0
-      fix2Float(amount),
+      account ? getAccountIndex(account.accountIndex) : 0,
+      amount.toDouble(),
       0,
       token.id,
       0,
@@ -99,12 +99,13 @@ class Tx {
   /// @param {Object} token - The token information object as returned from the API
   /// @param {Number} gasLimit - Optional gas limit
   /// @param {Bumber} gasMultiplier - Optional gas multiplier
-  static void forceExit(BigInt amount, String accountIndex, dynamic token, {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+  static void forceExit(BigInt amount, String accountIndex, dynamic token,
+      {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
     Map hermezABI =
-    json.decode(await new File('abis/HermezABI.json').readAsString());
+        json.decode(await new File('abis/HermezABI.json').readAsString());
 
     dynamic hermezContract =
-    getContract(contractAddresses["Hermez"], hermezABI);
+        getContract(contractAddresses["Hermez"], hermezABI);
 
     String gasPrice = await getGasPrice(gasMultiplier);
 
@@ -117,7 +118,7 @@ class Tx {
       0,
       getAccountIndex(accountIndex),
       0,
-      fix2Float(amount),
+      amount.toDouble(),
       token.id,
       1,
       '0x'
@@ -139,12 +140,16 @@ class Tx {
   /// @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
   /// @param {Number} gasLimit - Optional gas limit
   /// @param {Bumber} gasMultiplier - Optional gas multiplier
-  static void withdraw(BigInt amount, String accountIndex, dynamic token, String babyJubJub, BigInt merkleRoot, List<BigInt> merkleSiblings, {isInstant = true, gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+  static void withdraw(BigInt amount, String accountIndex, dynamic token,
+      String babyJubJub, BigInt merkleRoot, List<BigInt> merkleSiblings,
+      {isInstant = true,
+      gasLimit = GAS_LIMIT,
+      gasMultiplier = GAS_MULTIPLIER}) async {
     Map hermezABI =
-    json.decode(await new File('abis/HermezABI.json').readAsString());
+        json.decode(await new File('abis/HermezABI.json').readAsString());
 
     dynamic hermezContract =
-    getContract(contractAddresses["Hermez"], hermezABI);
+        getContract(contractAddresses["Hermez"], hermezABI);
 
     String gasPrice = await getGasPrice(gasMultiplier);
 
@@ -173,12 +178,13 @@ class Tx {
   /// @param {Object} token - The token information object as returned from the API
   /// @param {Number} gasLimit - Optional gas limit
   /// @param {Bumber} gasMultiplier - Optional gas multiplier
-  static void delayWithdraw(String hezEthereumAddress, dynamic token, {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
-    Map withdrawalDelayerABI =
-    json.decode(await new File('abis/WithdrawalDelayerABI.json').readAsString());
+  static void delayWithdraw(String hezEthereumAddress, dynamic token,
+      {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+    Map withdrawalDelayerABI = json.decode(
+        await new File('abis/WithdrawalDelayerABI.json').readAsString());
 
-    dynamic delayedWithdrawalContract =
-    getContract(contractAddresses["WithdrawalDelayer"], withdrawalDelayerABI);
+    dynamic delayedWithdrawalContract = getContract(
+        contractAddresses["WithdrawalDelayer"], withdrawalDelayerABI);
 
     String gasPrice = await getGasPrice(gasMultiplier);
 

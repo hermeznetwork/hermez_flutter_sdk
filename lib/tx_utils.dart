@@ -3,10 +3,12 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:hex/hex.dart';
 
 import 'fee_factors.dart' show feeFactors;
 import 'eddsa_babyjub.dart' show hashPoseidon;
+import 'tx_pool.dart' show getPoolTransactions;
 
 import 'libs/circomlib.dart';
 
@@ -57,18 +59,24 @@ class TxUtils {
   ///
   /// @returns {String}
   String getTxId (int fromIdx, int nonce) {
-    Uint64List.fromList(elements)
+    BigInt.from(fromIdx)
+    Uint8List.fromList(elements)
+    ByteBuffer
     const fromIdxBytes = new ArrayBuffer(8)
     const fromIdxView = new DataView(fromIdxBytes)
     fromIdxView.setBigUint64(0, BigInt(fromIdx).value, false)
 
-    const nonceBytes = new ArrayBuffer(8)
+    final nonceBytes = Uint8List(8);
+    nonceBytes.add(nonce);
+    HEX.encode(nonceBytes.buffer.asUint8List(2, 8).toList());
+
+    //const nonceBytes = new ArrayBuffer(8)
     const nonceView = new DataView(nonceBytes)
     nonceView.setBigUint64(0, BigInt(nonce).value, false)
 
     const fromIdxHex = HEX.encode(input) bufToHex(fromIdxView.buffer.slice(2, 8))
-    const nonceHex = bufToHex(nonceView.buffer.slice(3, 8))
-    return '0x02' + fromIdxHex + nonceHex
+    const nonceHex = HEX.encode() bufToHex(nonceView.buffer.slice(3, 8))
+    return '0x02' + fromIdxHex + nonceHex;
   }
 
   /// Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
@@ -122,17 +130,37 @@ class TxUtils {
   ///
   /// @return {Number} nonce
   Future<num> getNonce(num currentNonce, num accountIndex, String bjj, num tokenId) async {
-    const poolTxs = await getPoolTransactions(accountIndex, bjj)
-    const poolTxsNonces = poolTxs.filter(tx => tx.token.id === tokenId)
-        .map(tx => tx.nonce)
-        .sort()
+    final List<dynamic> poolTxs = await getPoolTransactions(accountIndex.toString(), bjj);
+    poolTxs.removeWhere((tx) => tx.token.id == tokenId);
+    final List<int> poolTxsNonces = poolTxs.map((tx) => tx.nonce);
+    poolTxs.sort();
 
-    final nonce = currentNonce + 1;
-    while (poolTxsNonces.indexOf(nonce) !== -1) {
-      nonce++
+    int nonce = currentNonce + 1;
+    while (poolTxsNonces.indexOf(nonce) != -1) {
+      nonce++;
     }
 
-    return nonce
+    return nonce;
+  }
+
+  /// Encode tx compressed data
+  /// @param {Object} tx - Transaction object
+  /// @returns {BigInt} Encoded tx compressed data
+  BigInt buildTxCompressedData(dynamic tx) {
+    final signatureConstant = BigInt.parse('3322668559');
+    BigInt res = BigInt.zero;
+
+    res = res + signatureConstant; // SignConst --> 32 bits
+    res = res + BigInt.from((tx.chainId ? tx.chainId : 0) << 32); // chainId --> 16 bits
+    res = res + BigInt.from((tx.fromAccountIndex ? tx.fromAccountIndex : 0) << 48); // fromIdx --> 48 bits
+    res = res + BigInt.from((tx.toAccountIndex ? tx.toAccountIndex : 0) << 96); // toIdx --> 48 bits
+    res = res + BigInt.from((tx.amount.toDouble() ? tx.amount.toDouble() : 0) << 144); // amounf16 --> 16 bits
+    res = res + BigInt.from((tx.tokenId ? tx.tokenId : 0) << 160);  // tokenID --> 32 bits
+    res = res + BigInt.from((tx.nonce ? tx.nonce : 0) << 192); // nonce --> 40 bits
+    res = res + BigInt.from((tx.fee ? tx.fee : 0) << 232); // userFee --> 8 bits
+    res = res + BigInt.from((tx.toBjjSign ? 1 : 0) << 240); // toBjjSign --> 1 bit
+
+    return res;
   }
 
   /// Builds the message to hash
@@ -140,17 +168,17 @@ class TxUtils {
   /// @param {Object} encodedTransaction - Transaction object
   ///
   /// @returns {Scalar} message to sign
-  BigInt buildTransactionHashMessage(encodedTransaction) {
-    const txCompressedData = buildTxCompressedData(encodedTransaction);
+  BigInt buildTransactionHashMessage(dynamic encodedTransaction) {
+    final txCompressedData = buildTxCompressedData(encodedTransaction);
 
-    const h = eddsababyjubjub.hashPoseidon(
+    final h = hashPoseidon(
       txCompressedData,
       encodedTransaction.to_eth_addr,
       encodedTransaction.toBjjAy,
       encodedTransaction.rqTxCompressedDataV2,
       encodedTransaction.rqToEthAddr,
       encodedTransaction.rqToBjjAy
-    )
+    );
     BigInt.from(HEX.decode(encoded));
     return h;
   }

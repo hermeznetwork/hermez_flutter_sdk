@@ -25,8 +25,8 @@ Map<String, dynamic> getPageData(dynamic fromItem) {
   };
 }
 
-Future<String> getAccounts(
-    String address, List<dynamic> tokenIds, dynamic fromItem) async {
+Future<String> getAccounts(String address, List<dynamic> tokenIds,
+    {dynamic fromItem}) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
@@ -35,12 +35,13 @@ Future<String> getAccounts(
   if (tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
   params.addAll(getPageData(fromItem));
-  return extractJSON(get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
+  return extractJSON(
+      await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
 }
 
 Future<String> getAccount(int accountIndex) async {
   return extractJSON(
-      get(baseApiUrl, ACCOUNTS_URL + '/' + accountIndex.toString()));
+      await get(baseApiUrl, ACCOUNTS_URL + '/' + accountIndex.toString()));
 }
 
 Future<String> getTransactions(int accountIndex) async {
@@ -48,30 +49,30 @@ Future<String> getTransactions(int accountIndex) async {
     'accountIndex': accountIndex > 0 ? accountIndex.toString() : ''
   };
   return extractJSON(
-      get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params));
+      await get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params));
 }
 
 Future<String> getHistoryTransaction(int transactionId) async {
-  return extractJSON(get(
+  return extractJSON(await get(
       baseApiUrl, TRANSACTIONS_HISTORY_URL + '/' + transactionId.toString()));
 }
 
 Future<String> getPoolTransaction(int transactionId) async {
-  return extractJSON(get(
+  return extractJSON(await get(
       baseApiUrl, TRANSACTIONS_HISTORY_URL + '/' + transactionId.toString()));
 }
 
 Future<String> postPoolTransaction(dynamic transaction) async {
   return extractJSON(
-      post(baseApiUrl, TRANSACTIONS_POOL_URL, body: transaction));
+      await post(baseApiUrl, TRANSACTIONS_POOL_URL, body: transaction));
 }
 
 Future<String> getExits() async {
-  return extractJSON(get(baseApiUrl, EXITS_URL));
+  return extractJSON(await get(baseApiUrl, EXITS_URL));
 }
 
 Future<String> getExit(int batchNum, int accountIndex) async {
-  return extractJSON(get(baseApiUrl,
+  return extractJSON(await get(baseApiUrl,
       EXITS_URL + '/' + batchNum.toString() + '/' + accountIndex.toString()));
 }
 
@@ -80,13 +81,15 @@ Future<String> getTokens(tokenIds) async {
     "tokenIds": tokenIds.isNotEmpty ? tokenIds.join(',') : ''
   };
 
-  return extractJSON(get(baseApiUrl, TOKENS_URL, queryParameters: params));
+  return extractJSON(
+      await get(baseApiUrl, TOKENS_URL, queryParameters: params));
 }
 
 Future<String> getToken(int tokenId) async {
-  return extractJSON(get(baseApiUrl, TOKENS_URL + '/' + tokenId.toString()));
+  return extractJSON(
+      await get(baseApiUrl, TOKENS_URL + '/' + tokenId.toString()));
 }
 
 Future<String> getState() async {
-  return extractJSON(get(baseApiUrl, STATE_URL));
+  return extractJSON(await get(baseApiUrl, STATE_URL));
 }

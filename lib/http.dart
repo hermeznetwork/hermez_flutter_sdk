@@ -5,7 +5,9 @@ import 'package:http/http.dart' as http;
 
 import 'http_exceptions.dart';
 
-Future<String> extractJSON(dynamic request) async {}
+Future<String> extractJSON(http.Response response) async {
+  return response.body;
+}
 
 Future<http.Response> get(String baseAddress, String endpoint,
     {Map<String, String> queryParameters}) async {

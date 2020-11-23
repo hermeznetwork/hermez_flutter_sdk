@@ -1,4 +1,6 @@
-import 'package:hermez_plugin/abis/ERC20ABI.json' as ERC20ABI;
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:hermez_plugin/contracts.dart' show getContract;
 
 import 'constants.dart' show contractAddresses;
@@ -12,7 +14,10 @@ import 'constants.dart' show contractAddresses;
 /// @returns {Promise} transaction
 Future<String> approve(
     BigInt amount, String accountAddress, String contractAddress) async {
-  final erc20Contract = getContract(contractAddress, ERC20ABI);
+  Map erc20ABI =
+      json.decode(await new File('abis/ERC20ABI.json').readAsString());
+
+  dynamic erc20Contract = getContract(contractAddress, erc20ABI);
   final allowance = await erc20Contract.allowance(
       accountAddress, contractAddresses['Hermez']);
 
