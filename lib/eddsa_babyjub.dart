@@ -19,9 +19,14 @@ final DynamicLibrary nativeExampleLib = Platform.isAndroid
 // Result<Signature,String>
 
 // eddsa.packSignature -> pack_signature
-typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Structs.Signature>);
+/*typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Structs.Signature>);
 typedef PackSignatureFuncNative = Pointer<Uint8> Function(
     Pointer<Structs.Signature>);
+final PackSignatureFunc packSignature = nativeExampleLib
+    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
+    .asFunction();*/
+typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Uint8>);
+typedef PackSignatureFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
 final PackSignatureFunc packSignature = nativeExampleLib
     .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
     .asFunction();

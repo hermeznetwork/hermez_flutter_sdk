@@ -73,11 +73,6 @@ pub extern fn unpack_point(b: &[u8; 32]) -> Result<Point, String> {
     }
 }
 
-
-
-
-
-
 /*Result<Point, String>
 pub extern fn unpack_point() -> Result<Point, String> {
 
@@ -135,8 +130,6 @@ pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], m
     let msg = message.to_bigint().unwrap();
     return verify(pk.public().unwrap(), sig.clone(), msg.clone());
 }
-
-
 
 /*#[no_mangle]
 pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
