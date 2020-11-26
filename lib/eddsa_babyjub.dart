@@ -36,8 +36,13 @@ final UnpackSignatureFunc unpackSignature = nativeExampleLib
     .asFunction();
 
 // eddsa.packPoint -> pack_point
-typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Structs.Point>);
+/*typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Structs.Point>);
 typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Structs.Point>);
+final PackPointFunc packPoint = nativeExampleLib
+    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
+    .asFunction();*/
+typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
+typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
 final PackPointFunc packPoint = nativeExampleLib
     .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
     .asFunction();
@@ -65,9 +70,16 @@ final hashPoseidonFunc hashPoseidon = nativeExampleLib
     .asFunction();
 
 // circomlib.poseidon -> signPoseidon
-typedef signPoseidonFunc = Pointer<Structs.Signature> Function(
+/*typedef signPoseidonFunc = Pointer<Structs.Signature> Function(
     Pointer<Uint8>, Pointer<Utf8>);
 typedef signPoseidonNative = Pointer<Structs.Signature> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
+final signPoseidonFunc signPoseidon = nativeExampleLib
+    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
+    .asFunction();*/
+typedef signPoseidonFunc = Pointer<Uint8> Function(
+    Pointer<Uint8>, Pointer<Utf8>);
+typedef signPoseidonNative = Pointer<Uint8> Function(
     Pointer<Uint8>, Pointer<Utf8>);
 final signPoseidonFunc signPoseidon = nativeExampleLib
     .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
@@ -111,8 +123,10 @@ class Signature {
     List<BigInt> r8 = List<BigInt>(2);
     r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.x))));
     r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.y))));
-    return new Signature(r8, sig.s);
-    return null;
+
+    BigInt s =
+        Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(sig.s, 32));
+    return new Signature(r8, s);
   }
 }
 
@@ -131,10 +145,9 @@ class PublicKey {
   /// @param {BigInt} compressedBigInt - compressed public key in a bigInt
   ///
   /// @returns {PublicKey} public key class
-  static PublicKey newFromCompressed(Pointer<Uint8> compressedBigInt) {
+  static PublicKey newFromCompressed(BigInt compressedBigInt) {
     final Uint8List compressedBuffLE =
-        Uint8ArrayUtils.fromPointer(compressedBigInt, 32);
-    //leInt2Buff(compressedBigInt, 32);
+        Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
     if (compressedBuffLE.length != 32) {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
@@ -144,18 +157,33 @@ class PublicKey {
       throw new Error(/*'unpackPoint failed'*/);
     }
     Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
-    return new PublicKey(p);
+    List<BigInt> point = List<BigInt>(2);
+    point.add(BigInt.from(buf.elementAt(0)));
+    point.add(BigInt.from(buf.elementAt(1)));
+    return new PublicKey(point);
   }
 
   /// Compress the PublicKey
   /// @returns {Uint8List} - point compressed into a buffer
-  Uint8List compress() {
-    return Uint8ArrayUtils.fromPointer(packPoint(this.p), 32);
+  BigInt compress() {
+    //Structs.Point point = Structs.Point.allocate(
+    //    Utf8.toUtf8(p[0].toString()), Utf8.toUtf8(p[1].toString()));
+    List<int> pointList = List<int>(2);
+    pointList.add(p[0].toInt());
+    pointList.add(p[1].toInt());
+    return Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(
+        packPoint(Uint8ArrayUtils.toPointer(Uint8List.fromList(pointList))),
+        32));
   }
 
   bool verify(String messageHash, Signature signature) {
+    List<int> sigList = List<int>(3);
+    sigList.add(signature.r8[0].toInt());
+    sigList.add(signature.r8[1].toInt());
+    sigList.add(signature.s.toInt());
+    Pointer<Uint8> sigPtr = Uint8ArrayUtils.toPointer(sigList);
     Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash);
-    verifyPoseidon();
+    verifyPoseidon(sigPtr, msgPtr);
   }
 }
 
@@ -183,12 +211,12 @@ class PrivateKey {
     return new PublicKey(p);
   }
 
-  Signature sign(String messageHash) {
+  BigInt sign(BigInt messageHash) {
     Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
-    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash);
-    Pointer<Structs.Signature> signature = signPoseidon(pointer, msgPtr);
-    //sign = Signature(signature.ref.r_b8, signature.ref.s.)
-    return sign;
+    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash.toString());
+    Pointer<Uint8> signature = signPoseidon(pointer, msgPtr);
+    final sign = Uint8ArrayUtils.fromPointer(signature, 64);
+    return Uint8ArrayUtils.leBuff2int(sign);
   }
 }
 

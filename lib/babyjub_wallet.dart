@@ -26,19 +26,19 @@ class BabyJubWallet {
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
-  /// @param {Buffer} privateKey - 32 bytes buffer
+  /// @param {Uint8List} privateKey - 32 bytes buffer
   /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
   BabyJubWallet(Uint8List privateKey, String hermezEthereumAddress) {
     final priv = eddsaBabyJub.PrivateKey(privateKey);
     final eddsaBabyJub.PublicKey pub = priv.public();
     this.privateKey = privateKey;
     this.publicKey = [pub.p[0].toString(), pub.p[1].toString()];
-    this.publicKeyHex = HEX.encode(pub.p) [
-      pub.p[0].toString(16),
-      pub.p[1].toString(16)
-    ]; // HEX.encode(list<int> input)
+    this.publicKeyHex = [
+      pub.p[0].toRadixString(16),
+      pub.p[1].toRadixString(16)
+    ];
     this.publicKeyCompressed = pub.compress().toString();
-    this.publicKeyCompressedHex = pub.compress().toString(16);
+    this.publicKeyCompressedHex = pub.compress().toRadixString(16);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
@@ -50,7 +50,7 @@ class BabyJubWallet {
     final messHash = hashBuffer(messBuff);
     final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
     final sig = privKey.sign(messHash);
-    return HEX.encode(sig); //sig.toString(16);
+    return sig.toRadixString(16);
   }
 
   /// To sign transaction with babyjubjub keys
@@ -70,22 +70,16 @@ class BabyJubWallet {
 /// @param {String} signatureHex - Ecdsa signature compressed and encoded as hex string
 /// @returns {bool} True if validation is successful; otherwise false
 bool verifyBabyJub(String publicKeyHex, String messStr, String signatureHex) {
-
-  final pkBuff = Uint8ArrayUtils.uint8ListfromString(publicKeyHex);
-  final pkBuffPointer = Uint8ArrayUtils.toPointer(pkBuff);
-  final pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuffPointer);
+  final pkBuff = BigInt.from(int.parse(publicKeyHex, radix: 16));
+  final pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuff);
   final msgBuff = Uint8ArrayUtils.uint8ListfromString(messStr);
-  final hash = hashBuffer(msgBuff);
-  final sigBuff = Uint8ArrayUtils.uint8ListfromString(signatureHex);
+  final hashBuff = hashBuffer(msgBuff);
+  final hashStr = Uint8ArrayUtils.bigIntToBytes(hashBuff);
+  final hash = Uint8ArrayUtils.uint8ListToString(hashStr);
+  final sigBuff = Uint8ArrayUtils.bigIntToBytes(
+      BigInt.from(int.parse(signatureHex, radix: 16)));
   final sig = eddsaBabyJub.Signature.newFromCompressed(sigBuff);
   return pk.verify(hash, sig);
-  /*const pkBuff = Buffer.from(publicKeyHex, 'hex')
-  const pk = eddsaBabyJub.PublicKey.newFromCompressed(pkBuff)
-  const msgBuff = Buffer.from(messStr)
-  const hash = hashBuffer(msgBuff)
-  const sigBuff = Buffer.from(signatureHex, 'hex')
-  const sig = eddsaBabyJub.Signature.newFromCompressed(sigBuff)
-  return pk.verifyPoseidon(hash, sig)*/
 }
 
 ///

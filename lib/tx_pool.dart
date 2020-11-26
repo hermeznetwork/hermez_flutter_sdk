@@ -31,7 +31,7 @@ Future<List<String>> getPoolTransactions(
       json.decode(prefs.get(TRANSACTION_POOL_KEY));
   final List<String> accountTransactionPool = transactionPool[bJJ];
 
-  final accountTransactionsPromises = List<String>()
+  final accountTransactionsPromises = List<dynamic>()
     ..addAll(accountTransactionPool);
   accountTransactionsPromises.removeWhere(
       (transaction) => transaction.fromAccountIndex == accountIndex);

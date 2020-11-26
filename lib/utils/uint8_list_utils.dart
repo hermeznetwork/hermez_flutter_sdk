@@ -27,4 +27,60 @@ class Uint8ArrayUtils {
   static String uint8ListToString(Uint8List bytes) {
     return String.fromCharCodes(bytes);
   }
+
+  static BigInt leBuff2int(Uint8List buf) {
+    BigInt res = BigInt.zero;
+    for (int i = 0; i < buf.length; i++) {
+      final n = BigInt.from(buf[i]);
+      res = res + (n << i * 8);
+    }
+    return res;
+  }
+
+  static Uint8List leInt2Buff(BigInt n, int len) {
+    BigInt r = n;
+    int o = 0;
+
+    final buff = Uint8List(len);
+    while ((r > BigInt.zero) && (o < buff.length)) {
+      final c = (r & BigInt.from(255)).toInt();
+      buff[o] = c;
+      o++;
+      r = r >> 8;
+    }
+    if (r == BigInt.zero) {
+      throw new Error(/*"Number does not fit in this length"*/);
+    }
+    return buff;
+  }
+
+  static BigInt bytesToBigInt(Uint8List bytes) {
+    BigInt read(int start, int end) {
+      if (end - start <= 4) {
+        int result = 0;
+        for (int i = end - 1; i >= start; i--) {
+          result = result * 256 + bytes[i];
+        }
+        return new BigInt.from(result);
+      }
+      int mid = start + ((end - start) >> 1);
+      var result = read(start, mid) +
+          read(mid, end) * (BigInt.one << ((mid - start) * 8));
+      return result;
+    }
+
+    return read(0, bytes.length);
+  }
+
+  static Uint8List bigIntToBytes(BigInt number) {
+    // Not handling negative numbers. Decide how you want to do that.
+    int bytes = (number.bitLength + 7) >> 3;
+    var b256 = new BigInt.from(256);
+    var result = new Uint8List(bytes);
+    for (int i = 0; i < bytes; i++) {
+      result[i] = number.remainder(b256).toInt();
+      number = number >> 8;
+    }
+    return result;
+  }
 }
