@@ -1,103 +1,10 @@
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
 import 'utils/structs.dart' as Structs;
-
-///////////////////////////////////////////////////////////////////////////////
-// Load the library
-///////////////////////////////////////////////////////////////////////////////
-
-final DynamicLibrary nativeExampleLib = Platform.isAndroid
-    ? DynamicLibrary.open("libbabyjubjub.so")
-    : DynamicLibrary.process();
-
-// babyJub.unpackPoint
-// Result<Signature,String>
-
-// eddsa.packSignature -> pack_signature
-/*typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Structs.Signature>);
-typedef PackSignatureFuncNative = Pointer<Uint8> Function(
-    Pointer<Structs.Signature>);
-final PackSignatureFunc packSignature = nativeExampleLib
-    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
-    .asFunction();*/
-typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef PackSignatureFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final PackSignatureFunc packSignature = nativeExampleLib
-    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
-    .asFunction();
-
-// eddsa.unpackSignature -> unpack_signature
-typedef UnpackSignatureFunc = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>);
-typedef UnpackSignatureFuncNative = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>);
-final UnpackSignatureFunc unpackSignature = nativeExampleLib
-    .lookup<NativeFunction<UnpackSignatureFuncNative>>("unpack_signature")
-    .asFunction();
-
-// eddsa.packPoint -> pack_point
-/*typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Structs.Point>);
-typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Structs.Point>);
-final PackPointFunc packPoint = nativeExampleLib
-    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
-    .asFunction();*/
-typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final PackPointFunc packPoint = nativeExampleLib
-    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
-    .asFunction();
-
-// eddsa.unpackPoint -> unpack_point
-typedef UnpackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef UnpackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final UnpackPointFunc unpackPoint = nativeExampleLib
-    .lookup<NativeFunction<UnpackPointFuncNative>>("unpack_point")
-    .asFunction();
-
-// eddsa.prv2pub -> prv2pub
-typedef Prv2pubFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
-typedef Prv2pubFuncNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
-final Prv2pubFunc prv2pub = nativeExampleLib
-    .lookup<NativeFunction<Prv2pubFuncNative>>("prv2pub")
-    .asFunction();
-
-// circomlib.poseidon -> hashPoseidon
-typedef hashPoseidonFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
-typedef hashPoseidonFuncNative = Pointer<Structs.Point> Function(
-    Pointer<Uint8>);
-final hashPoseidonFunc hashPoseidon = nativeExampleLib
-    .lookup<NativeFunction<hashPoseidonFuncNative>>("hashPoseidon")
-    .asFunction();
-
-// circomlib.poseidon -> signPoseidon
-/*typedef signPoseidonFunc = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef signPoseidonNative = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final signPoseidonFunc signPoseidon = nativeExampleLib
-    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
-    .asFunction();*/
-typedef signPoseidonFunc = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef signPoseidonNative = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final signPoseidonFunc signPoseidon = nativeExampleLib
-    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
-    .asFunction();
-
-// circomlib.poseidon -> poseidon
-typedef verifyPoseidonFunc = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef verifyPoseidonNative = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final verifyPoseidonFunc verifyPoseidon = nativeExampleLib
-    .lookup<NativeFunction<verifyPoseidonNative>>("verifyPoseidon")
-    .asFunction();
 
 /// Class representing EdDSA Baby Jub signature
 class Signature {

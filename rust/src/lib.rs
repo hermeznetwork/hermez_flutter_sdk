@@ -20,10 +20,11 @@ extern crate rand;
 extern crate ff;
 use ff::*;
 
-use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify};
+use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point, PointProjective};
 use num_bigint::{Sign, BigInt, ToBigInt};
 use std::os::raw::c_char;
 use std::ffi::{CString, CStr};
+use std::cmp::min;
 
 lazy_static! {
  static ref B8: Point = Point {
@@ -40,49 +41,78 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub extern fn pack_signature(b: &[u8; 64]) -> Result<Signature, String> {
-
-}
-
-#[no_mangle]
-pub extern fn unpack_signature(b: &[u8; 64]) -> Result<Signature, String> {
-    let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
-    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
+pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
+    let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
+    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
     let r_b8 = decompress_point(r_b8_bytes);
-    match r_b8 {
-        Result::Err(err) => return Err(err.to_string()),
-        Result::Ok(res) => Ok(Signature {
-            r_b8: res.clone(),
-            s: s,
-        }),
+    let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
+    let res = sig.compress();
+    return res;
+}
+
+#[no_mangle]
+pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
+    let decompressed_sig = decompress_signature(&compressed_signature).unwrap();
+    let mut r: [u8; 64] = [0; 64];
+    let r_b8_bytes = compress_point(&decompressed_sig.r_b8);
+    let (_, s_bytes) = decompressed_sig.s.to_bytes_le();
+    let len = min(s_bytes.len(), r.len());
+    r[..len].copy_from_slice(&s_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[63] = r[63] | 0x80;
     }
+    r
 }
 
 #[no_mangle]
-pub extern fn pack_point(b: &[u8; 64]) -> Result<Signature, String> {
-
+pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..32]);
+    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[32..]);
+    let mut r: [u8; 32] = [0; 32];
+    let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r.len());
+    r[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[31] = r[31] | 0x80;
+    }
+    r
 }
 
 #[no_mangle]
-pub extern fn unpack_point(b: &[u8; 32]) -> Result<Point, String> {
-    let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
+pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
+    let r_b8_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
     let r_b8 = decompress_point(r_b8_bytes);
-    match r_b8 {
-        Result::Err(err) => return Err(err.to_string()),
-        Result::Ok(res) => Ok(res),
+    let p = r_b8.unwrap();
+    let mut r: [u8; 64] = [0; 64];
+    let mut x_vec = to_hex(&p.x).as_bytes();
+    let mut y_vec =  to_hex(&p.y).as_bytes();
+    x_vec.
+    x_vec.append(&mut y_vec);
+    /*let x_big = BigInt::parse_bytes(, 16).unwrap();
+    let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
+    let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r.len());
+    r[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[31] = r[31] | 0x80;
     }
+    r*/
 }
 
-/*Result<Point, String>
-pub extern fn unpack_point() -> Result<Point, String> {
-
-}*/
-
 #[no_mangle]
-pub extern fn prv2pub(key: &[u8; 32]) -> Result<Point, String> {
-    let prv: BigInt = BigInt::from_bytes_le(Sign::Plus, &key[..32]);
-    let pk = B8.mul_scalar(&prv)?;
-    Ok(pk.clone())
+pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
+    let sk = private_key.to_bigint().unwrap();
+    let pk = B8.mul_scalar(&sk)?;
+    let mut r: [u8; 32] = [0; 32];
+    let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();
+    let y_big = BigInt::parse_bytes(to_hex(&pk.y).as_bytes(), 16).unwrap();
+    let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r.len());
+    r[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[31] = r[31] | 0x80;
+    }
+    r
 }
 
 #[no_mangle]
@@ -104,23 +134,19 @@ pub extern fn poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_
     let poseidon = Poseidon::new();
     let h = poseidon.hash(big_arr.clone()).unwrap();
     return h.toString();
-    /*assert_eq!(
-        h.to_string(),
-        "Fr(0x186a5454a7c47c73dfc74ac32ea40a57d27eeb4e2bfc6551dd7b66686d3fd1ab)" // "11043376183861534927536506085090418075369306574649619885724436265926427398571"
-    );*/
 }
 
 #[no_mangle]
-pub extern fn signPoseidon(private_key: *const c_char, message: *const c_char) -> Signature {
+pub extern fn signPoseidon(private_key: *const c_char, message: *const c_char) -> [u8; 64] {
     let sk = private_key.to_bigint().unwrap();
     let pk = PrivateKey { key: sk };
     let msg = message.to_bigint().unwrap();
     let sig = pk.sign(msg.clone()).unwrap();
-    return sig;
+    return sig.compress();
 }
 
 #[no_mangle]
-pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> bool {
+pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> int8 {
     let sk = private_key.to_bigint().unwrap();
     let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
@@ -128,7 +154,11 @@ pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], m
     let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
     let pk = PrivateKey { key: sk };
     let msg = message.to_bigint().unwrap();
-    return verify(pk.public().unwrap(), sig.clone(), msg.clone());
+    return if verify(pk.public().unwrap(), sig.clone(), msg.clone()) {
+        1
+    } else {
+        0
+    }
 }
 
 /*#[no_mangle]

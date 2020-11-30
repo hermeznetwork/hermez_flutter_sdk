@@ -200,7 +200,21 @@ pub fn test_bit(b: &Vec<u8>, i: usize) -> bool {
     return b[i / 8] & (1 << (i % 8)) != 0;
 }
 
-pub fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
+pub fn compress_point(p: &Point) -> [u8; 32] {
+    let mut r: [u8; 32] = [0; 32];
+    let x_big = BigInt::parse_bytes(to_hex(&p.x).as_bytes(), 16).unwrap();
+    let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
+    let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r.len());
+    r[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[31] = r[31] | 0x80;
+    }
+    r
+}
+
+//#[no_mangle]
+pub /*extern*/ fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
     // https://tools.ietf.org/html/rfc8032#section-5.2.3
     let mut sign: bool = false;
     let mut b = bb.clone();

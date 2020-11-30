@@ -7,7 +7,6 @@ import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 
 import 'addresses.dart' show getAccountIndex;
-import 'eddsa_babyjub.dart' show hashPoseidon;
 import 'fee_factors.dart' show feeFactors;
 import 'providers.dart' show getProvider;
 import 'tx_pool.dart' show getPoolTransactions;
@@ -211,9 +210,9 @@ dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
 
   final uint8list = Uint8List.fromList(lint);
   Pointer<Uint8> ptr = Uint8ArrayUtils.toPointer(uint8list);
-  final h = hashPoseidon(ptr);
-  final point = h.ref;
-  return h;
+  //final h = hashPoseidon(ptr);
+  //final point = h.ref;
+  //return h;
 }
 
 /// Prepares a transaction to be ready to be sent to a Coordinator.

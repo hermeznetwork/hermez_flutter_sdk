@@ -45,10 +45,8 @@ import 'package:ffi/ffi.dart';
 }*/
 
 class Signature extends Struct {
-  //@ffi.Pointer
   Pointer<Point> r_b8;
 
-  //@Pointer()
   Pointer<Uint8> s;
 
   factory Signature.allocate(Pointer<Point> r_b8, Pointer<Uint8> s) =>
