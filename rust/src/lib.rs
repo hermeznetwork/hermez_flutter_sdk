@@ -36,7 +36,7 @@ lazy_static! {
             "16950150798460657717958625567821834550301663161624707787222815936182638968203",
         )
         .unwrap(),
-            // z: Fr::one(),
+        // z: Fr::one(),
     };
 }
 
@@ -66,16 +66,19 @@ pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
 
 #[no_mangle]
 pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
-    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..32]);
-    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[32..]);
-    let mut r: [u8; 32] = [0; 32];
-    let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r.len());
-    r[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[31] = r[31] | 0x80;
-    }
-    r
+    let x_big: BigInt = BigInt::parse_bytes(&point[..32], 10).unwrap();
+    let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();
+
+    let p: Point = Point {
+        x: Fr::from_str(
+            x_big.to_str_radix(10),
+        ).unwrap(),
+        y: Fr::from_str(
+            y_big.to_str_radix(10),
+        ).unwrap(),
+    };
+
+    return compress_point(&p);
 }
 
 #[no_mangle]
@@ -84,19 +87,10 @@ pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
     let r_b8 = decompress_point(r_b8_bytes);
     let p = r_b8.unwrap();
     let mut r: [u8; 64] = [0; 64];
-    let mut x_vec = to_hex(&p.x).as_bytes();
-    let mut y_vec =  to_hex(&p.y).as_bytes();
-    x_vec.
-    x_vec.append(&mut y_vec);
-    /*let x_big = BigInt::parse_bytes(, 16).unwrap();
-    let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
-    let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r.len());
-    r[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[31] = r[31] | 0x80;
-    }
-    r*/
+    let mut x_bytes = to_hex(&p.x).as_bytes();
+    let mut y_bytes = to_hex(&p.y).as_bytes();
+    r.iter().chain(&x_bytes).chain(&y_bytes).collect();
+    r
 }
 
 #[no_mangle]

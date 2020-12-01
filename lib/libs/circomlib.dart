@@ -150,8 +150,8 @@ class CircomLib {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
     //final Uint8List buf = Uint8ArrayUtils.fromPointer(signature, length);
-    //final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _packSignature(buf);
+    final ptr = Uint8ArrayUtils.toPointer(buf);
+    final resultPtr = _packSignature(ptr);
     final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
     return result;
   }
@@ -160,7 +160,7 @@ class CircomLib {
   Pointer<Uint8> unpackSignature(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _unpackSignature(ptr);
-    return resultPtr.ref;
+    return resultPtr;
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packPoint;
@@ -171,41 +171,41 @@ class CircomLib {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
     //final Uint8List buf = Uint8ArrayUtils.fromPointer(signature, length);
-    //final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _packPoint(buf);
+    final ptr = Uint8ArrayUtils.toPointer(buf);
+    final resultPtr = _packPoint(ptr);
     final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
     return result;
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _unpackPoint;
-  Point unpackPoint(Uint8List buf) {
+  Pointer<Uint8> unpackPoint(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _unpackPoint(ptr);
-    return resultPtr.ref;
+    return resultPtr;
   }
 
   // circomlib.poseidon -> hashPoseidon
   Pointer<Uint8> Function(Pointer<Uint8>) _hashPoseidon;
-  Uint8 hashPoseidon(Uint8List buf) {
+  Pointer<Uint8> hashPoseidon(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _hashPoseidon(ptr);
-    return resultPtr.ref;
+    return resultPtr;
   }
 
   // privKey.signPoseidon -> signPoseidon
   Pointer<Uint8> Function(Pointer<Uint8>) _signPoseidon;
-  Point signPoseidon(Uint8List buf) {
+  Pointer<Uint8> signPoseidon(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _signPoseidon(ptr);
-    return resultPtr.ref;
+    return resultPtr;
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
   Pointer<Uint8> Function(Pointer<Uint8>) _verifyPoseidon;
-  Point verifyPoseidon(Uint8List buf) {
+  Pointer<Uint8> verifyPoseidon(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _verifyPoseidon(ptr);
-    return resultPtr.ref;
+    return resultPtr;
   }
 
   /*

@@ -6,6 +6,8 @@ import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
 import 'utils/structs.dart' as Structs;
 
+import 'libs/circomlib.dart';
+
 /// Class representing EdDSA Baby Jub signature
 class Signature {
   List<BigInt> r8;
@@ -26,9 +28,16 @@ class Signature {
     if (buf.length != 64) {
       throw new Error(); // buf must be 64 bytes
     }
-    Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(buf);
-    final sigPointer = unpackSignature(pointer);
-    final Structs.Signature sig = sigPointer.ref;
+    CircomLib circomLib = CircomLib();
+    //Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(buf);
+    final sigPointer = circomLib.unpackSignature(buf);
+    final bufSignature = Uint8ArrayUtils.fromPointer(sigPointer, 64);
+    final r_b8_list = bufSignature.sublist(0, 32);
+    final r_s_list = bufSignature.sublist(32, 64);
+    final r_b8_ptr = Uint8ArrayUtils.toPointer(r_b8_list);
+    final Structs.Point point = Point.allocate()
+    //final Structs.Signature sig = sigPointer.ref;
+    final Structs.Signature sig = Structs.Signature.allocate()
     if (sig.r_b8 == null) {
       throw new Error(); // unpackSignature failed
     }
@@ -63,8 +72,9 @@ class PublicKey {
     if (compressedBuffLE.length != 32) {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
-    final ptr = Uint8ArrayUtils.toPointer(compressedBuffLE);
-    final p = unpackPoint(ptr);
+    CircomLib circomLib = CircomLib();
+    //final ptr = Uint8ArrayUtils.toPointer(compressedBuffLE);
+    final p = circomLib.unpackPoint(compressedBuffLE);
     if (p == null) {
       throw new Error(/*'unpackPoint failed'*/);
     }
