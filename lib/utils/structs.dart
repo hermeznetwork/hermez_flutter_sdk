@@ -57,12 +57,12 @@ class Signature extends Struct {
 
 class Point extends Struct {
   //@ffi.Pointer()
-  Pointer<Utf8> x;
+  Pointer<Uint8> x;
 
   //@ffi.Pointer()
-  Pointer<Utf8> y;
+  Pointer<Uint8> y;
 
-  factory Point.allocate(Pointer<Utf8> x, Pointer<Utf8> y) =>
+  factory Point.allocate(Pointer<Uint8> x, Pointer<Uint8> y) =>
       allocate<Point>().ref
         ..x = x
         ..y = y;

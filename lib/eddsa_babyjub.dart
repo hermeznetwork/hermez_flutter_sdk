@@ -1,12 +1,10 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:ffi/ffi.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
-import 'utils/structs.dart' as Structs;
-
 import 'libs/circomlib.dart';
+import 'utils/structs.dart' as Structs;
 
 /// Class representing EdDSA Baby Jub signature
 class Signature {
@@ -29,21 +27,25 @@ class Signature {
       throw new Error(); // buf must be 64 bytes
     }
     CircomLib circomLib = CircomLib();
-    //Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(buf);
     final sigPointer = circomLib.unpackSignature(buf);
     final bufSignature = Uint8ArrayUtils.fromPointer(sigPointer, 64);
-    final r_b8_list = bufSignature.sublist(0, 32);
-    final r_s_list = bufSignature.sublist(32, 64);
-    final r_b8_ptr = Uint8ArrayUtils.toPointer(r_b8_list);
-    final Structs.Point point = Point.allocate()
-    //final Structs.Signature sig = sigPointer.ref;
-    final Structs.Signature sig = Structs.Signature.allocate()
+    final xList = bufSignature.sublist(0, 16);
+    final yList = bufSignature.sublist(16, 32);
+    final rSList = bufSignature.sublist(32, 64);
+    final xPtr = Uint8ArrayUtils.toPointer(xList);
+    final yPtr = Uint8ArrayUtils.toPointer(yList);
+    final sPtr = Uint8ArrayUtils.toPointer(rSList);
+    final Structs.Point point = Structs.Point.allocate(xPtr, yPtr);
+    final pointPtr = point.addressOf;
+    final Structs.Signature sig = Structs.Signature.allocate(pointPtr, sPtr);
     if (sig.r_b8 == null) {
       throw new Error(); // unpackSignature failed
     }
+    BigInt x = Uint8ArrayUtils.leBuff2int(xList);
+    BigInt y = Uint8ArrayUtils.leBuff2int(yList);
     List<BigInt> r8 = List<BigInt>(2);
-    r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.x))));
-    r8.add(BigInt.from(num.parse(Utf8.fromUtf8(sig.r_b8.ref.y))));
+    r8.add(x);
+    r8.add(y);
 
     BigInt s =
         Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(sig.s, 32));
@@ -73,15 +75,18 @@ class PublicKey {
       throw new Error(/*'buf must be 32 bytes'*/);
     }
     CircomLib circomLib = CircomLib();
-    //final ptr = Uint8ArrayUtils.toPointer(compressedBuffLE);
     final p = circomLib.unpackPoint(compressedBuffLE);
     if (p == null) {
       throw new Error(/*'unpackPoint failed'*/);
     }
     Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
+    final xList = buf.sublist(0, 16);
+    final yList = buf.sublist(16, 32);
+    BigInt x = Uint8ArrayUtils.leBuff2int(xList);
+    BigInt y = Uint8ArrayUtils.leBuff2int(yList);
     List<BigInt> point = List<BigInt>(2);
-    point.add(BigInt.from(buf.elementAt(0)));
-    point.add(BigInt.from(buf.elementAt(1)));
+    point.add(x);
+    point.add(y);
     return new PublicKey(point);
   }
 
@@ -90,22 +95,25 @@ class PublicKey {
   BigInt compress() {
     //Structs.Point point = Structs.Point.allocate(
     //    Utf8.toUtf8(p[0].toString()), Utf8.toUtf8(p[1].toString()));
+    CircomLib circomLib = CircomLib();
     List<int> pointList = List<int>(2);
     pointList.add(p[0].toInt());
     pointList.add(p[1].toInt());
-    return Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(
-        packPoint(Uint8ArrayUtils.toPointer(Uint8List.fromList(pointList))),
-        32));
+    return Uint8ArrayUtils.leBuff2int(circomLib
+        .packPoint(Uint8ArrayUtils.toPointer(Uint8List.fromList(pointList))));
   }
 
   bool verify(String messageHash, Signature signature) {
+    CircomLib circomLib = CircomLib();
+    List<int> pointList = List<int>(2);
+    pointList.add(p[0].toInt());
+    pointList.add(p[1].toInt());
     List<int> sigList = List<int>(3);
     sigList.add(signature.r8[0].toInt());
     sigList.add(signature.r8[1].toInt());
     sigList.add(signature.s.toInt());
-    Pointer<Uint8> sigPtr = Uint8ArrayUtils.toPointer(sigList);
-    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash);
-    verifyPoseidon(sigPtr, msgPtr);
+    circomLib.verifyPoseidon(Uint8List.fromList(pointList),
+        Uint8List.fromList(sigList), messageHash);
   }
 }
 
@@ -125,21 +133,36 @@ class PrivateKey {
   /// Retrieve PublicKey of the PrivateKey
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   PublicKey public() {
+    CircomLib circomLib = CircomLib();
     Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
-    Pointer<Structs.Point> publicKey = prv2pub(pointer);
+    Pointer<Uint8> pubKeyPtr = circomLib.prv2pub(this.sk);
+    final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
+    final xList = bufPubKey.sublist(0, 16);
+    final yList = bufPubKey.sublist(16, 32);
+    final xPtr = Uint8ArrayUtils.toPointer(xList);
+    final yPtr = Uint8ArrayUtils.toPointer(yList);
+    final Structs.Point point = Structs.Point.allocate(xPtr, yPtr);
+    BigInt x = Uint8ArrayUtils.leBuff2int(xList);
+    BigInt y = Uint8ArrayUtils.leBuff2int(yList);
     List<BigInt> p = List<BigInt>(2);
-    p.add(BigInt.from(num.parse(Utf8.fromUtf8(publicKey.ref.x))));
-    p.add(BigInt.from(num.parse(Utf8.fromUtf8(publicKey.ref.y))));
+    p.add(x);
+    p.add(y);
     return new PublicKey(p);
   }
 
   BigInt sign(BigInt messageHash) {
-    Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
-    Pointer<Utf8> msgPtr = Utf8.toUtf8(messageHash.toString());
-    Pointer<Uint8> signature = signPoseidon(pointer, msgPtr);
+    CircomLib circomLib = CircomLib();
+    Pointer<Uint8> signature =
+        circomLib.signPoseidon(this.sk, messageHash.toString());
     final sign = Uint8ArrayUtils.fromPointer(signature, 64);
     return Uint8ArrayUtils.leBuff2int(sign);
   }
+}
+
+Uint8List packSignature(Uint8List signature) {
+  CircomLib circomLib = CircomLib();
+  final sigPtr = Uint8ArrayUtils.toPointer(signature);
+  return circomLib.packSignature(sigPtr);
 }
 
 /*Point poseidon(Uint8List input) {

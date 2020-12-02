@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:hermez_plugin/utils/structs.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
@@ -132,13 +133,22 @@ class CircomLib {
         .asFunction();
 
     _signPoseidon = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
-            "sign_poseidon")
+        .lookup<
+            NativeFunction<
+                Pointer<Uint8> Function(
+                    Pointer<Uint8>, Pointer<Utf8>)>>("sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
+        .lookup<
+            NativeFunction<
+                Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Uint8>,
+                    Pointer<Utf8>)>>("verify_poseidon")
+        .asFunction();
+
+    _prv2Pub = lib
         .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
-            "verify_poseidon")
+            "prv2pub")
         .asFunction();
   }
 
@@ -193,18 +203,30 @@ class CircomLib {
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Uint8> Function(Pointer<Uint8>) _signPoseidon;
-  Pointer<Uint8> signPoseidon(Uint8List buf) {
-    final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _signPoseidon(ptr);
+  Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Utf8>) _signPoseidon;
+  Pointer<Uint8> signPoseidon(Uint8List privateKey, String msg) {
+    final pvtKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
+    final msgPtr = Utf8.toUtf8(msg);
+    final resultPtr = _signPoseidon(pvtKeyPtr, msgPtr);
     return resultPtr;
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
-  Pointer<Uint8> Function(Pointer<Uint8>) _verifyPoseidon;
-  Pointer<Uint8> verifyPoseidon(Uint8List buf) {
+  Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Utf8>)
+      _verifyPoseidon;
+  Pointer<Uint8> verifyPoseidon(
+      Uint8List publicKey, Uint8List signature, String msg) {
+    final pubKeyPtr = Uint8ArrayUtils.toPointer(publicKey);
+    final sigPtr = Uint8ArrayUtils.toPointer(signature);
+    final msgPtr = Utf8.toUtf8(msg);
+    final resultPtr = _verifyPoseidon(pubKeyPtr, sigPtr, msgPtr);
+    return resultPtr;
+  }
+
+  Pointer<Uint8> Function(Pointer<Uint8>) _prv2Pub;
+  Pointer<Uint8> prv2pub(Uint8List buf) {
     final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _verifyPoseidon(ptr);
+    final resultPtr = _prv2Pub(ptr);
     return resultPtr;
   }
 

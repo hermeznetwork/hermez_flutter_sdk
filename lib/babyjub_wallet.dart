@@ -57,11 +57,11 @@ class BabyJubWallet {
   /// @param {Object} tx - transaction
   dynamic signTransaction(transaction, encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(transaction);
-    final signature = eddsaBabyJub.signPoseidon(this.privateKey, hashMessage);
-    final packedSignature = eddsaBabyJub.packSignature(signature);
-    final packedSignatureList =
-        Uint8ArrayUtils.fromPointer(packedSignature, 32);
-    transaction.signature = HEX.encode(packedSignatureList);
+    final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
+    final signature = privKey.sign(hashMessage);
+    final Uint8List compressedSigLE = Uint8ArrayUtils.leInt2Buff(signature, 32);
+    final packedSignature = eddsaBabyJub.packSignature(compressedSigLE);
+    transaction.signature = HEX.encode(packedSignature);
     return transaction;
   }
 }
