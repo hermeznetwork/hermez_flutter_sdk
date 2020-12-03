@@ -17,7 +17,7 @@ import 'utils.dart' show hashBuffer, hexToBuffer;
 /// @class
 /// Manage Babyjubjub keys
 /// Perform standard wallet actions
-class BabyJubWallet {
+class HermezWallet {
   dynamic privateKey;
   dynamic publicKey;
   dynamic publicKeyHex;
@@ -29,6 +29,9 @@ class BabyJubWallet {
   /// @param {Uint8List} privateKey - 32 bytes buffer
   /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
   BabyJubWallet(Uint8List privateKey, String hermezEthereumAddress) {
+    if (privateKey.length != 32) {
+      throw new ArgumentError('buf must be 32 bytes');
+    }
     final priv = eddsaBabyJub.PrivateKey(privateKey);
     final eddsaBabyJub.PublicKey pub = priv.public();
     this.privateKey = privateKey;
@@ -112,7 +115,7 @@ dynamic createWalletFromMnemonic(String mnemonic) async {
   //final signature = await signer.sign(getUint8ListFromString(METAMASK_MESSAGE));
   //final hashedSignature = keccak256(signature);
   //final bufferSignature = hexToBytes(hashedSignature);
-  final hermezWallet = new BabyJubWallet(data.key, hermezEthereumAddress);
+  final hermezWallet = new HermezWallet(data.key, hermezEthereumAddress);
   return {hermezWallet, hermezEthereumAddress};
 
   /*const signer = provider.getSigner(index)

@@ -42,7 +42,7 @@ bool isHermezEthereumAddress(String test) {
 /// @param {String} test
 ///
 /// @returns {bool}
-bool isHermezBjjEthereumAddress(String test) {
+bool isHermezBjjAddress(String test) {
   if (bjjAddressPattern.hasMatch(test)) {
     return true;
   }

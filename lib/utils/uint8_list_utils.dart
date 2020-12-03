@@ -49,7 +49,7 @@ class Uint8ArrayUtils {
       r = r >> 8;
     }
     if (r == BigInt.zero) {
-      throw new Error(/*"Number does not fit in this length"*/);
+      throw new ArgumentError("Number does not fit in this length");
     }
     return buff;
   }

@@ -24,7 +24,7 @@ class Signature {
   /// @returns {Signature} Object signature
   static Signature newFromCompressed(Uint8List buf) {
     if (buf.length != 64) {
-      throw new Error(); // buf must be 64 bytes
+      throw new ArgumentError('buf must be 64 bytes');
     }
     CircomLib circomLib = CircomLib();
     final sigPointer = circomLib.unpackSignature(buf);
@@ -39,7 +39,7 @@ class Signature {
     final pointPtr = point.addressOf;
     final Structs.Signature sig = Structs.Signature.allocate(pointPtr, sPtr);
     if (sig.r_b8 == null) {
-      throw new Error(); // unpackSignature failed
+      throw new ArgumentError('unpackSignature failed');
     }
     BigInt x = Uint8ArrayUtils.leBuff2int(xList);
     BigInt y = Uint8ArrayUtils.leBuff2int(yList);
@@ -72,12 +72,12 @@ class PublicKey {
     final Uint8List compressedBuffLE =
         Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
     if (compressedBuffLE.length != 32) {
-      throw new Error(/*'buf must be 32 bytes'*/);
+      throw new ArgumentError('buf must be 32 bytes');
     }
     CircomLib circomLib = CircomLib();
     final p = circomLib.unpackPoint(compressedBuffLE);
     if (p == null) {
-      throw new Error(/*'unpackPoint failed'*/);
+      throw new ArgumentError('unpackPoint failed');
     }
     Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
     final xList = buf.sublist(0, 16);
