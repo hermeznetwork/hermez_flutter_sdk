@@ -5,14 +5,16 @@ import 'package:hermez_plugin/contracts.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'addresses.dart' show getEthereumAddress, getAccountIndex;
-import 'api.dart' show getAccounts;
+import 'api.dart' show getAccounts, postPoolTransaction;
 import 'constants.dart' show GAS_LIMIT, GAS_MULTIPLIER, contractAddresses;
 import 'providers.dart' show getProvider;
 import 'tokens.dart' show approve;
+import 'tx_pool.dart' show addPoolTransaction;
 
 class Tx {
   static const Map<String, String> txType = {
     "Deposit": "Deposit",
+    "CreateAccountDeposit": "CreateAccountDeposit",
     "Transfer": "Transfer",
     "Withdraw": "Withdrawn",
     "Exit": "Exit"
@@ -28,7 +30,7 @@ class Tx {
   /// Get current average gas price from the last ethereum blocks and multiply it
   /// @param {Number} multiplier - multiply the average gas price by this parameter
   /// @returns {Future<String>} - will return the gas price obtained.
-  static Future<String> getGasPrice(int multiplier) async {
+  static Future<String> getGasPrice(num multiplier) async {
     Web3Client provider = getProvider();
     EtherAmount strAvgGas = await provider.getGasPrice();
     BigInt avgGas = strAvgGas.getInEther;
@@ -98,7 +100,7 @@ class Tx {
   /// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
   /// @param {Object} token - The token information object as returned from the API
   /// @param {Number} gasLimit - Optional gas limit
-  /// @param {Bumber} gasMultiplier - Optional gas multiplier
+  /// @param {Number} gasMultiplier - Optional gas multiplier
   static void forceExit(BigInt amount, String accountIndex, dynamic token,
       {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
     Map hermezABI =
@@ -178,7 +180,7 @@ class Tx {
   /// @param {Object} token - The token information object as returned from the API
   /// @param {Number} gasLimit - Optional gas limit
   /// @param {Bumber} gasMultiplier - Optional gas multiplier
-  static void delayWithdraw(String hezEthereumAddress, dynamic token,
+  static void delayedWithdraw(String hezEthereumAddress, dynamic token,
       {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
     Map withdrawalDelayerABI = json.decode(
         await new File('abis/WithdrawalDelayerABI.json').readAsString());
@@ -211,20 +213,17 @@ class Tx {
   /// @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
   ///
   /// @return {Object} - Object with the response status, transaction id and the transaction nonce
-  static void send(dynamic transaction, String babyJubJub) async {
-    //dynamic result = await postPoolTransaction(transaction);
-  }
+  static dynamic send(dynamic transaction, String bJJ) async {
+    dynamic result = await postPoolTransaction(transaction);
 
-  /*async function send (transaction, bJJ) {
-    const result = await postPoolTransaction(transaction)
-
-    if (result.status === 200) {
-      addPoolTransaction(transaction, bJJ)
+    if (result.status == 200) {
+      addPoolTransaction(transaction, bJJ);
     }
+
     return {
-      status: result.status,
-      id: result.data,
-      nonce: transaction.nonce
-    }
-  }*/
+      "status": result.status,
+      "id": result.data,
+      "nonce": transaction.nonce,
+    };
+  }
 }

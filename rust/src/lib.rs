@@ -20,10 +20,10 @@ extern crate rand;
 extern crate ff;
 use ff::*;
 
-use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point, PointProjective};
+use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point,PointProjective, Q};
 use num_bigint::{Sign, BigInt, ToBigInt};
-use std::os::raw::c_char;
-use std::ffi::{CString, CStr};
+use std::os::raw::{c_char};
+use std::ffi::{CStr};
 use std::cmp::min;
 
 lazy_static! {
@@ -53,14 +53,16 @@ pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
 #[no_mangle]
 pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
     let decompressed_sig = decompress_signature(&compressed_signature).unwrap();
-    let mut r: [u8; 64] = [0; 64];
+    let mut b: Vec<u8> = Vec::new();
     let r_b8_bytes = compress_point(&decompressed_sig.r_b8);
+    b.append(&mut r_b8_bytes.to_vec());
     let (_, s_bytes) = decompressed_sig.s.to_bytes_le();
-    let len = min(s_bytes.len(), r.len());
-    r[..len].copy_from_slice(&s_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[63] = r[63] | 0x80;
-    }
+    let mut s_32bytes: [u8; 32] = [0; 32];
+    let len = min(s_bytes.len(), s_32bytes.len());
+    s_32bytes[..len].copy_from_slice(&s_bytes[..len]);
+    b.append(&mut s_32bytes.to_vec());
+    let mut r: [u8; 64] = [0; 64];
+    r[..].copy_from_slice(&b[..]);
     r
 }
 
@@ -71,10 +73,10 @@ pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
 
     let p: Point = Point {
         x: Fr::from_str(
-            x_big.to_str_radix(10),
+            &x_big.to_str_radix(10),
         ).unwrap(),
         y: Fr::from_str(
-            y_big.to_str_radix(10),
+            &y_big.to_str_radix(10),
         ).unwrap(),
     };
 
@@ -83,19 +85,25 @@ pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
 
 #[no_mangle]
 pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
-    let r_b8_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
-    let r_b8 = decompress_point(r_b8_bytes);
+    let p_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
+    let r_b8 = decompress_point(p_bytes);
     let p = r_b8.unwrap();
+    let mut b: Vec<u8> = Vec::new();
+    let x_bytes =  to_hex(&p.x).as_bytes();
+    b.append(&mut x_bytes.to_vec());
+    let y_bytes =  to_hex(&p.x).as_bytes();
+    b.append(&mut y_bytes.to_vec());
     let mut r: [u8; 64] = [0; 64];
-    let mut x_bytes = to_hex(&p.x).as_bytes();
-    let mut y_bytes = to_hex(&p.y).as_bytes();
-    r.iter().chain(&x_bytes).chain(&y_bytes).collect();
+    r[..].copy_from_slice(&b[..]);
     r
 }
 
 #[no_mangle]
 pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
-    let sk = private_key.to_bigint().unwrap();
+    let private_key_str = unsafe { CStr::from_ptr(private_key) };
+    let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
+    /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();
+    let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());*/
     let pk = B8.mul_scalar(&sk)?;
     let mut r: [u8; 32] = [0; 32];
     let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();
@@ -140,7 +148,7 @@ pub extern fn signPoseidon(private_key: *const c_char, message: *const c_char) -
 }
 
 #[no_mangle]
-pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> int8 {
+pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> c_char {
     let sk = private_key.to_bigint().unwrap();
     let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
