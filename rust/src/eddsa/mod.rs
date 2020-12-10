@@ -214,7 +214,7 @@ pub fn compress_point(p: &Point) -> [u8; 32] {
 }
 
 //#[no_mangle]
-pub /*extern*/ fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
+pub fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
     // https://tools.ietf.org/html/rfc8032#section-5.2.3
     let mut sign: bool = false;
     let mut b = bb.clone();
@@ -249,9 +249,9 @@ pub /*extern*/ fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct Signature {
-    pub(crate) r_b8: Point,
-    pub(crate) s: BigInt,
+pub struct Signature {
+    pub r_b8: Point,
+    pub s: BigInt,
 }
 
 impl Signature {
@@ -270,7 +270,7 @@ impl Signature {
 }
 
 //#[no_mangle]
-pub /*extern*/ fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
+pub fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
     let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
     let r_b8 = decompress_point(r_b8_bytes);

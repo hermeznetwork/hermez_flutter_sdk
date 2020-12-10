@@ -23,8 +23,9 @@ use ff::*;
 use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point,PointProjective, Q};
 use num_bigint::{Sign, BigInt, ToBigInt};
 use std::os::raw::{c_char};
-use std::ffi::{CStr};
+use std::ffi::{CStr, CString};
 use std::cmp::min;
+use std::str::FromStr;
 
 lazy_static! {
  static ref B8: Point = Point {
@@ -88,23 +89,41 @@ pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
     let p_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
     let r_b8 = decompress_point(p_bytes);
     let p = r_b8.unwrap();
-    let mut b: Vec<u8> = Vec::new();
-    let x_bytes =  to_hex(&p.x).as_bytes();
+    let mut r: [u8; 64] = [0; 64];
+    let x_big = BigInt::parse_bytes(to_hex(&p.x).as_bytes(), 16).unwrap();
+    let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
+    let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r.len());
+    r[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r[31] = r[31] | 0x80;
+    }
+    r
+    /*let mut b: Vec<u8> = Vec::new();
+    let x_bytes_raw =  to_hex(&p.x).as_bytes();
+    let mut x_bytes: [u8; 32] = [0; 32];
+    x_bytes.copy_from_slice(&x_bytes_raw);
     b.append(&mut x_bytes.to_vec());
-    let y_bytes =  to_hex(&p.x).as_bytes();
+
+    let y_bytes_raw =  to_hex(&p.y).as_bytes();
+    let mut y_bytes: [u8; 32] = [0; 32];
+    y_bytes.copy_from_slice(&y_bytes_raw);
     b.append(&mut y_bytes.to_vec());
+    /*let y_bytes =  to_hex(&p.y).as_bytes();
+    b.append(&mut y_bytes.to_vec());*/
     let mut r: [u8; 64] = [0; 64];
     r[..].copy_from_slice(&b[..]);
-    r
+    r*/
 }
 
 #[no_mangle]
 pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
+
     let private_key_str = unsafe { CStr::from_ptr(private_key) };
     let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
     /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();
     let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());*/
-    let pk = B8.mul_scalar(&sk)?;
+    let pk = B8.mul_scalar(&sk).unwrap();
     let mut r: [u8; 32] = [0; 32];
     let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();
     let y_big = BigInt::parse_bytes(to_hex(&pk.y).as_bytes(), 16).unwrap();
@@ -118,13 +137,19 @@ pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
 }
 
 #[no_mangle]
-pub extern fn poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_char, to_bjj_ay: *const c_char, rq_txcompressed_data_v2: *const c_char, rq_to_eth_addr: *const c_char, rq_to_bjj_ay: *const c_char) -> *mut c_char {
-    let b0: Fr = Fr::from_str(tx_compressed_data).unwrap();
-    let b1: Fr = Fr::from_str(to_eth_addr).unwrap();
-    let b2: Fr = Fr::from_str(to_bjj_ay).unwrap();
-    let b3: Fr = Fr::from_str(rq_txcompressed_data_v2).unwrap();
-    let b4: Fr = Fr::from_str(rq_to_eth_addr).unwrap();
-    let b5: Fr = Fr::from_str(rq_to_bjj_ay).unwrap();
+pub extern fn poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_char, to_bjj_ay: *const c_char, rq_txcompressed_data_v2: *const c_char, rq_to_eth_addr: *const c_char, rq_to_bjj_ay: *const c_char) -> *const [u8] {
+    let tx_compressed_data_str = unsafe { CStr::from_ptr(tx_compressed_data) }.to_str().unwrap();
+    let b0: Fr = Fr::from_str(tx_compressed_data_str).unwrap();
+    let to_eth_addr_str = unsafe { CStr::from_ptr(to_eth_addr) }.to_str().unwrap();
+    let b1: Fr = Fr::from_str(to_eth_addr_str).unwrap();
+    let to_bjj_ay_str = unsafe { CStr::from_ptr(to_bjj_ay) }.to_str().unwrap();
+    let b2: Fr = Fr::from_str(to_bjj_ay_str).unwrap();
+    let rq_txcompressed_data_v2_str = unsafe { CStr::from_ptr(rq_txcompressed_data_v2) }.to_str().unwrap();
+    let b3: Fr = Fr::from_str(rq_txcompressed_data_v2_str).unwrap();
+    let rq_to_eth_addr_str = unsafe { CStr::from_ptr(rq_to_eth_addr) }.to_str().unwrap();
+    let b4: Fr = Fr::from_str(rq_to_eth_addr_str).unwrap();
+    let rq_to_bjj_ay_str = unsafe { CStr::from_ptr(rq_to_bjj_ay) }.to_str().unwrap();
+    let b5: Fr = Fr::from_str(rq_to_bjj_ay_str).unwrap();
 
     let mut big_arr: Vec<Fr> = Vec::new();
     big_arr.push(b0.clone());
@@ -135,27 +160,31 @@ pub extern fn poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_
     big_arr.push(b5.clone());
     let poseidon = Poseidon::new();
     let h = poseidon.hash(big_arr.clone()).unwrap();
-    return h.toString();
+    return h.to_string().as_bytes();
 }
 
 #[no_mangle]
 pub extern fn signPoseidon(private_key: *const c_char, message: *const c_char) -> [u8; 64] {
-    let sk = private_key.to_bigint().unwrap();
+    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    let sk = BigInt::from_str(private_key_str).unwrap();
     let pk = PrivateKey { key: sk };
-    let msg = message.to_bigint().unwrap();
+    let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
+    let msg = BigInt::from_str(message_str).unwrap();
     let sig = pk.sign(msg.clone()).unwrap();
     return sig.compress();
 }
 
 #[no_mangle]
 pub extern fn verifyPoseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> c_char {
-    let sk = private_key.to_bigint().unwrap();
+    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    let sk = BigInt::from_str(private_key_str).unwrap();
     let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
     let r_b8 = decompress_point(r_b8_bytes);
     let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
     let pk = PrivateKey { key: sk };
-    let msg = message.to_bigint().unwrap();
+    let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
+    let msg = BigInt::from_str(message_str).unwrap();
     return if verify(pk.public().unwrap(), sig.clone(), msg.clone()) {
         1
     } else {
