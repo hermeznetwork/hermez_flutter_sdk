@@ -4,10 +4,16 @@
 @end
 // NOTE: Append the lines below to ios/Classes/<your>Plugin.h
 
-typedef struct Result_Point__String Result_Point__String;
+uint8_t (pack_signature(const uint8_t (*signature)[64]))[64];
 
-typedef struct Result_Signature__String Result_Signature__String;
+uint8_t (unpack_signature(const uint8_t (*compressed_signature)[64]))[64];
 
-Result_Signature__String decompress_signature(const uint8_t (*b)[64]);
+uint8_t (pack_point(const uint8_t (*point)[64]))[32];
 
-Result_Point__String prv2pub(BigInt key);
+uint8_t (unpack_point(const uint8_t (*point)[32]))[64];
+
+uint8_t (prv2pub(const char *private_key))[32];
+
+uint8_t (sign_poseidon(const char *private_key, const char *message))[64];
+
+char verify_poseidon(const char *private_key, const uint8_t (*signature)[64], const char *message);

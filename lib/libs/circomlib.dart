@@ -127,39 +127,37 @@ class CircomLib {
             "unpack_point")
         .asFunction();
 
-    _hashPoseidon = lib
+    _prv2Pub = lib
+        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
+            "prv2pub")
+        .asFunction();
+
+    /*_hashPoseidon = lib
         .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
             "hash_poseidon")
-        .asFunction();
+        .asFunction();*/
 
     _signPoseidon = lib
         .lookup<
             NativeFunction<
                 Pointer<Uint8> Function(
-                    Pointer<Uint8>, Pointer<Utf8>)>>("sign_poseidon")
+                    Pointer<Utf8>, Pointer<Utf8>)>>("sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
         .lookup<
             NativeFunction<
-                Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Uint8>,
+                Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Uint8>,
                     Pointer<Utf8>)>>("verify_poseidon")
-        .asFunction();
-
-    _prv2Pub = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
-            "prv2pub")
         .asFunction();
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packSignature;
-  Uint8List packSignature(Pointer<Uint8> signature) {
-    final Uint8List buf = Uint8ArrayUtils.fromPointer(signature, 32);
-    //leInt2Buff(compressedBigInt, 32);
+  Uint8List packSignature(BigInt compressedBigInt) {
+    final Uint8List buf = Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
     if (buf.length != 32) {
-      throw new Error(/*'buf must be 32 bytes'*/);
+      throw new ArgumentError('buf must be 32 bytes');
     }
-    //final Uint8List buf = Uint8ArrayUtils.fromPointer(signature, length);
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _packSignature(ptr);
     final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
@@ -174,13 +172,11 @@ class CircomLib {
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packPoint;
-  Uint8List packPoint(Pointer<Uint8> point) {
-    final Uint8List buf = Uint8ArrayUtils.fromPointer(point, 32);
-    //leInt2Buff(compressedBigInt, 32);
+  Uint8List packPoint(BigInt compressedBigInt) {
+    final Uint8List buf = Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
     if (buf.length != 32) {
-      throw new Error(/*'buf must be 32 bytes'*/);
+      throw new ArgumentError('buf must be 32 bytes');
     }
-    //final Uint8List buf = Uint8ArrayUtils.fromPointer(signature, length);
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _packPoint(ptr);
     final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
@@ -203,20 +199,20 @@ class CircomLib {
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Utf8>) _signPoseidon;
-  Pointer<Uint8> signPoseidon(Uint8List privateKey, String msg) {
-    final pvtKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
+  Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
+  Pointer<Uint8> signPoseidon(String privateKey, String msg) {
+    final pvtKeyPtr = Utf8.toUtf8(privateKey);
     final msgPtr = Utf8.toUtf8(msg);
     final resultPtr = _signPoseidon(pvtKeyPtr, msgPtr);
     return resultPtr;
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
-  Pointer<Uint8> Function(Pointer<Uint8>, Pointer<Uint8>, Pointer<Utf8>)
+  Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Uint8>, Pointer<Utf8>)
       _verifyPoseidon;
   Pointer<Uint8> verifyPoseidon(
-      Uint8List publicKey, Uint8List signature, String msg) {
-    final pubKeyPtr = Uint8ArrayUtils.toPointer(publicKey);
+      String publicKey, Uint8List signature, String msg) {
+    final pubKeyPtr = Utf8.toUtf8(publicKey);
     final sigPtr = Uint8ArrayUtils.toPointer(signature);
     final msgPtr = Utf8.toUtf8(msg);
     final resultPtr = _verifyPoseidon(pubKeyPtr, sigPtr, msgPtr);

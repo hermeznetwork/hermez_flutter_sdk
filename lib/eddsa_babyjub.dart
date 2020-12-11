@@ -100,7 +100,7 @@ class PublicKey {
     pointList.add(p[0].toInt());
     pointList.add(p[1].toInt());
     return Uint8ArrayUtils.leBuff2int(circomLib
-        .packPoint(Uint8ArrayUtils.toPointer(Uint8List.fromList(pointList))));
+        .packPoint(Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList))));
   }
 
   bool verify(String messageHash, Signature signature) {
@@ -112,8 +112,10 @@ class PublicKey {
     sigList.add(signature.r8[0].toInt());
     sigList.add(signature.r8[1].toInt());
     sigList.add(signature.s.toInt());
-    circomLib.verifyPoseidon(Uint8List.fromList(pointList),
-        Uint8List.fromList(sigList), messageHash);
+    circomLib.verifyPoseidon(
+        Uint8ArrayUtils.uint8ListToString(Uint8List.fromList(pointList)),
+        Uint8List.fromList(sigList),
+        messageHash);
   }
 }
 
@@ -134,14 +136,10 @@ class PrivateKey {
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   PublicKey public() {
     CircomLib circomLib = CircomLib();
-    //Pointer<Uint8> pointer = Uint8ArrayUtils.toPointer(this.sk);
     Pointer<Uint8> pubKeyPtr = circomLib.prv2pub(this.sk);
     final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
     final xList = bufPubKey.sublist(0, 16);
     final yList = bufPubKey.sublist(16, 32);
-    final xPtr = Uint8ArrayUtils.toPointer(xList);
-    final yPtr = Uint8ArrayUtils.toPointer(yList);
-    //final Structs.Point point = Structs.Point.allocate(xPtr, yPtr);
     BigInt x = Uint8ArrayUtils.leBuff2int(xList);
     BigInt y = Uint8ArrayUtils.leBuff2int(yList);
     List<BigInt> p = List<BigInt>(2);
@@ -152,8 +150,8 @@ class PrivateKey {
 
   BigInt sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    Pointer<Uint8> signature =
-        circomLib.signPoseidon(this.sk, messageHash.toString());
+    Pointer<Uint8> signature = circomLib.signPoseidon(
+        Uint8ArrayUtils.uint8ListToString(this.sk), messageHash.toString());
     final sign = Uint8ArrayUtils.fromPointer(signature, 64);
     return Uint8ArrayUtils.leBuff2int(sign);
   }
@@ -161,7 +159,7 @@ class PrivateKey {
 
 Uint8List packSignature(Uint8List signature) {
   CircomLib circomLib = CircomLib();
-  final sigPtr = Uint8ArrayUtils.toPointer(signature);
+  final sigPtr = Uint8ArrayUtils.leBuff2int(signature);
   return circomLib.packSignature(sigPtr);
 }
 

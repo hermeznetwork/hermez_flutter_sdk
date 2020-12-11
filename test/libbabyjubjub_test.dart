@@ -14,7 +14,7 @@ void main() async {
 
   test('pack_signature', () {
     final buf = Uint8ArrayUtils.uint8ListfromString("helloo");
-    final signature = Uint8ArrayUtils.toPointer(buf);
+    final signature = Uint8ArrayUtils.leBuff2int(buf);
     final version = circomlib.packSignature(signature);
   });
 }
