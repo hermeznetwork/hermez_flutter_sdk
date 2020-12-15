@@ -43,7 +43,7 @@ class Signature {
     }
     BigInt x = Uint8ArrayUtils.leBuff2int(xList);
     BigInt y = Uint8ArrayUtils.leBuff2int(yList);
-    List<BigInt> r8 = List<BigInt>(2);
+    List<BigInt> r8 = List<BigInt>();
     r8.add(x);
     r8.add(y);
 
@@ -82,9 +82,9 @@ class PublicKey {
     Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
     final xList = buf.sublist(0, 16);
     final yList = buf.sublist(16, 32);
-    BigInt x = Uint8ArrayUtils.leBuff2int(xList);
-    BigInt y = Uint8ArrayUtils.leBuff2int(yList);
-    List<BigInt> point = List<BigInt>(2);
+    BigInt x = Uint8ArrayUtils.bytesToBigInt(xList);
+    BigInt y = Uint8ArrayUtils.bytesToBigInt(yList);
+    List<BigInt> point = List<BigInt>();
     point.add(x);
     point.add(y);
     return new PublicKey(point);
@@ -95,20 +95,38 @@ class PublicKey {
   BigInt compress() {
     //Structs.Point point = Structs.Point.allocate(
     //    Utf8.toUtf8(p[0].toString()), Utf8.toUtf8(p[1].toString()));
+
+    //final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
+    //final xList = bufPubKey.sublist(0, 16);
+    //final yList = bufPubKey.sublist(16, 32);
+    //Uint8List xList = Uint8ArrayUtils.leInt2Buff(p[0],16);
+    //BigInt y = Uint8ArrayUtils.leBuff2int(yList);
+    /*List<BigInt> p = List<BigInt>();
+    p.add(x);
+    p.add(y);*/
     CircomLib circomLib = CircomLib();
-    List<int> pointList = List<int>(2);
-    pointList.add(p[0].toInt());
-    pointList.add(p[1].toInt());
-    return Uint8ArrayUtils.leBuff2int(circomLib
-        .packPoint(Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList))));
+    Uint8List xList = Uint8ArrayUtils.uint8ListfromString(p[0].toString());
+    Uint8List yList = Uint8ArrayUtils.uint8ListfromString(p[1].toString());
+    List<int> pointList = xList.toList();
+    pointList.addAll(yList.toList());
+
+    //Uint8List yList = Uint8ArrayUtils.leInt2Buff(p[1], 16);
+    //var pointList = Uint8List.fromList(xList);
+    //pointList.addAll(xList);
+    //pointList.addAll(yList);
+    BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));
+    //List<int> pointList = List<int>();
+    //pointList.add(p[0].toInt());
+    //pointList.add(int.parse(p[1].toString()));
+    return Uint8ArrayUtils.leBuff2int(circomLib.packPoint(result));
   }
 
   bool verify(String messageHash, Signature signature) {
     CircomLib circomLib = CircomLib();
-    List<int> pointList = List<int>(2);
+    List<int> pointList = List<int>();
     pointList.add(p[0].toInt());
     pointList.add(p[1].toInt());
-    List<int> sigList = List<int>(3);
+    List<int> sigList = List<int>();
     sigList.add(signature.r8[0].toInt());
     sigList.add(signature.r8[1].toInt());
     sigList.add(signature.s.toInt());
@@ -127,7 +145,7 @@ class PrivateKey {
   /// @param {Uint8List} buf - private key
   PrivateKey(Uint8List buf) {
     if (buf.length != 32) {
-      throw new Error(/*'buf must be 32 bytes'*/);
+      throw new ArgumentError('buf must be 32 bytes');
     }
     this.sk = buf;
   }
@@ -136,13 +154,14 @@ class PrivateKey {
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   PublicKey public() {
     CircomLib circomLib = CircomLib();
-    Pointer<Uint8> pubKeyPtr = circomLib.prv2pub(this.sk);
+    Pointer<Uint8> pubKeyPtr =
+        circomLib.prv2pub(Uint8ArrayUtils.uint8ListToString(this.sk));
     final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
     final xList = bufPubKey.sublist(0, 16);
     final yList = bufPubKey.sublist(16, 32);
-    BigInt x = Uint8ArrayUtils.leBuff2int(xList);
-    BigInt y = Uint8ArrayUtils.leBuff2int(yList);
-    List<BigInt> p = List<BigInt>(2);
+    BigInt x = Uint8ArrayUtils.bytesToBigInt(xList);
+    BigInt y = Uint8ArrayUtils.bytesToBigInt(yList);
+    List<BigInt> p = List<BigInt>();
     p.add(x);
     p.add(y);
     return new PublicKey(p);

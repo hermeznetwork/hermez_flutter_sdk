@@ -43,12 +43,14 @@ lazy_static! {
 
 #[no_mangle]
 pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
-    let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
+    /*let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
     let r_b8 = decompress_point(r_b8_bytes);
     let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
     let res = sig.compress();
-    return res;
+    return res;*/
+    let mut r: [u8; 64] = [0; 64];
+    return r;
 }
 
 #[no_mangle]
@@ -120,9 +122,9 @@ pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
 pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
 
     let private_key_str = unsafe { CStr::from_ptr(private_key) };
-    let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
-    /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();
-    let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());*/
+    //let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
+    /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();*/
+    let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());
     let pk = B8.mul_scalar(&sk).unwrap();
     let mut r: [u8; 32] = [0; 32];
     let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();

@@ -128,7 +128,7 @@ class CircomLib {
         .asFunction();
 
     _prv2Pub = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Utf8>)>>(
             "prv2pub")
         .asFunction();
 
@@ -219,10 +219,10 @@ class CircomLib {
     return resultPtr;
   }
 
-  Pointer<Uint8> Function(Pointer<Uint8>) _prv2Pub;
-  Pointer<Uint8> prv2pub(Uint8List buf) {
-    final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _prv2Pub(ptr);
+  Pointer<Uint8> Function(Pointer<Utf8>) _prv2Pub;
+  Pointer<Uint8> prv2pub(String privateKey) {
+    final prvKeyPtr = Utf8.toUtf8(privateKey);
+    final resultPtr = _prv2Pub(prvKeyPtr);
     return resultPtr;
   }
 
