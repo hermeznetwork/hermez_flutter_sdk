@@ -93,31 +93,12 @@ class PublicKey {
   /// Compress the PublicKey
   /// @returns {Uint8List} - point compressed into a buffer
   BigInt compress() {
-    //Structs.Point point = Structs.Point.allocate(
-    //    Utf8.toUtf8(p[0].toString()), Utf8.toUtf8(p[1].toString()));
-
-    //final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
-    //final xList = bufPubKey.sublist(0, 16);
-    //final yList = bufPubKey.sublist(16, 32);
-    //Uint8List xList = Uint8ArrayUtils.leInt2Buff(p[0],16);
-    //BigInt y = Uint8ArrayUtils.leBuff2int(yList);
-    /*List<BigInt> p = List<BigInt>();
-    p.add(x);
-    p.add(y);*/
     CircomLib circomLib = CircomLib();
     Uint8List xList = Uint8ArrayUtils.bigIntToBytes(p[0]);
     Uint8List yList = Uint8ArrayUtils.bigIntToBytes(p[1]);
     List<int> pointList = xList.toList();
     pointList.addAll(yList.toList());
-
-    //Uint8List yList = Uint8ArrayUtils.leInt2Buff(p[1], 16);
-    //var pointList = Uint8List.fromList(xList);
-    //pointList.addAll(xList);
-    //pointList.addAll(yList);
     BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));
-    //List<int> pointList = List<int>();
-    //pointList.add(p[0].toInt());
-    //pointList.add(int.parse(p[1].toString()));
     return Uint8ArrayUtils.leBuff2int(circomLib.packPoint(result));
   }
 

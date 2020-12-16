@@ -70,15 +70,15 @@ pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
 }
 
 #[no_mangle]
-pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
-    let x_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
-    let y_bytes: [u8; 32] = *array_ref!(point[32..], 0, 32);
-    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..32]);
-    //let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[32..]);
+pub extern fn pack_point(point: &[u8; 32]) -> [u8; 32] {
+    //let x_bytes: [u8; 16] = *array_ref!(point[..16], 0, 16);
+    //let y_bytes: [u8; 16] = *array_ref!(point[16..], 0, 16);
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..16]);
+    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[16..]);
     //let x_big: BigInt = BigInt::parse_bytes(&x_bytes, 10).unwrap();
     //let y_big: BigInt = BigInt::parse_bytes(&y_bytes, 10).unwrap();
 
-    /*let p: Point = Point {
+    let p: Point = Point {
         x: Fr::from_str(
             &x_big.to_string(),
         ).unwrap(),
@@ -87,17 +87,15 @@ pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
         ).unwrap(),
     };
 
-    return compress_point(&p);*/
-    let mut r: [u8; 32] = [0; 32];
-    return r;
+    return compress_point(&p);
 }
 
 #[no_mangle]
-pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
+pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 32] {
     let p_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
     let r_b8 = decompress_point(p_bytes);
     let p = r_b8.unwrap();
-    let mut r: [u8; 64] = [0; 64];
+    let mut r: [u8; 32] = [0; 32];
     let x_big = BigInt::parse_bytes(to_hex(&p.x).as_bytes(), 16).unwrap();
     let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
     let (_, y_bytes) = y_big.to_bytes_le();
@@ -107,21 +105,6 @@ pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 64] {
         r[31] = r[31] | 0x80;
     }
     r
-    /*let mut b: Vec<u8> = Vec::new();
-    let x_bytes_raw =  to_hex(&p.x).as_bytes();
-    let mut x_bytes: [u8; 32] = [0; 32];
-    x_bytes.copy_from_slice(&x_bytes_raw);
-    b.append(&mut x_bytes.to_vec());
-
-    let y_bytes_raw =  to_hex(&p.y).as_bytes();
-    let mut y_bytes: [u8; 32] = [0; 32];
-    y_bytes.copy_from_slice(&y_bytes_raw);
-    b.append(&mut y_bytes.to_vec());
-    /*let y_bytes =  to_hex(&p.y).as_bytes();
-    b.append(&mut y_bytes.to_vec());*/
-    let mut r: [u8; 64] = [0; 64];
-    r[..].copy_from_slice(&b[..]);
-    r*/
 }
 
 #[no_mangle]
