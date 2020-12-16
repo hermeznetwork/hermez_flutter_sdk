@@ -71,19 +71,25 @@ pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
 
 #[no_mangle]
 pub extern fn pack_point(point: &[u8; 64]) -> [u8; 32] {
-    let x_big: BigInt = BigInt::parse_bytes(&point[..32], 10).unwrap();
-    let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();
+    let x_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
+    let y_bytes: [u8; 32] = *array_ref!(point[32..], 0, 32);
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..32]);
+    //let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[32..]);
+    //let x_big: BigInt = BigInt::parse_bytes(&x_bytes, 10).unwrap();
+    //let y_big: BigInt = BigInt::parse_bytes(&y_bytes, 10).unwrap();
 
-    let p: Point = Point {
+    /*let p: Point = Point {
         x: Fr::from_str(
-            &x_big.to_str_radix(10),
+            &x_big.to_string(),
         ).unwrap(),
         y: Fr::from_str(
-            &y_big.to_str_radix(10),
+            &y_big.to_string(),
         ).unwrap(),
     };
 
-    return compress_point(&p);
+    return compress_point(&p);*/
+    let mut r: [u8; 32] = [0; 32];
+    return r;
 }
 
 #[no_mangle]

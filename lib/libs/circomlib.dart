@@ -173,7 +173,7 @@ class CircomLib {
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packPoint;
   Uint8List packPoint(BigInt compressedBigInt) {
-    final Uint8List buf = Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
+    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(compressedBigInt);
     if (buf.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
     }

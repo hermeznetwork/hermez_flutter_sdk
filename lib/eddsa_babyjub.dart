@@ -105,8 +105,8 @@ class PublicKey {
     p.add(x);
     p.add(y);*/
     CircomLib circomLib = CircomLib();
-    Uint8List xList = Uint8ArrayUtils.uint8ListfromString(p[0].toString());
-    Uint8List yList = Uint8ArrayUtils.uint8ListfromString(p[1].toString());
+    Uint8List xList = Uint8ArrayUtils.bigIntToBytes(p[0]);
+    Uint8List yList = Uint8ArrayUtils.bigIntToBytes(p[1]);
     List<int> pointList = xList.toList();
     pointList.addAll(yList.toList());
 
