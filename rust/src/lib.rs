@@ -43,14 +43,12 @@ lazy_static! {
 
 #[no_mangle]
 pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
-    /*let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
+    let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
     let r_b8 = decompress_point(r_b8_bytes);
     let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
     let res = sig.compress();
-    return res;*/
-    let mut r: [u8; 64] = [0; 64];
-    return r;
+    return res;
 }
 
 #[no_mangle]
