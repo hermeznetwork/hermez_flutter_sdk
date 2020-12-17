@@ -27,8 +27,8 @@ class Signature {
       throw new ArgumentError('buf must be 64 bytes');
     }
     CircomLib circomLib = CircomLib();
-    final sigPointer = circomLib.unpackSignature(buf);
-    final bufSignature = Uint8ArrayUtils.fromPointer(sigPointer, 64);
+    final signature = circomLib.unpackSignature(buf);
+    final bufSignature = Uint8ArrayUtils.bigIntToBytes(signature);
     final xList = bufSignature.sublist(0, 16);
     final yList = bufSignature.sublist(16, 32);
     final rSList = bufSignature.sublist(32, 64);

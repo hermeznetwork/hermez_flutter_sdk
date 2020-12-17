@@ -153,27 +153,32 @@ class CircomLib {
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packSignature;
-  Uint8List packSignature(BigInt compressedBigInt) {
-    final Uint8List buf = Uint8ArrayUtils.leInt2Buff(compressedBigInt, 32);
-    if (buf.length != 32) {
-      throw new ArgumentError('buf must be 32 bytes');
+  Uint8List packSignature(BigInt signature) {
+    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(signature);
+    if (buf.length != 64) {
+      throw new ArgumentError('buf must be 64 bytes');
     }
     final ptr = Uint8ArrayUtils.toPointer(buf);
     final resultPtr = _packSignature(ptr);
-    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
+    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 64);
     return result;
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _unpackSignature;
-  Pointer<Uint8> unpackSignature(Uint8List buf) {
-    final ptr = Uint8ArrayUtils.toPointer(buf);
+  BigInt unpackSignature(Uint8List compressedSignature) {
+    if (compressedSignature.length != 64) {
+      throw new ArgumentError('buf must be 64 bytes');
+    }
+    final ptr = Uint8ArrayUtils.toPointer(compressedSignature);
     final resultPtr = _unpackSignature(ptr);
-    return resultPtr;
+    final uncompressedBuf = Uint8ArrayUtils.fromPointer(resultPtr, 64);
+    final BigInt result = Uint8ArrayUtils.bytesToBigInt(uncompressedBuf);
+    return result;
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _packPoint;
-  Uint8List packPoint(BigInt compressedBigInt) {
-    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(compressedBigInt);
+  Uint8List packPoint(BigInt point) {
+    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(point);
     if (buf.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
     }
@@ -184,8 +189,8 @@ class CircomLib {
   }
 
   Pointer<Uint8> Function(Pointer<Uint8>) _unpackPoint;
-  Pointer<Uint8> unpackPoint(Uint8List buf) {
-    final ptr = Uint8ArrayUtils.toPointer(buf);
+  Pointer<Uint8> unpackPoint(Uint8List compressedPoint) {
+    final ptr = Uint8ArrayUtils.toPointer(compressedPoint);
     final resultPtr = _unpackPoint(ptr);
     return resultPtr;
   }

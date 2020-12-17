@@ -19,6 +19,7 @@ extern crate rand;
 #[macro_use]
 extern crate ff;
 use ff::*;
+use std::str;
 
 use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point,PointProjective, Q};
 use num_bigint::{Sign, BigInt, ToBigInt};
@@ -45,8 +46,19 @@ lazy_static! {
 pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
     let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
-    let r_b8 = decompress_point(r_b8_bytes);
-    let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[..16]);
+    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[16..]);
+
+    let r_b8: Point = Point {
+        x: Fr::from_str(
+            &x_big.to_string(),
+        ).unwrap(),
+        y: Fr::from_str(
+            &y_big.to_string(),
+        ).unwrap(),
+    };
+
+    let sig = Signature { r_b8 : r_b8.clone(), s };
     let res = sig.compress();
     return res;
 }
@@ -54,9 +66,27 @@ pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
 #[no_mangle]
 pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
     let decompressed_sig = decompress_signature(&compressed_signature).unwrap();
+
+    let mut r_b8_bytes: [u8; 32] = [0; 32];
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &decompressed_sig.r_b8.x.to_string().as_bytes());
+    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &decompressed_sig.r_b8.y.to_string().as_bytes());
+    //let x_big = BigInt::parse_bytes(decompressed_sig.r_b8.x.to_string().as_bytes(), 10).unwrap();
+    //let y_big = BigInt::parse_bytes(decompressed_sig.r_b8.y.to_string().as_bytes(), 10).unwrap();
+    /*let (_, y_bytes) = y_big.to_bytes_le();
+    let len = min(y_bytes.len(), r_b8_bytes.len());
+    r_b8_bytes[..len].copy_from_slice(&y_bytes[..len]);
+    if &x_big > &(&Q.clone() >> 1) {
+        r_b8_bytes[31] = r_b8_bytes[31] | 0x80;
+    }*/
+
     let mut b: Vec<u8> = Vec::new();
-    let r_b8_bytes = compress_point(&decompressed_sig.r_b8);
     b.append(&mut r_b8_bytes.to_vec());
+
+    //let mut b: Vec<u8> = Vec::new();
+    //let hmB = BigInt::parse_bytes(to_hex(&decompressed_sig).as_bytes(), 10).unwrap();
+
+    //let r_b8_bytes = compress_point(&decompressed_sig.r_b8);
+    //b.append(&mut r_b8_bytes.to_vec());
     let (_, s_bytes) = decompressed_sig.s.to_bytes_le();
     let mut s_32bytes: [u8; 32] = [0; 32];
     let len = min(s_bytes.len(), s_32bytes.len());
