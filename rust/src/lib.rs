@@ -67,34 +67,41 @@ pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
 pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
     let decompressed_sig = decompress_signature(&compressed_signature).unwrap();
 
-    let mut r_b8_bytes: [u8; 32] = [0; 32];
-    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &decompressed_sig.r_b8.x.to_string().as_bytes());
-    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &decompressed_sig.r_b8.y.to_string().as_bytes());
-    //let x_big = BigInt::parse_bytes(decompressed_sig.r_b8.x.to_string().as_bytes(), 10).unwrap();
-    //let y_big = BigInt::parse_bytes(decompressed_sig.r_b8.y.to_string().as_bytes(), 10).unwrap();
-    /*let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r_b8_bytes.len());
-    r_b8_bytes[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r_b8_bytes[31] = r_b8_bytes[31] | 0x80;
-    }*/
-
     let mut b: Vec<u8> = Vec::new();
-    b.append(&mut r_b8_bytes.to_vec());
 
-    //let mut b: Vec<u8> = Vec::new();
-    //let hmB = BigInt::parse_bytes(to_hex(&decompressed_sig).as_bytes(), 10).unwrap();
+    let x_big = BigInt::parse_bytes(to_hex(&decompressed_sig.r_b8.x).as_bytes(), 16).unwrap();
+    let y_big = BigInt::parse_bytes(to_hex(&decompressed_sig.r_b8.y).as_bytes(), 16).unwrap();
+    let (_, x_bytes) = x_big.to_bytes_le();
+    let (_, y_bytes) = y_big.to_bytes_le();
 
-    //let r_b8_bytes = compress_point(&decompressed_sig.r_b8);
-    //b.append(&mut r_b8_bytes.to_vec());
+    let mut x_16bytes: [u8; 16] = [0; 16];
+    let lenx = min(x_bytes.len(), x_16bytes.len());
+    x_16bytes[..lenx].copy_from_slice(&x_bytes[..lenx]);
+    b.append(&mut x_16bytes.to_vec());
+
+    let mut y_16bytes: [u8; 16] = [0; 16];
+    let leny = min(y_bytes.len(), y_16bytes.len());
+    y_16bytes[..leny].copy_from_slice(&y_bytes[..leny]);
+    b.append(&mut y_16bytes.to_vec());
+
     let (_, s_bytes) = decompressed_sig.s.to_bytes_le();
     let mut s_32bytes: [u8; 32] = [0; 32];
-    let len = min(s_bytes.len(), s_32bytes.len());
-    s_32bytes[..len].copy_from_slice(&s_bytes[..len]);
+    let lens = min(s_bytes.len(), s_32bytes.len());
+    s_32bytes[..lens].copy_from_slice(&s_bytes[..lens]);
     b.append(&mut s_32bytes.to_vec());
+
     let mut r: [u8; 64] = [0; 64];
-    r[..].copy_from_slice(&b[..]);
+    let res_len = min(r.len(), b.len());
+    r[..res_len].copy_from_slice(&b[..res_len]);
     r
+}
+
+fn vector_as_u8_64_array(vector: Vec<u8>) -> [u8; 64] {
+    let mut arr = [0u8;64];
+    for (place, element) in arr.iter_mut().zip(vector.iter()) {
+        *place = *element;
+    }
+    arr
 }
 
 #[no_mangle]
