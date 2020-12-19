@@ -92,14 +92,15 @@ class PublicKey {
 
   /// Compress the PublicKey
   /// @returns {Uint8List} - point compressed into a buffer
-  BigInt compress() {
+  Uint8List compress() {
     CircomLib circomLib = CircomLib();
-    Uint8List xList = Uint8ArrayUtils.bigIntToBytes(p[0]);
+    /*Uint8List xList = Uint8ArrayUtils.bigIntToBytes(p[0]);
     Uint8List yList = Uint8ArrayUtils.bigIntToBytes(p[1]);
     List<int> pointList = xList.toList();
     pointList.addAll(yList.toList());
-    BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));
-    return Uint8ArrayUtils.leBuff2int(circomLib.packPoint(result));
+    BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));*/
+    return Uint8ArrayUtils.uint8ListfromString(
+        circomLib.packPoint(p[0].toString(), p[1].toString()));
   }
 
   bool verify(String messageHash, Signature signature) {

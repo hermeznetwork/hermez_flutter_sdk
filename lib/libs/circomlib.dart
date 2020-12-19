@@ -118,8 +118,10 @@ class CircomLib {
         .asFunction();
 
     _packPoint = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
-            "pack_point")
+        .lookup<
+            NativeFunction<
+                Pointer<Utf8> Function(
+                    Pointer<Utf8>, Pointer<Utf8>)>>("pack_point")
         .asFunction();
 
     _unpackPoint = lib
@@ -176,15 +178,20 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Uint8> Function(Pointer<Uint8>) _packPoint;
-  Uint8List packPoint(BigInt point) {
-    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(point);
-    if (buf.length != 32) {
+  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
+  String packPoint(String pointX, String pointY) {
+    final ptrX = Utf8.toUtf8(pointX);
+    final ptrY = Utf8.toUtf8(pointY);
+    /*final Uint8List bufX = Uint8ArrayUtils.bigIntToBytes(pointX);
+    final Uint8List bufY = Uint8ArrayUtils.bigIntToBytes(pointY);
+    if (bufX.length != 32 || bufY.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
     }
-    final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _packPoint(ptr);
-    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
+    final ptrX = Uint8ArrayUtils.toPointer(bufX);
+    final ptrY = Uint8ArrayUtils.toPointer(bufX);*/
+    final resultPtr = _packPoint(ptrX, ptrY);
+    final result = Utf8.fromUtf8(resultPtr);
+    //final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
     return result;
   }
 

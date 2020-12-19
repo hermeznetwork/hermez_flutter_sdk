@@ -105,24 +105,31 @@ fn vector_as_u8_64_array(vector: Vec<u8>) -> [u8; 64] {
 }
 
 #[no_mangle]
-pub extern fn pack_point(point: &[u8; 32]) -> [u8; 32] {
-    //let x_bytes: [u8; 16] = *array_ref!(point[..16], 0, 16);
-    //let y_bytes: [u8; 16] = *array_ref!(point[16..], 0, 16);
-    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[..16]);
-    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &point[16..]);
-    //let x_big: BigInt = BigInt::parse_bytes(&x_bytes, 10).unwrap();
-    //let y_big: BigInt = BigInt::parse_bytes(&y_bytes, 10).unwrap();
-
-    let p: Point = Point {
-        x: Fr::from_str(
-            &x_big.to_string(),
-        ).unwrap(),
-        y: Fr::from_str(
-            &y_big.to_string(),
-        ).unwrap(),
+pub extern fn pack_point(point_x: *const c_char, point_y: *const c_char) -> *mut c_char {
+    let point_x_cstr = unsafe { CStr::from_ptr(point_x) };
+    let point_x_str = match point_x_cstr.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
     };
+    let point_y_cstr = unsafe { CStr::from_ptr(point_y) };
+    let point_y_str = match point_y_cstr.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    let p: Point = Point {
+        x: Fr::from_str(point_x_str).unwrap(),
+        y: Fr::from_str(point_y_str).unwrap(),
+    };
+    let compressed_point = compress_point(&p);
+    let hex_string = to_hex_string(compressed_point.to_vec());
+    CString::new(hex_string.as_str()).unwrap().into_raw()
+}
 
-    return compress_point(&p);
+pub fn to_hex_string(bytes: Vec<u8>) -> String {
+    let strs: Vec<String> = bytes.iter()
+        .map(|b| format!("{:02X}", b))
+        .collect();
+    strs.connect(" ")
 }
 
 #[no_mangle]

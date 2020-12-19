@@ -39,7 +39,7 @@ class HermezWallet {
       publicKey.p[1].toRadixString(16)
     ];
     this.publicKeyCompressed = publicKey.compress().toString();
-    this.publicKeyCompressedHex = publicKey.compress().toRadixString(16);
+    this.publicKeyCompressedHex = publicKey.compress().toString();
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
