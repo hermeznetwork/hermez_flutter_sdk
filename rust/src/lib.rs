@@ -27,6 +27,8 @@ use std::os::raw::{c_char};
 use std::ffi::{CStr, CString};
 use std::cmp::min;
 use std::str::FromStr;
+use num_traits::Num;
+use rustc_hex::FromHex;
 
 lazy_static! {
  static ref B8: Point = Point {
@@ -129,24 +131,23 @@ pub fn to_hex_string(bytes: Vec<u8>) -> String {
     let strs: Vec<String> = bytes.iter()
         .map(|b| format!("{:02X}", b))
         .collect();
-    strs.connect(" ")
+    strs.join("")
 }
 
 #[no_mangle]
-pub extern fn unpack_point(point: &[u8; 32]) -> [u8; 32] {
-    let p_bytes: [u8; 32] = *array_ref!(point[..32], 0, 32);
-    let r_b8 = decompress_point(p_bytes);
-    let p = r_b8.unwrap();
-    let mut r: [u8; 32] = [0; 32];
+pub extern fn unpack_point(compressed_point: *const c_char) ->  *mut c_char {
+    let compressed_point_str = unsafe { CStr::from_ptr(compressed_point) }.to_str().unwrap();
+    let y_bytes_raw = compressed_point_str.from_hex().unwrap();
+    let mut y_bytes: [u8; 32] = [0; 32];
+    y_bytes.copy_from_slice(&y_bytes_raw);
+    let p = decompress_point(y_bytes).unwrap();
     let x_big = BigInt::parse_bytes(to_hex(&p.x).as_bytes(), 16).unwrap();
     let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
-    let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r.len());
-    r[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[31] = r[31] | 0x80;
-    }
-    r
+    let mut result_string: String = "".to_owned();
+    result_string.push_str(&x_big.to_string());
+    result_string.push_str(",");
+    result_string.push_str(&y_big.to_string());
+    CString::new(result_string.as_str()).unwrap().into_raw()
 }
 
 #[no_mangle]

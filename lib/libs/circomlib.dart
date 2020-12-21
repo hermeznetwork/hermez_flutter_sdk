@@ -125,7 +125,7 @@ class CircomLib {
         .asFunction();
 
     _unpackPoint = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Utf8>)>>(
             "unpack_point")
         .asFunction();
 
@@ -182,24 +182,17 @@ class CircomLib {
   String packPoint(String pointX, String pointY) {
     final ptrX = Utf8.toUtf8(pointX);
     final ptrY = Utf8.toUtf8(pointY);
-    /*final Uint8List bufX = Uint8ArrayUtils.bigIntToBytes(pointX);
-    final Uint8List bufY = Uint8ArrayUtils.bigIntToBytes(pointY);
-    if (bufX.length != 32 || bufY.length != 32) {
-      throw new ArgumentError('buf must be 32 bytes');
-    }
-    final ptrX = Uint8ArrayUtils.toPointer(bufX);
-    final ptrY = Uint8ArrayUtils.toPointer(bufX);*/
     final resultPtr = _packPoint(ptrX, ptrY);
     final result = Utf8.fromUtf8(resultPtr);
-    //final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 32);
     return result;
   }
 
-  Pointer<Uint8> Function(Pointer<Uint8>) _unpackPoint;
-  Pointer<Uint8> unpackPoint(Uint8List compressedPoint) {
-    final ptr = Uint8ArrayUtils.toPointer(compressedPoint);
-    final resultPtr = _unpackPoint(ptr);
-    return resultPtr;
+  Pointer<Utf8> Function(Pointer<Utf8>) _unpackPoint;
+  List<String> unpackPoint(String compressedPoint) {
+    final pointPtr = Utf8.toUtf8(compressedPoint);
+    final resultPtr = _unpackPoint(pointPtr);
+    final result = Utf8.fromUtf8(resultPtr);
+    return result.split(",");
   }
 
   // circomlib.poseidon -> hashPoseidon

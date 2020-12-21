@@ -75,15 +75,13 @@ class PublicKey {
       throw new ArgumentError('buf must be 32 bytes');
     }
     CircomLib circomLib = CircomLib();
-    final p = circomLib.unpackPoint(compressedBuffLE);
+    final p = circomLib
+        .unpackPoint(Uint8ArrayUtils.uint8ListToString(compressedBuffLE));
     if (p == null) {
       throw new ArgumentError('unpackPoint failed');
     }
-    Uint8List buf = Uint8ArrayUtils.fromPointer(p, 32);
-    final xList = buf.sublist(0, 16);
-    final yList = buf.sublist(16, 32);
-    BigInt x = Uint8ArrayUtils.bytesToBigInt(xList);
-    BigInt y = Uint8ArrayUtils.bytesToBigInt(yList);
+    BigInt x = BigInt.parse(p[0]);
+    BigInt y = BigInt.parse(p[1]);
     List<BigInt> point = List<BigInt>();
     point.add(x);
     point.add(y);
