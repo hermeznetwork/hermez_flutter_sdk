@@ -205,11 +205,12 @@ class CircomLib {
 
   // privKey.signPoseidon -> signPoseidon
   Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
-  Pointer<Uint8> signPoseidon(String privateKey, String msg) {
+  Uint8List signPoseidon(String privateKey, String msg) {
     final pvtKeyPtr = Utf8.toUtf8(privateKey);
     final msgPtr = Utf8.toUtf8(msg);
     final resultPtr = _signPoseidon(pvtKeyPtr, msgPtr);
-    return resultPtr;
+    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 64);
+    return result;
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon

@@ -21,7 +21,7 @@ extern crate ff;
 use ff::*;
 use std::str;
 
-use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point,PointProjective, Q};
+use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point, PointProjective, Q, new_key};
 use num_bigint::{Sign, BigInt, ToBigInt};
 use std::os::raw::{c_char};
 use std::ffi::{CStr, CString};
@@ -200,23 +200,21 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
 #[no_mangle]
 pub extern fn sign_poseidon(private_key: *const c_char, message: *const c_char) -> [u8; 64] {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
-    let sk = BigInt::from_str(private_key_str).unwrap();
-    let pk = PrivateKey { key: sk };
+    let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    let pk = PrivateKey { key: pk_bigint };
     let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
-    let msg = BigInt::from_str(message_str).unwrap();
-    let sig = pk.sign(msg.clone()).unwrap();
-    return sig.compress();
+    let message_bigint = BigInt::from_str(message_str).unwrap();
+    let sig = pk.sign(message_bigint.clone()).unwrap();
+    let compressed_signature = sig.compress().clone();
+    return compressed_signature;
 }
 
 #[no_mangle]
 pub extern fn verify_poseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
-    let sk = BigInt::from_str(private_key_str).unwrap();
-    let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
-    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
-    let r_b8 = decompress_point(r_b8_bytes);
-    let sig = Signature { r_b8 : r_b8.clone().unwrap(), s };
-    let pk = PrivateKey { key: sk };
+    let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    let pk = PrivateKey { key: pk_bigint };
+    let sig = decompress_signature(signature).unwrap();
     let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
     let msg = BigInt::from_str(message_str).unwrap();
     return if verify(pk.public().unwrap(), sig.clone(), msg.clone()) {

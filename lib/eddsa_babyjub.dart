@@ -149,10 +149,9 @@ class PrivateKey {
 
   BigInt sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    Pointer<Uint8> signature = circomLib.signPoseidon(
+    Uint8List signature = circomLib.signPoseidon(
         Uint8ArrayUtils.uint8ListToString(this.sk), messageHash.toString());
-    final sign = Uint8ArrayUtils.fromPointer(signature, 64);
-    return Uint8ArrayUtils.leBuff2int(sign);
+    return Uint8ArrayUtils.bytesToBigInt(signature);
   }
 }
 
