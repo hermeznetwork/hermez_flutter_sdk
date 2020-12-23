@@ -142,14 +142,14 @@ class CircomLib {
     _signPoseidon = lib
         .lookup<
             NativeFunction<
-                Pointer<Uint8> Function(
+                Pointer<Utf8> Function(
                     Pointer<Utf8>, Pointer<Utf8>)>>("sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
         .lookup<
             NativeFunction<
-                Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Uint8>,
+                Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<Utf8>)>>("verify_poseidon")
         .asFunction();
   }
@@ -204,25 +204,27 @@ class CircomLib {
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
-  Uint8List signPoseidon(String privateKey, String msg) {
+  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
+  String signPoseidon(String privateKey, String msg) {
     final pvtKeyPtr = Utf8.toUtf8(privateKey);
     final msgPtr = Utf8.toUtf8(msg);
     final resultPtr = _signPoseidon(pvtKeyPtr, msgPtr);
-    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 64);
-    return result;
+    final String compressedSignature = Utf8.fromUtf8(resultPtr);
+    return compressedSignature;
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
-  Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Uint8>, Pointer<Utf8>)
+  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>)
       _verifyPoseidon;
-  Pointer<Uint8> verifyPoseidon(
-      String publicKey, Uint8List signature, String msg) {
-    final pubKeyPtr = Utf8.toUtf8(publicKey);
-    final sigPtr = Uint8ArrayUtils.toPointer(signature);
+  bool verifyPoseidon(
+      String privateKey, String compressedSignature, String msg) {
+    final pubKeyPtr = Utf8.toUtf8(privateKey);
+    final sigPtr = Utf8.toUtf8(compressedSignature);
     final msgPtr = Utf8.toUtf8(msg);
     final resultPtr = _verifyPoseidon(pubKeyPtr, sigPtr, msgPtr);
-    return resultPtr;
+    final String resultString = Utf8.fromUtf8(resultPtr);
+    final bool result = resultString.compareTo("1") == 0;
+    return result;
   }
 
   Pointer<Uint8> Function(Pointer<Utf8>) _prv2Pub;

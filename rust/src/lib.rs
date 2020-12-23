@@ -27,8 +27,9 @@ use std::os::raw::{c_char};
 use std::ffi::{CStr, CString};
 use std::cmp::min;
 use std::str::FromStr;
-use num_traits::Num;
+use num_traits::{Num, ToPrimitive};
 use rustc_hex::FromHex;
+use num::Zero;
 
 lazy_static! {
  static ref B8: Point = Point {
@@ -198,29 +199,49 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
 }
 
 #[no_mangle]
-pub extern fn sign_poseidon(private_key: *const c_char, message: *const c_char) -> [u8; 64] {
+pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /*[u8; 64]*/ *mut c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
     let pk = PrivateKey { key: pk_bigint };
-    let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
-    let message_bigint = BigInt::from_str(message_str).unwrap();
+    let message_c_str = unsafe { CStr::from_ptr(msg) };
+    let message_str = match message_c_str.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    let message_bigint = match message_str.parse::<i32>() {
+        Ok(n) => BigInt::from(n),
+        Err(e) => BigInt::zero(),
+    };
     let sig = pk.sign(message_bigint.clone()).unwrap();
-    let compressed_signature = sig.compress().clone();
-    return compressed_signature;
+    let compressed_signature = sig.compress();
+    let hex_string = to_hex_string(compressed_signature.to_vec());
+    CString::new(hex_string.as_str()).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern fn verify_poseidon(private_key: *const c_char, signature: &[u8; 64], message: *const c_char) -> c_char {
+pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: *const c_char, message: *const c_char) ->  *mut c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
     let pk = PrivateKey { key: pk_bigint };
-    let sig = decompress_signature(signature).unwrap();
-    let message_str = unsafe { CStr::from_ptr(message) }.to_str().unwrap();
-    let msg = BigInt::from_str(message_str).unwrap();
-    return if verify(pk.public().unwrap(), sig.clone(), msg.clone()) {
-        1
+    let compressed_signature_str = unsafe { CStr::from_ptr(compressed_signature) }.to_str().unwrap();
+    let signature_bytes_raw = compressed_signature_str.from_hex().unwrap();
+    let mut signature_bytes: [u8; 64] = [0; 64];
+    signature_bytes.copy_from_slice(&signature_bytes_raw);
+    let sig = decompress_signature(&signature_bytes).unwrap();
+    let message_c_str = unsafe { CStr::from_ptr(message) };
+    let message_str = match message_c_str.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    let message_bigint = match message_str.parse::<i32>() {
+        Ok(n) => BigInt::from(n),
+        Err(e) => BigInt::zero(),
+    };
+
+    if verify(pk.public().unwrap(), sig.clone(), message_bigint.clone()) {
+        CString::new("1".to_owned()).unwrap().into_raw()
     } else {
-        0
+        CString::new("0".to_owned()).unwrap().into_raw()
     }
 }
 
