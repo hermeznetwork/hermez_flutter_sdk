@@ -27,8 +27,9 @@ class Signature {
       throw new ArgumentError('buf must be 64 bytes');
     }
     CircomLib circomLib = CircomLib();
-    final signature = circomLib.unpackSignature(buf);
-    final bufSignature = Uint8ArrayUtils.bigIntToBytes(signature);
+    final signature =
+        circomLib.unpackSignature(Uint8ArrayUtils.uint8ListToString(buf));
+    final bufSignature = Uint8ArrayUtils.uint8ListfromString(signature);
     final xList = bufSignature.sublist(0, 16);
     final yList = bufSignature.sublist(16, 32);
     final rSList = bufSignature.sublist(32, 64);
@@ -112,7 +113,7 @@ class PublicKey {
     sigList.add(signature.s.toInt());
     circomLib.verifyPoseidon(
         Uint8ArrayUtils.uint8ListToString(Uint8List.fromList(pointList)),
-        Uint8List.fromList(sigList),
+        Uint8ArrayUtils.uint8ListToString(Uint8List.fromList(sigList)),
         messageHash);
   }
 }
@@ -147,18 +148,18 @@ class PrivateKey {
     return new PublicKey(p);
   }
 
-  BigInt sign(BigInt messageHash) {
+  String sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    Uint8List signature = circomLib.signPoseidon(
+    String signature = circomLib.signPoseidon(
         Uint8ArrayUtils.uint8ListToString(this.sk), messageHash.toString());
-    return Uint8ArrayUtils.bytesToBigInt(signature);
+    return signature;
   }
 }
 
-Uint8List packSignature(Uint8List signature) {
+String packSignature(Uint8List signature) {
   CircomLib circomLib = CircomLib();
-  final sigPtr = Uint8ArrayUtils.leBuff2int(signature);
-  return circomLib.packSignature(sigPtr);
+  final sigString = Uint8ArrayUtils.uint8ListToString(signature);
+  return circomLib.packSignature(sigString);
 }
 
 /*Point poseidon(Uint8List input) {

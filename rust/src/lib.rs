@@ -46,11 +46,46 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
-    let r_b8_bytes: [u8; 32] = *array_ref!(signature[..32], 0, 32);
-    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature[32..]);
-    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[..16]);
-    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[16..]);
+pub extern fn pack_signature(signature: *const c_char) -> *mut c_char {
+    let signature_cstr = unsafe { CStr::from_ptr(signature) };
+    let signature_str = match signature_cstr.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    let signature_bytes_raw = signature_str.from_hex().unwrap();
+    let mut signature_bytes: [u8; 64] = [0; 64];
+    signature_bytes.copy_from_slice(&signature_bytes_raw);
+
+    let r_b8_bytes: [u8; 32] = *array_ref!(signature_bytes[..32], 0, 32);
+    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &signature_bytes[32..]);
+
+    //let x_big = BigInt::parse_bytes(&r_b8_bytes[..16], 16).unwrap();
+    //let y_big = BigInt::parse_bytes(&r_b8_bytes[16..], 16).unwrap();
+    /*let (_, x_bytes) = x_big.to_bytes_le();
+    let (_, y_bytes) = y_big.to_bytes_le();
+
+    let mut x_16bytes: [u8; 16] = [0; 16];
+    let lenx = min(x_bytes.len(), x_16bytes.len());
+    x_16bytes[..lenx].copy_from_slice(&x_bytes[..lenx]);
+    b.append(&mut x_16bytes.to_vec());
+
+    let mut y_16bytes: [u8; 16] = [0; 16];
+    let leny = min(y_bytes.len(), y_16bytes.len());
+    y_16bytes[..leny].copy_from_slice(&y_bytes[..leny]);
+    b.append(&mut y_16bytes.to_vec());*/
+
+
+    //let x_string = to_hex_string(r_b8_bytes[..16].to_vec());
+    //let x_str = x_string.as_str();
+    //let y_string = to_hex_string(r_b8_bytes[16..].to_vec());
+
+    //let r_b8 = decompress_point(r_b8_bytes).unwrap();
+    //let y_str = y_string.as_str();
+    //let x_big = BigInt::parse_bytes(&r_b8_bytes[0..15], 16).unwrap();
+    //let y_big = BigInt::parse_bytes(&r_b8_bytes[15..32], 16).unwrap();
+    let x_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[0..15]);
+    let y_big: BigInt = BigInt::from_bytes_le(Sign::Plus, &r_b8_bytes[15..32]);
+    //let y_big = x_big.clone();
 
     let r_b8: Point = Point {
         x: Fr::from_str(
@@ -63,12 +98,22 @@ pub extern fn pack_signature(signature: &[u8; 64]) -> [u8; 64] {
 
     let sig = Signature { r_b8 : r_b8.clone(), s };
     let res = sig.compress();
-    return res;
+
+    let hex_string = to_hex_string(res.to_vec());
+    CString::new(hex_string.as_str()).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
-    let decompressed_sig = decompress_signature(&compressed_signature).unwrap();
+pub extern fn unpack_signature(compressed_signature: *const c_char) -> *mut c_char {
+    let compressed_signature_cstr = unsafe { CStr::from_ptr(compressed_signature) };
+    let compressed_signature_str = match compressed_signature_cstr.to_str() {
+        Err(_) => "there",
+        Ok(string) => string,
+    };
+    let compressed_signature_bytes_raw = compressed_signature_str.from_hex().unwrap();
+    let mut compressed_signature_bytes: [u8; 64] = [0; 64];
+    compressed_signature_bytes.copy_from_slice(&compressed_signature_bytes_raw);
+    let decompressed_sig = decompress_signature(&compressed_signature_bytes).unwrap();
 
     let mut b: Vec<u8> = Vec::new();
 
@@ -96,7 +141,9 @@ pub extern fn unpack_signature(compressed_signature: &[u8; 64]) -> [u8; 64] {
     let mut r: [u8; 64] = [0; 64];
     let res_len = min(r.len(), b.len());
     r[..res_len].copy_from_slice(&b[..res_len]);
-    r
+
+    let hex_string = to_hex_string(r.to_vec());
+    CString::new(hex_string.as_str()).unwrap().into_raw()
 }
 
 fn vector_as_u8_64_array(vector: Vec<u8>) -> [u8; 64] {
@@ -244,6 +291,9 @@ pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: 
         CString::new("0".to_owned()).unwrap().into_raw()
     }
 }
+
+
+
 
 /*#[no_mangle]
 pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {

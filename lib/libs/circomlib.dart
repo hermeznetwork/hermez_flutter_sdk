@@ -108,12 +108,12 @@ class CircomLib {
   //final DynamicLibrary lib;
   CircomLib(/*{@required this.lib}*/) {
     _packSignature = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Utf8>)>>(
             "pack_signature")
         .asFunction();
 
     _unpackSignature = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Utf8>)>>(
             "unpack_signature")
         .asFunction();
 
@@ -154,27 +154,19 @@ class CircomLib {
         .asFunction();
   }
 
-  Pointer<Uint8> Function(Pointer<Uint8>) _packSignature;
-  Uint8List packSignature(BigInt signature) {
-    final Uint8List buf = Uint8ArrayUtils.bigIntToBytes(signature);
-    if (buf.length != 64) {
-      throw new ArgumentError('buf must be 64 bytes');
-    }
-    final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _packSignature(ptr);
-    final Uint8List result = Uint8ArrayUtils.fromPointer(resultPtr, 64);
+  Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
+  String packSignature(String signature) {
+    final sig = Utf8.toUtf8(signature);
+    final resultPtr = _packSignature(sig);
+    final result = Utf8.fromUtf8(resultPtr);
     return result;
   }
 
-  Pointer<Uint8> Function(Pointer<Uint8>) _unpackSignature;
-  BigInt unpackSignature(Uint8List compressedSignature) {
-    if (compressedSignature.length != 64) {
-      throw new ArgumentError('buf must be 64 bytes');
-    }
-    final ptr = Uint8ArrayUtils.toPointer(compressedSignature);
-    final resultPtr = _unpackSignature(ptr);
-    final uncompressedBuf = Uint8ArrayUtils.fromPointer(resultPtr, 64);
-    final BigInt result = Uint8ArrayUtils.bytesToBigInt(uncompressedBuf);
+  Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
+  String unpackSignature(String compressedSignature) {
+    final sigPtr = Utf8.toUtf8(compressedSignature);
+    final resultPtr = _unpackSignature(sigPtr);
+    final result = Utf8.fromUtf8(resultPtr);
     return result;
   }
 
