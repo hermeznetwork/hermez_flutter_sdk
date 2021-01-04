@@ -1,9 +1,9 @@
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
-import 'constants.dart' show DEFAULT_PAGE_SIZE;
+import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
 
-const baseApiUrl = 'http://167.71.59.190:4010';
+var baseApiUrl = BASE_API_URL;
 
 const REGISTER_AUTH_URL = "/account-creation-authorization";
 const ACCOUNTS_URL = "/accounts";
@@ -17,6 +17,11 @@ const TOKENS_URL = "/tokens";
 const RECOMMENDED_FEES_URL = "/recommendedFee";
 const COORDINATORS_URL = "/coordinators";
 
+const BATCHES_URL = "/batches";
+const SLOTS_URL = "/slots";
+const BIDS_URL = "/bids";
+const ACCOUNT_CREATION_AUTH_URL = "/account-creation-authorization";
+
 /// Sets the query parameters related to pagination
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Includes the values `fromItem` and `limit`
@@ -26,6 +31,20 @@ Map<String, dynamic> getPageData(int fromItem) {
     "fromItem": !fromItem.isNaN ? fromItem : {},
     "limit": DEFAULT_PAGE_SIZE
   };
+}
+
+/// Sets the current coordinator API URL
+/// @param {String} url - The currently forging Coordinator
+void setBaseApiUrl(String url) {
+  baseApiUrl = url;
+  // TODO: Remove once this is fixed https://github.com/hermeznetwork/integration-testing/issues/34
+  baseApiUrl = BASE_API_URL;
+}
+
+/// Returns current coordinator API URL
+/// @returns {String} The currently set Coordinator
+String getBaseApiUrl() {
+  return baseApiUrl;
 }
 
 /// GET request to the /accounts endpoint. Returns a list of token accounts associated to a Hermez address
@@ -148,10 +167,94 @@ Future<String> getToken(int tokenId) async {
 /// GET request to the /state endpoint.
 /// @returns {object} Response data with the current state of the coordinator
 Future<String> getState() async {
-  final state = extractJSON(await get(baseApiUrl, STATE_URL));
+  dynamic state = extractJSON(await get(baseApiUrl, STATE_URL));
   // Remove once hermez-node is ready
+  /*state.network.nextForgers = [{
+    coordinator: {
+      URL: 'http://localhost:8086'
+    }
+  }];*/
+
   // state.withdrawalDelayer.emergencyMode = true
   // state.withdrawalDelayer.withdrawalDelay = 60
   // state.rollup.buckets[0].withdrawals = 0
   return state;
+}
+
+/// GET request to the /batches endpoint. Returns a filtered list of batches
+/// @param {String} forgerAddr - Filter by forger address
+/// @param {int} slotNum - A specific slot number
+/// @param {int} fromItem - Item from where to start the request
+/// @returns {Object} Response data with a paginated list of batches
+Future<String> getBatches(String forgerAddr, int slotNum, int fromItem) async {
+  Map<String, String> params = {};
+  params.putIfAbsent(
+      'forgerAddr', () => forgerAddr.isNotEmpty ? forgerAddr : '');
+  params.putIfAbsent('slotNum', () => slotNum > 0 ? slotNum.toString() : '');
+  params.putIfAbsent('fromItem', () => fromItem > 0 ? fromItem.toString() : '');
+
+  return extractJSON(
+      await get(baseApiUrl, BATCHES_URL, queryParameters: params));
+}
+
+/// GET request to the /batches/:batchNum endpoint. Returns a specific batch
+/// @param {int} batchNum - Number of a specific batch
+/// @returns {Object} Response data with a specific batch
+Future<String> getBatch(int batchNum) async {
+  return extractJSON(
+      await get(baseApiUrl, BATCHES_URL + '/' + batchNum.toString()));
+}
+
+/// GET request to the /coordinators/:bidderAddr endpoint. Returns a specific coordinator information
+/// @param {String} forgerAddr - A coordinator forger address
+/// @param {String} bidderAddr - A coordinator bidder address
+/// @returns {Object} Response data with a specific coordinator
+Future<String> getCoordinators(String forgerAddr, String bidderAddr) async {
+  Map<String, String> params = {};
+  params.putIfAbsent(
+      'forgerAddr', () => forgerAddr.isNotEmpty ? forgerAddr : '');
+  params.putIfAbsent(
+      'bidderAddr', () => bidderAddr.isNotEmpty ? bidderAddr : '');
+
+  return extractJSON(
+      await get(baseApiUrl, COORDINATORS_URL, queryParameters: params));
+}
+
+/// GET request to the /slots/:slotNum endpoint. Returns the information for a specific slot
+/// @param {int} slotNum - The nunmber of a slot
+/// @returns {Object} Response data with a specific slot
+Future<String> getSlot(int slotNum) async {
+  return extractJSON(
+      await get(baseApiUrl, SLOTS_URL + '/' + slotNum.toString()));
+}
+
+/// GET request to the /bids endpoint. Returns a list of bids
+/// @param {int} slotNum - Filter by slot
+/// @param {String} bidderAddr - Filter by coordinator
+/// @param {int} fromItem - Item from where to start the request
+/// @returns {Object} Response data with the list of slots
+Future<String> getBids(int slotNum, String bidderAddr, int fromItem) async {
+  Map<String, String> params = {};
+  params.putIfAbsent('slotNum', () => slotNum > 0 ? slotNum.toString() : '');
+  params.putIfAbsent(
+      'bidderAddr', () => bidderAddr.isNotEmpty ? bidderAddr : '');
+  params.putIfAbsent('fromItem', () => fromItem > 0 ? fromItem.toString() : '');
+
+  return extractJSON(await get(baseApiUrl, BIDS_URL, queryParameters: params));
+}
+
+/// POST request to the /account-creation-authorization endpoint. Sends an authorization to the coordinator to register token accounts on their behalf
+/// @param {String} hezEthereumAddress - The Hermez Ethereum address of the account that makes the authorization
+/// @param {String} bJJ - BabyJubJub address of the account that makes the authorization
+/// @param {String} signature - The signature of the request
+/// @returns {Object} Response data
+Future<String> postCreateAccountAuthorization(
+    String hezEthereumAddress, String bJJ, String signature) async {
+  Map<String, String> params = {};
+  params.putIfAbsent('hezEthereumAddress',
+      () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
+  params.putIfAbsent('bJJ', () => bJJ.isNotEmpty ? bJJ : '');
+  params.putIfAbsent('signature', () => signature.isNotEmpty ? signature : '');
+  return extractJSON(
+      await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params));
 }

@@ -10,8 +10,11 @@ const GAS_LIMIT = 5000000;
 const GAS_MULTIPLIER = 1;
 
 const Map<String, String> contractAddresses = {
-  "Hermez": '0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e',
-  "WithdrawalDelayer": '0xc4905364b78a742ccce7B890A89514061E47068D'
+  'Hermez': '0x10465b16615ae36F350268eb951d7B0187141D3B',
+  'WithdrawalDelayer': '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 };
 
 const DEFAULT_PAGE_SIZE = 20;
+
+//const BASE_API_URL = 'localhost:8086';
+const BASE_API_URL = '167.71.59.190:4010';

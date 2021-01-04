@@ -30,6 +30,12 @@ class HermezWallet {
     if (privateKey.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
     }
+
+    if (!isHermezEthereumAddress(hermezEthereumAddress)) {
+      throw new ArgumentError('Invalid Hermez Ethereum address');
+    }
+
+    //final publicKey = circomlib.eddsa.prv2pub(privateKey);
     final priv = eddsaBabyJub.PrivateKey(privateKey);
     final eddsaBabyJub.PublicKey publicKey = priv.public();
     this.privateKey = privateKey;
@@ -43,8 +49,9 @@ class HermezWallet {
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
-  ///
-  /// @param {String} mnemonic
+  /// Creates a Hermez Wallet and Ethereum Wallet from mnemonic phrase
+  /// @param {String} mnemonic - mnemonic phrase
+  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
   static dynamic createWalletFromMnemonic(String mnemonic) async {
     //final Web3Client provider = getProvider();
     String seed = bip39.mnemonicToSeedHex(mnemonic);
@@ -86,6 +93,7 @@ class HermezWallet {
 
   /// To sign transaction with babyjubjub keys
   /// @param {object} transaction - Transaction object
+  /// @param {Object} encodedTransaction - Transaction encoded object
   /// @returns {object} The signed transaction object
   dynamic signTransaction(transaction, encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
@@ -97,7 +105,35 @@ class HermezWallet {
     transaction.signature = packedSignature; // HEX.encode
     return transaction;
   }
+
+  /// Generates the signature necessary for /create-account-authorization endpoint
+  /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+  /// @param {Object} signerData - Signer data used to build a Signer to create the walet
+  /// @returns {String} The generated signature
+  dynamic signCreateAccountAuthorization (String providerUrl, signerData) async {
+    const provider = getProvider(providerUrl)
+    const signer = getSigner(provider, signerData)
+
+    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
+    const chainId = (await provider.getNetwork()).chainId.toString(16)
+    const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
+    const messageHex =
+    ethers.utils.hexlify(accountCreationAuthMsgArray) +
+    this.publicKeyCompressedHex +
+    ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
+    getEthereumAddress(this.hermezEthereumAddress).slice(2)
+
+    const messageArray = ethers.utils.arrayify(messageHex)
+    const signature = await signer.signMessage(messageArray)
+    // Generate the signature from params as there's a bug in ethers
+    // that generates the base signature wrong
+    const signatureParams = ethers.utils.splitSignature(signature)
+    return signatureParams.r + signatureParams.s + signatureParams.v
+  }
 }
+}
+
+
 
 /*/// Verifies signature for a given message using babyjubjub
 /// @param {String} publicKeyHex - Babyjubjub public key encoded as hex string
