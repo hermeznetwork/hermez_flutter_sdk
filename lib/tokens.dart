@@ -10,10 +10,14 @@ import 'constants.dart' show contractAddresses;
 /// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
 /// @param {String} accountAddress - The Ethereum address of the transaction sender
 /// @param {String} contractAddress - The token smart contract address
+/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 ///
 /// @returns {Promise} transaction
-Future<String> approve(
-    BigInt amount, String accountAddress, String contractAddress) async {
+Future<String> approve(BigInt amount, String accountAddress,
+    String contractAddress, String providerUrl, dynamic signerData) async {
+  //final txSignerData =
+  //    signerData || {type: SignerType.JSON_RPC, addressOrIndex: accountAddress};
   Map erc20ABI =
       json.decode(await new File('abis/ERC20ABI.json').readAsString());
 

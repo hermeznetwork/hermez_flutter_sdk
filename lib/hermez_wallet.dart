@@ -110,11 +110,11 @@ class HermezWallet {
   /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
   /// @param {Object} signerData - Signer data used to build a Signer to create the walet
   /// @returns {String} The generated signature
-  dynamic signCreateAccountAuthorization (String providerUrl, signerData) async {
-    const provider = getProvider(providerUrl)
-    const signer = getSigner(provider, signerData)
+  dynamic signCreateAccountAuthorization(String providerUrl, dynamic signerData) async {
+    const provider = getProvider(providerUrl);
+    const signer = getSigner(provider, signerData);
 
-    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE)
+    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE);
     const chainId = (await provider.getNetwork()).chainId.toString(16)
     const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
     const messageHex =
@@ -130,7 +130,6 @@ class HermezWallet {
     const signatureParams = ethers.utils.splitSignature(signature)
     return signatureParams.r + signatureParams.s + signatureParams.v
   }
-}
 }
 
 

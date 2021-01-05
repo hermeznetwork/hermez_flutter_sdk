@@ -13,6 +13,21 @@ import 'tx_pool.dart' show getPoolTransactions;
 
 const String hermezPrefix = "hez:";
 
+const Map<String, String> txType = {
+  "Deposit": "Deposit",
+  "CreateAccountDeposit": "CreateAccountDeposit",
+  "Transfer": "Transfer",
+  "Withdraw": "Withdrawn",
+  "Exit": "Exit"
+};
+
+const Map<String, String> txState = {
+  "Forged": "fged",
+  "Forging": "fing",
+  "Pending": "pend",
+  "Invalid": "invl"
+};
+
 final DynamicLibrary nativeExampleLib = Platform.isAndroid
     ? DynamicLibrary.open("libbabyjubjub.so")
     : DynamicLibrary.process();
@@ -23,12 +38,14 @@ final DynamicLibrary nativeExampleLib = Platform.isAndroid
 /// Used, for example, to sign the transaction
 ///
 /// @param {Object} transaction - Transaction object returned by generateL2Transaction
+/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
 ///
 /// @returns {Object} encodedTransaction
-Future<dynamic> encodeTransaction(dynamic transaction) async {
+Future<dynamic> encodeTransaction(
+    dynamic transaction, String providerUrl) async {
   final encodedTransaction = transaction.clone();
 
-  final provider = getProvider();
+  final provider = getProvider(providerUrl);
   //encodedTransaction.chainId = await provider.getNetwork().chainId
 
   encodedTransaction.fromAccountIndex =

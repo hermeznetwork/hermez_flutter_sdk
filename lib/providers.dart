@@ -16,9 +16,9 @@ void setProvider(String url) {
 /// Retrieve provider
 ///
 /// @returns {Object} provider
-Web3Client getProvider() {
+Web3Client getProvider(String url) {
   if (provider == null) {
-    setProvider('');
+    setProvider(url);
   }
   return provider;
 }
