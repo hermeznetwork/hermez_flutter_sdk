@@ -41,8 +41,8 @@ final DynamicLibrary nativeExampleLib = Platform.isAndroid
 /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
 ///
 /// @returns {Object} encodedTransaction
-Future<dynamic> encodeTransaction(
-    dynamic transaction, String providerUrl) async {
+Future<dynamic> encodeTransaction(dynamic transaction,
+    {String providerUrl}) async {
   final encodedTransaction = transaction.clone();
 
   final provider = getProvider(providerUrl);

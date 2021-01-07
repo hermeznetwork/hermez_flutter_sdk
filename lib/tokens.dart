@@ -21,7 +21,8 @@ Future<String> approve(BigInt amount, String accountAddress,
   Map erc20ABI =
       json.decode(await new File('abis/ERC20ABI.json').readAsString());
 
-  dynamic erc20Contract = getContract(contractAddress, erc20ABI);
+  dynamic erc20Contract =
+      getContract(contractAddress, erc20ABI, providerUrl, signerData);
   final allowance = await erc20Contract.allowance(
       accountAddress, contractAddresses['Hermez']);
 

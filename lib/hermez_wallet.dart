@@ -110,29 +110,28 @@ class HermezWallet {
   /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
   /// @param {Object} signerData - Signer data used to build a Signer to create the walet
   /// @returns {String} The generated signature
-  dynamic signCreateAccountAuthorization(String providerUrl, dynamic signerData) async {
-    const provider = getProvider(providerUrl);
-    const signer = getSigner(provider, signerData);
+  dynamic signCreateAccountAuthorization(
+      String providerUrl, dynamic signerData) async {
+    /*final provider = getProvider(providerUrl);
+    final signer = getSigner(provider, signerData);
 
-    const accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE);
-    const chainId = (await provider.getNetwork()).chainId.toString(16)
-    const chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`
-    const messageHex =
+    final accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE);
+    final chainId = (await provider.getNetwork()).chainId.toString(16);
+    final chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`;
+    final messageHex =
     ethers.utils.hexlify(accountCreationAuthMsgArray) +
     this.publicKeyCompressedHex +
     ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-    getEthereumAddress(this.hermezEthereumAddress).slice(2)
+    getEthereumAddress(this.hermezEthereumAddress).slice(2);
 
-    const messageArray = ethers.utils.arrayify(messageHex)
-    const signature = await signer.signMessage(messageArray)
+    final messageArray = ethers.utils.arrayify(messageHex);
+    final signature = await signer.signMessage(messageArray);
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong
-    const signatureParams = ethers.utils.splitSignature(signature)
-    return signatureParams.r + signatureParams.s + signatureParams.v
+    final signatureParams = ethers.utils.splitSignature(signature);
+    return signatureParams.r + signatureParams.s + signatureParams.v;*/
   }
 }
-
-
 
 /*/// Verifies signature for a given message using babyjubjub
 /// @param {String} publicKeyHex - Babyjubjub public key encoded as hex string

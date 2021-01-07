@@ -45,8 +45,8 @@ class Tx {
     Map hermezABI =
         json.decode(await new File('abis/HermezABI.json').readAsString());
 
-    dynamic hermezContract =
-        getContract(contractAddresses["Hermez"], hermezABI);
+    dynamic hermezContract = getContract(
+        contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
 
     dynamic ethereumAddress = getEthereumAddress(hezEthereumAddress);
     dynamic account = (await getAccounts(ethereumAddress,
@@ -98,8 +98,8 @@ class Tx {
     Map hermezABI =
         json.decode(await new File('abis/HermezABI.json').readAsString());
 
-    dynamic hermezContract =
-        getContract(contractAddresses["Hermez"], hermezABI);
+    dynamic hermezContract = getContract(
+        contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
 
     String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
 
@@ -152,8 +152,8 @@ class Tx {
     Map hermezABI =
         json.decode(await new File('abis/HermezABI.json').readAsString());
 
-    dynamic hermezContract =
-        getContract(contractAddresses["Hermez"], hermezABI);
+    dynamic hermezContract = getContract(
+        contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
 
     String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
 
@@ -191,7 +191,10 @@ class Tx {
         await new File('abis/WithdrawalDelayerABI.json').readAsString());
 
     dynamic delayedWithdrawalContract = getContract(
-        contractAddresses["WithdrawalDelayer"], withdrawalDelayerABI);
+        contractAddresses["WithdrawalDelayer"],
+        withdrawalDelayerABI,
+        providerUrl,
+        signerData);
 
     String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
 
