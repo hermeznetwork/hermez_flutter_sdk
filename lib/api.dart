@@ -26,10 +26,10 @@ const ACCOUNT_CREATION_AUTH_URL = "/account-creation-authorization";
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Includes the values `fromItem` and `limit`
 /// @private
-Map<String, dynamic> getPageData(int fromItem) {
+Map<String, String> getPageData(int fromItem) {
   return {
-    "fromItem": !fromItem.isNaN ? fromItem : {},
-    "limit": DEFAULT_PAGE_SIZE
+    "fromItem": !fromItem.isNaN ? fromItem.toString() : {},
+    "limit": DEFAULT_PAGE_SIZE.toString()
   };
 }
 
@@ -53,14 +53,15 @@ String getBaseApiUrl() {
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered token accounts and pagination data
 Future<String> getAccounts(String address, List<int> tokenIds,
-    {int fromItem = 0}) async {
+    {int fromItem = 0, String order = "ASC"}) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
-  if (isHermezBjjAddress(address) && address.isNotEmpty)
+  else if (isHermezBjjAddress(address) && address.isNotEmpty)
     params.putIfAbsent('BJJ', () => address);
   if (tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
+  params.putIfAbsent('order', () => order);
   params.addAll(getPageData(fromItem));
   return extractJSON(
       await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
