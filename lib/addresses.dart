@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+
 const String hermezPrefix = 'hez:';
 final hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}\$'); //
 final bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}\$');
@@ -61,4 +66,38 @@ num getAccountIndex(String hezAccountIndex) {
   } else {
     return -1;
   }
+}
+
+/// Get API Bjj compressed data format
+/// @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
+/// @returns {String} API adapted bjj compressed address
+String hexToBase64BJJ(String bjjCompressedHex) {
+  // swap endian
+  BigInt bjjScalar = Uint8ArrayUtils.bytesToBigInt(
+      Uint8ArrayUtils.uint8ListfromString(
+          bjjCompressedHex)); // Scalar.fromString(bjjCompressedHex, 16);
+  Uint8List bjjBuff = Uint8ArrayUtils.leInt2Buff(bjjScalar, 32);
+  String bjjSwap =
+      Uint8ArrayUtils.bytesToBigInt(bjjBuff).toRadixString(16).padLeft(64, '0');
+
+  Uint8List bjjSwapBuffer = Uint8ArrayUtils.uint8ListfromString(
+      bjjSwap); //Buffer.from(bjjSwap, 'hex')
+
+  var sum = 0;
+
+  for (var i = 0; i < bjjSwapBuffer.length; i++) {
+    sum += bjjSwapBuffer[i];
+    sum = sum % 2 * 8;
+  }
+
+  /*Uint8List sumBuff = Uint8List(1); //Buffer.alloc(1)
+  sumBuff[0] = sum; //writeUInt8(sum)*/
+
+  final BytesBuilder finalBuffBjj = BytesBuilder();
+  finalBuffBjj.add(bjjSwapBuffer.toList());
+  finalBuffBjj.addByte(sum);
+
+  //Uint8List finalBuffBjj = Uint8List.from([bjjSwapBuffer, sumBuff]);
+
+  return 'hez:${base64Url.encode(finalBuffBjj.toBytes())}';
 }

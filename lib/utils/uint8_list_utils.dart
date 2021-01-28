@@ -83,4 +83,10 @@ class Uint8ArrayUtils {
     }
     return result;
   }
+
+  static Uint8List hexZeroPad(Uint8List data, int size) {
+    //assert(data.length <= size);
+    if (data.length >= size) return data;
+    return Uint8List(size)..setRange(size - data.length, size, data);
+  }
 }

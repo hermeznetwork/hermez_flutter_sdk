@@ -1,10 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:hermez_plugin/contracts.dart' show getContract;
-
-import 'constants.dart' show contractAddresses;
-
 /// Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
 ///
 /// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
@@ -18,7 +11,7 @@ Future<String> approve(BigInt amount, String accountAddress,
     String contractAddress, String providerUrl, dynamic signerData) async {
   //final txSignerData =
   //    signerData || {type: SignerType.JSON_RPC, addressOrIndex: accountAddress};
-  Map erc20ABI =
+  /*Map erc20ABI =
       json.decode(await new File('abis/ERC20ABI.json').readAsString());
 
   dynamic erc20Contract =
@@ -27,7 +20,7 @@ Future<String> approve(BigInt amount, String accountAddress,
       accountAddress, contractAddresses['Hermez']);
 
   if (allowance < amount) {
-    return erc20Contract.appove(contractAddresses['Hermez'], amount);
+    return erc20Contract.approve(contractAddresses['Hermez'], amount);
   }
 
   if (!allowance.isZero(amount)) {
@@ -35,5 +28,16 @@ Future<String> approve(BigInt amount, String accountAddress,
     await tx.wait(1);
   }
 
-  return erc20Contract.approve(contractAddresses['Hermez'], amount);
+  return erc20Contract.approve(contractAddresses['Hermez'], amount);*/
+
+  /*final contract = await ContractParser.fromAssets(
+      'ERC20ABI.json', contractAddress, tokenContractName);
+
+  var response = await client.call(
+    contract: contract,
+    function: _approve(contract),
+    params: [delegate, amount],
+  );
+
+  return response.first as bool;*/
 }

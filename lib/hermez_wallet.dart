@@ -19,13 +19,14 @@ class HermezWallet {
   dynamic privateKey;
   dynamic publicKey;
   dynamic publicKeyHex;
-  dynamic publicKeyCompressed;
-  dynamic publicKeyCompressedHex;
+  String publicKeyCompressed;
+  String publicKeyCompressedHex;
+  dynamic publicKeyBase64;
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
   /// @param {Uint8List} privateKey - 32 bytes buffer
-  /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum key from Metamask
+  /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum Address
   HermezWallet(Uint8List privateKey, String hermezEthereumAddress) {
     if (privateKey.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
@@ -44,8 +45,18 @@ class HermezWallet {
       publicKey.p[0].toRadixString(16),
       publicKey.p[1].toRadixString(16)
     ];
-    this.publicKeyCompressed = publicKey.compress().toString();
-    this.publicKeyCompressedHex = publicKey.compress().toString();
+    final compressedPublicKey =
+        Uint8ArrayUtils.leBuff2int(publicKey.compress());
+    this.publicKeyCompressed = compressedPublicKey.toString();
+    this.publicKeyCompressedHex =
+        compressedPublicKey.toRadixString(16).padLeft(32, '0');
+    /*Uint8ArrayUtils.uint8ListToString(
+            Uint8ArrayUtils.hexZeroPad(
+                Uint8ArrayUtils.uint8ListfromString(
+                    '0x' + ),
+                32))*/
+    //.substring(2);
+    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
