@@ -1,30 +1,37 @@
-// WARNING still updating the code, it works, but is still in process the refactor.
-
-
+extern crate rand;
+#[macro_use]
+extern crate ff;
 use ff::*;
 
 use poseidon_rs::Poseidon;
 pub type Fr = poseidon_rs::Fr; // alias
 
+#[macro_use]
+extern crate arrayref;
+extern crate generic_array;
+extern crate num;
+extern crate num_bigint;
+extern crate num_traits;
 
+extern crate rand6;
 use rand6::Rng;
 
-use blake2::{Blake2b, Digest};
-use mimc_rs::Mimc7;
-use std::cmp::min;
-use std::os::raw::{c_char};
-use std::ffi::{CString, CStr};
+// use blake2::{Blake2b, Digest};
+extern crate blake_hash; // compatible version with Blake used at circomlib
+#[macro_use]
+use blake_hash::Digest;
 
-use num_bigint::{BigInt, RandBigInt, RandomBits, Sign, ToBigInt};
-use num_traits::{One, Zero};
+use std::cmp::min;
+
+use num_bigint::{BigInt, RandBigInt, Sign, ToBigInt};
+use num_traits::One;
 
 use generic_array::GenericArray;
 
-extern crate rand;
-
-use ff::*;
-
 pub mod utils;
+
+#[macro_use]
+extern crate lazy_static;
 
 lazy_static! {
     static ref D: Fr = Fr::from_str("168696").unwrap();
@@ -34,38 +41,29 @@ lazy_static! {
     pub static ref Q: BigInt = BigInt::parse_bytes(
         b"21888242871839275222246405745257275088548364400416034343698204186575808495617",10
     )
-    .unwrap();
-    // pub static ref Q: Fr = Fr::from_str(
-    //     "21888242871839275222246405745257275088548364400416034343698204186575808495617"
-    // )
-    // .unwrap();
+        .unwrap();
     static ref B8: Point = Point {
         x: Fr::from_str(
-            "5299619240641551281634865583518297030282874472190772894086521144482721001553",
-        )
-        .unwrap(),
-        y: Fr::from_str(
-            "16950150798460657717958625567821834550301663161624707787222815936182638968203",
-        )
-        .unwrap(),
-            // z: Fr::one(),
+               "5299619240641551281634865583518297030282874472190772894086521144482721001553",
+           )
+            .unwrap(),
+            y: Fr::from_str(
+                "16950150798460657717958625567821834550301663161624707787222815936182638968203",
+            )
+                .unwrap(),
     };
     static ref ORDER: Fr = Fr::from_str(
         "21888242871839275222246405745257275088614511777268538073601725287587578984328",
     )
-    .unwrap();
+        .unwrap();
 
     // SUBORDER = ORDER >> 3
-    // static ref SUBORDER: Fr = Fr::from_str(
-    //     "i2736030358979909402780800718157159386076813972158567259200215660948447373041",
-    // )
-    // .unwrap();
     static ref SUBORDER: BigInt = &BigInt::parse_bytes(
-                b"21888242871839275222246405745257275088614511777268538073601725287587578984328",
-                        10,
-                            )
-            .unwrap()
-                    >> 3;
+        b"21888242871839275222246405745257275088614511777268538073601725287587578984328",
+        10,
+    )
+        .unwrap()
+        >> 3;
     static ref poseidon: poseidon_rs::Poseidon = Poseidon::new();
 }
 
@@ -85,7 +83,7 @@ impl PointProjective {
             };
         }
 
-        let mut zinv = self.z.inverse().unwrap();
+        let zinv = self.z.inverse().unwrap();
         let mut x = self.x;
         x.mul_assign(&zinv);
         let mut y = self.y;
@@ -96,7 +94,7 @@ impl PointProjective {
             y: y.clone(),
         }
     }
-    pub fn add(&self, q: &PointProjective) -> Result<PointProjective, String> {
+    pub fn add(&self, q: &PointProjective) -> PointProjective {
         // add-2008-bbjlp https://hyperelliptic.org/EFD/g1p/auto-twisted-projective.html#doubling-dbl-2008-bbjlp
         let mut a = self.z;
         a.mul_assign(&q.z);
@@ -134,11 +132,11 @@ impl PointProjective {
         let mut z3 = f;
         z3.mul_assign(&g);
 
-        Ok(PointProjective {
+        PointProjective {
             x: x3.clone(),
             y: y3.clone(),
             z: z3.clone(),
-        })
+        }
     }
 }
 
@@ -157,7 +155,7 @@ impl Point {
         }
     }
 
-    pub fn mul_scalar(&self, n: &BigInt) -> Result<Point, String> {
+    pub fn mul_scalar(&self, n: &BigInt) -> Point {
         let mut r: PointProjective = PointProjective {
             x: Fr::zero(),
             y: Fr::one(),
@@ -167,11 +165,11 @@ impl Point {
         let (_, b) = n.to_bytes_le();
         for i in 0..n.bits() {
             if test_bit(&b, i) {
-                r = r.add(&exp)?;
+                r = r.add(&exp);
             }
-            exp = exp.add(&exp)?;
+            exp = exp.add(&exp);
         }
-        Ok(r.affine())
+        r.affine()
     }
 
     pub fn compress(&self) -> [u8; 32] {
@@ -200,20 +198,6 @@ pub fn test_bit(b: &Vec<u8>, i: usize) -> bool {
     return b[i / 8] & (1 << (i % 8)) != 0;
 }
 
-pub fn compress_point(p: &Point) -> [u8; 32] {
-    let mut r: [u8; 32] = [0; 32];
-    let x_big = BigInt::parse_bytes(to_hex(&p.x).as_bytes(), 16).unwrap();
-    let y_big = BigInt::parse_bytes(to_hex(&p.y).as_bytes(), 16).unwrap();
-    let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r.len());
-    r[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[31] = r[31] | 0x80;
-    }
-    r
-}
-
-//#[no_mangle]
 pub fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
     // https://tools.ietf.org/html/rfc8032#section-5.2.3
     let mut sign: bool = false;
@@ -269,7 +253,6 @@ impl Signature {
     }
 }
 
-//#[no_mangle]
 pub fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
     let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
     let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
@@ -283,84 +266,74 @@ pub fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
     }
 }
 
-/*#[no_mangle]
-pub extern fn new_method(b: &[u8; 64]) -> Signature {
-    let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
-    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
-    let r_b8 = decompress_point(r_b8_bytes);
-    return Signature {
-        r_b8: res.clone(),
-        s: s,
-    };
-    /*match r_b8 {
-        Result::Err(err) => return Err(err.to_string()),
-        Result::Ok(res) => Ok(Signature {
-            r_b8: res.clone(),
-            s: s,
-        }),
-    }*/
-
-    /*let r_b8_bytes: [u8; 32] = *array_ref!(b[..32], 0, 32);
-    let s: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[32..]);
-    let r_b8 = decompress_point(r_b8_bytes);
-    //let c_buf: *const c_char = unsafe { "hello".as_parallel_string() };
-    let c_str_1 = CString::new("hello").unwrap();
-    let c_str_2 = CString::new(b"world" as &[u8]).unwrap(); // from a &[u8], creates a new allocation
-    let recipient = match c_str_1.to_str() {
-        Err(_) => "there",
-        Ok(string) => string,
-    };
-    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()*/
-}*/
-
-/*#[no_mangle]
-pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
-    let c_str = unsafe { CStr::from_ptr(to) };
-    let recipient = match c_str.to_str() {
-        Err(_) => "there",
-        Ok(string) => string,
-    };
-
-    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()
-}*/
-
 pub struct PrivateKey {
-    pub key: BigInt,
+    key: [u8; 32],
 }
 
 impl PrivateKey {
-    pub fn public(&self) -> Result<Point, String> {
+    pub fn import(b: Vec<u8>) -> Result<PrivateKey, String> {
+        if b.len() != 32 {
+            return Err(String::from("imported key can not be bigger than 32 bytes"));
+        }
+        let mut sk: [u8; 32] = [0; 32];
+        sk.copy_from_slice(&b[..32]);
+        Ok(PrivateKey { key: sk })
+    }
+
+    pub fn scalar_key(&self) -> BigInt {
+        // not-compatible with circomlib implementation, but using Blake2b
+        // let mut hasher = Blake2b::new();
+        // hasher.update(sk_raw_bytes);
+        // let mut h = hasher.finalize();
+
+        // compatible with circomlib implementation
+        let hash = blake_hash::Blake512::digest(&self.key.to_vec());
+        let mut h: Vec<u8> = hash[..32].to_vec();
+
+        h[0] = h[0] & 0xF8;
+        h[31] = h[31] & 0x7F;
+        h[31] = h[31] | 0x40;
+
+        let sk = BigInt::from_bytes_le(Sign::Plus, &h[..]);
+        sk >> 3
+    }
+
+    pub fn public(&self) -> Point {
         // https://tools.ietf.org/html/rfc8032#section-5.1.5
-        let pk = B8.mul_scalar(&self.key)?;
-        Ok(pk.clone())
+        let pk = B8.mul_scalar(&self.scalar_key());
+        pk.clone()
     }
 
     pub fn sign(&self, msg: BigInt) -> Result<Signature, String> {
         if msg > Q.clone() {
             return Err("msg outside the Finite Field".to_string());
         }
+        // let (_, sk_bytes) = self.key.to_bytes_le();
+        // let mut hasher = Blake2b::new();
+        // hasher.update(sk_bytes);
+        // let mut h = hasher.finalize(); // h: hash(sk), s: h[32:64]
+        let mut h = blake_hash::Blake512::digest(&self.key);
+
+        let (_, msg_bytes) = msg.to_bytes_le();
+        let mut msg32: [u8; 32] = [0; 32];
+        msg32[..msg_bytes.len()].copy_from_slice(&msg_bytes[..]);
+        let msg_fr: Fr = Fr::from_str(&msg.to_string()).unwrap();
+
         // https://tools.ietf.org/html/rfc8032#section-5.1.6
-        let mut hasher = Blake2b::new();
-        let (_, sk_bytes) = self.key.to_bytes_be();
-        hasher.input(sk_bytes);
-        let mut h = hasher.result(); // h: hash(sk)
-                                     // s: h[32:64]
-        let (_, msg_bytes) = msg.to_bytes_be();
-        let msgFr: Fr = Fr::from_str(&msg.to_string()).unwrap();
-
         let s = GenericArray::<u8, generic_array::typenum::U32>::from_mut_slice(&mut h[32..64]);
-        let r_bytes = utils::concatenate_arrays(s, &msg_bytes);
-        let mut r = BigInt::from_bytes_be(Sign::Plus, &r_bytes[..]);
+        let r_bytes = utils::concatenate_arrays(s, &msg32);
+        let r_hashed = blake_hash::Blake512::digest(&r_bytes);
+        let mut r = BigInt::from_bytes_le(Sign::Plus, &r_hashed[..]);
         r = utils::modulus(&r, &SUBORDER);
-        let r8: Point = B8.mul_scalar(&r)?;
-        let a = &self.public()?;
+        let r8: Point = B8.mul_scalar(&r);
+        let a = &self.public();
 
-        let hm_input = vec![r8.x.clone(), r8.y.clone(), a.x.clone(), a.y.clone(), msgFr];
+        let hm_input = vec![r8.x.clone(), r8.y.clone(), a.x.clone(), a.y.clone(), msg_fr];
         let hm = poseidon.hash(hm_input)?;
 
-        let mut s = &self.key << 3;
-        let hmB = BigInt::parse_bytes(to_hex(&hm).as_bytes(), 16).unwrap();
-        s = hmB * s;
+        let mut s = &self.scalar_key() << 3;
+        let hm_b = BigInt::parse_bytes(to_hex(&hm).as_bytes(), 16).unwrap();
+        s = hm_b * s;
         s = r + s;
         s = s % &SUBORDER.clone();
 
@@ -376,14 +349,15 @@ impl PrivateKey {
         let k = rng.gen_biguint(1024).to_bigint().unwrap();
 
         // r = k·G
-        let r = B8.mul_scalar(&k)?;
+        let r = B8.mul_scalar(&k);
 
         // h = H(x, r, m)
-        let pk = &self.public()?;
+        let pk = &self.public();
         let h = schnorr_hash(&pk, m, &r)?;
 
         // s= k+x·h
-        let s = k + &self.key * &h;
+        let sk_scalar = self.scalar_key();
+        let s = k + &sk_scalar * &h;
         Ok((r, s))
     }
 }
@@ -392,22 +366,21 @@ pub fn schnorr_hash(pk: &Point, msg: BigInt, c: &Point) -> Result<BigInt, String
     if msg > Q.clone() {
         return Err("msg outside the Finite Field".to_string());
     }
-    let msgFr: Fr = Fr::from_str(&msg.to_string()).unwrap();
-    let hm_input = vec![pk.x.clone(), pk.y.clone(), c.x.clone(), c.y.clone(), msgFr];
+    let msg_fr: Fr = Fr::from_str(&msg.to_string()).unwrap();
+    let hm_input = vec![pk.x.clone(), pk.y.clone(), c.x.clone(), c.y.clone(), msg_fr];
     let h = poseidon.hash(hm_input)?;
-    println!("h {:?}", h.to_string());
-    let hB = BigInt::parse_bytes(to_hex(&h).as_bytes(), 16).unwrap();
-    Ok(hB)
+    let h_b = BigInt::parse_bytes(to_hex(&h).as_bytes(), 16).unwrap();
+    Ok(h_b)
 }
 
 pub fn verify_schnorr(pk: Point, m: BigInt, r: Point, s: BigInt) -> Result<bool, String> {
     // sG = s·G
-    let sg = B8.mul_scalar(&s)?;
+    let sg = B8.mul_scalar(&s);
 
     // r + h · x
     let h = schnorr_hash(&pk, m, &r)?;
-    let pk_h = pk.mul_scalar(&h)?;
-    let right = r.projective().add(&pk_h.projective())?;
+    let pk_h = pk.mul_scalar(&h);
+    let right = r.projective().add(&pk_h.projective());
 
     Ok(sg.equals(right.affine()))
 }
@@ -416,62 +389,34 @@ pub fn new_key() -> PrivateKey {
     // https://tools.ietf.org/html/rfc8032#section-5.1.5
     let mut rng = rand6::thread_rng();
     let sk_raw = rng.gen_biguint(1024).to_bigint().unwrap();
-
-    let mut hasher = Blake2b::new();
     let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
-    hasher.input(sk_raw_bytes);
-    let mut h = hasher.result();
-
-    h[0] = h[0] & 0xF8;
-    h[31] = h[31] & 0x7F;
-    h[31] = h[31] | 0x40;
-
-    let sk = BigInt::from_bytes_le(Sign::Plus, &h[..]);
-
-    PrivateKey { key: sk }
+    PrivateKey::import(sk_raw_bytes[..32].to_vec()).unwrap()
 }
 
 pub fn verify(pk: Point, sig: Signature, msg: BigInt) -> bool {
     if msg > Q.clone() {
         return false;
     }
-    let msgFr: Fr = Fr::from_str(&msg.to_string()).unwrap();
+    let msg_fr: Fr = Fr::from_str(&msg.to_string()).unwrap();
     let hm_input = vec![
         sig.r_b8.x.clone(),
         sig.r_b8.y.clone(),
         pk.x.clone(),
         pk.y.clone(),
-        msgFr,
+        msg_fr,
     ];
     let hm = match poseidon.hash(hm_input) {
         Result::Err(_) => return false,
         Result::Ok(hm) => hm,
     };
-    let l = match B8.mul_scalar(&sig.s) {
-        Result::Err(_) => return false,
-        Result::Ok(l) => l,
-    };
-    let hmB = BigInt::parse_bytes(to_hex(&hm).as_bytes(), 16).unwrap();
-    let r = match sig.r_b8.projective().add(
-        &pk.mul_scalar(&(8.to_bigint().unwrap() * hmB))
-            .unwrap()
-            .projective(),
-    ) {
-        Result::Err(_) => return false,
-        Result::Ok(r) => r,
-    };
+    let l = B8.mul_scalar(&sig.s);
+    let hm_b = BigInt::parse_bytes(to_hex(&hm).as_bytes(), 16).unwrap();
+    let r = sig
+        .r_b8
+        .projective()
+        .add(&pk.mul_scalar(&(8.to_bigint().unwrap() * hm_b)).projective());
     l.equals(r.affine())
-
 }
-
-
-//#[no_mangle]
-/*pub extern fn rust_cstr_free(s: *mut c_char) {
-    unsafe {
-        if s.is_null() { return }
-        CString::from_raw(s)
-    };
-}*/
 
 #[cfg(test)]
 mod tests {
@@ -485,38 +430,38 @@ mod tests {
             x: Fr::from_str(
                 "17777552123799933955779906779655732241715742912184938656739573121738514868268",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "2626589144620713026669568689430873010625803728049924121243784502389097019475",
             )
-            .unwrap(),
+                .unwrap(),
             z: Fr::one(),
         };
         let q: PointProjective = PointProjective {
             x: Fr::from_str(
                 "17777552123799933955779906779655732241715742912184938656739573121738514868268",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "2626589144620713026669568689430873010625803728049924121243784502389097019475",
             )
-            .unwrap(),
+                .unwrap(),
             z: Fr::one(),
         };
-        let res = p.add(&q).unwrap().affine();
+        let res = p.add(&q).affine();
         assert_eq!(
             res.x,
             Fr::from_str(
                 "6890855772600357754907169075114257697580319025794532037257385534741338397365"
             )
-            .unwrap()
+                .unwrap()
         );
         assert_eq!(
             res.y,
             Fr::from_str(
                 "4338620300185947561074059802482547481416142213883829469920100239455078257889"
             )
-            .unwrap()
+                .unwrap()
         );
     }
     #[test]
@@ -525,38 +470,38 @@ mod tests {
             x: Fr::from_str(
                 "17777552123799933955779906779655732241715742912184938656739573121738514868268",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "2626589144620713026669568689430873010625803728049924121243784502389097019475",
             )
-            .unwrap(),
+                .unwrap(),
             z: Fr::one(),
         };
         let q: PointProjective = PointProjective {
             x: Fr::from_str(
                 "16540640123574156134436876038791482806971768689494387082833631921987005038935",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "20819045374670962167435360035096875258406992893633759881276124905556507972311",
             )
-            .unwrap(),
+                .unwrap(),
             z: Fr::one(),
         };
-        let res = p.add(&q).unwrap().affine();
+        let res = p.add(&q).affine();
         assert_eq!(
             res.x,
             Fr::from_str(
                 "7916061937171219682591368294088513039687205273691143098332585753343424131937"
             )
-            .unwrap()
+                .unwrap()
         );
         assert_eq!(
             res.y,
             Fr::from_str(
                 "14035240266687799601661095864649209771790948434046947201833777492504781204499"
             )
-            .unwrap()
+                .unwrap()
         );
     }
 
@@ -566,77 +511,57 @@ mod tests {
             x: Fr::from_str(
                 "17777552123799933955779906779655732241715742912184938656739573121738514868268",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "2626589144620713026669568689430873010625803728049924121243784502389097019475",
             )
-            .unwrap(),
+                .unwrap(),
         };
-        let res_m = p.mul_scalar(&3.to_bigint().unwrap()).unwrap();
-        let res_a = p.projective().add(&p.projective()).unwrap();
-        let res_a = res_a.add(&p.projective()).unwrap().affine();
+        let res_m = p.mul_scalar(&3.to_bigint().unwrap());
+        let res_a = p.projective().add(&p.projective());
+        let res_a = res_a.add(&p.projective()).affine();
         assert_eq!(res_m.x, res_a.x);
         assert_eq!(
             res_m.x,
             Fr::from_str(
                 "19372461775513343691590086534037741906533799473648040012278229434133483800898"
             )
-            .unwrap()
+                .unwrap()
         );
         assert_eq!(
             res_m.y,
             Fr::from_str(
                 "9458658722007214007257525444427903161243386465067105737478306991484593958249"
             )
-            .unwrap()
+                .unwrap()
         );
 
         let n = BigInt::parse_bytes(
             b"14035240266687799601661095864649209771790948434046947201833777492504781204499",
             10,
         )
-        .unwrap();
-        let res2 = p.mul_scalar(&n).unwrap();
+            .unwrap();
+        let res2 = p.mul_scalar(&n);
         assert_eq!(
             res2.x,
             Fr::from_str(
                 "17070357974431721403481313912716834497662307308519659060910483826664480189605"
             )
-            .unwrap()
+                .unwrap()
         );
         assert_eq!(
             res2.y,
             Fr::from_str(
                 "4014745322800118607127020275658861516666525056516280575712425373174125159339"
             )
-            .unwrap()
+                .unwrap()
         );
     }
-
-    // #[test]
-    // fn test_new_key_sign_verify_mimc_0() {
-    //     let sk = new_key();
-    //     let pk = sk.public().unwrap();
-    //     let msg = 5.to_bigint().unwrap();
-    //     let sig = sk.sign_mimc(msg.clone()).unwrap();
-    //     let v = verify_mimc(pk, sig, msg);
-    //     assert_eq!(v, true);
-    // }
-    //
-    // #[test]
-    // fn test_new_key_sign_verify_mimc_1() {
-    //     let sk = new_key();
-    //     let pk = sk.public().unwrap();
-    //     let msg = BigInt::parse_bytes(b"123456789012345678901234567890", 10).unwrap();
-    //     let sig = sk.sign_mimc(msg.clone()).unwrap();
-    //     let v = verify_mimc(pk, sig, msg);
-    //     assert_eq!(v, true);
-    // }
 
     #[test]
     fn test_new_key_sign_verify_0() {
         let sk = new_key();
-        let pk = sk.public().unwrap();
+        let pk = sk.public();
         let msg = 5.to_bigint().unwrap();
         let sig = sk.sign(msg.clone()).unwrap();
         let v = verify(pk, sig, msg);
@@ -646,7 +571,7 @@ mod tests {
     #[test]
     fn test_new_key_sign_verify_1() {
         let sk = new_key();
-        let pk = sk.public().unwrap();
+        let pk = sk.public();
         let msg = BigInt::parse_bytes(b"123456789012345678901234567890", 10).unwrap();
         let sig = sk.sign(msg.clone()).unwrap();
         let v = verify(pk, sig, msg);
@@ -659,11 +584,11 @@ mod tests {
             x: Fr::from_str(
                 "17777552123799933955779906779655732241715742912184938656739573121738514868268",
             )
-            .unwrap(),
+                .unwrap(),
             y: Fr::from_str(
                 "2626589144620713026669568689430873010625803728049924121243784502389097019475",
             )
-            .unwrap(),
+                .unwrap(),
         };
         let p_comp = p.compress();
         assert_eq!(
@@ -718,17 +643,15 @@ mod tests {
         for _ in 0..5 {
             let random_bytes = rand6::thread_rng().gen::<[u8; 32]>();
             let sk_raw: BigInt = BigInt::from_bytes_le(Sign::Plus, &random_bytes[..]);
-            let mut hasher = Blake2b::new();
             let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
-            hasher.input(sk_raw_bytes);
-            let mut h = hasher.result();
+            let mut h = blake_hash::Blake512::digest(&sk_raw_bytes);
 
             h[0] = h[0] & 0xF8;
             h[31] = h[31] & 0x7F;
             h[31] = h[31] | 0x40;
 
             let sk = BigInt::from_bytes_le(Sign::Plus, &h[..]);
-            let point = B8.mul_scalar(&sk).unwrap();
+            let point = B8.mul_scalar(&sk);
             let cmp_point = point.compress();
             let dcmp_point = decompress_point(cmp_point).unwrap();
 
@@ -740,7 +663,7 @@ mod tests {
     #[test]
     fn test_signature_compress_decompress() {
         let sk = new_key();
-        let pk = sk.public().unwrap();
+        let pk = sk.public();
 
         for i in 0..5 {
             let msg_raw = "123456".to_owned() + &i.to_string();
@@ -761,14 +684,63 @@ mod tests {
     #[test]
     fn test_schnorr_signature() {
         let sk = new_key();
-        let pk = sk.public().unwrap();
+        let pk = sk.public();
 
         let msg = BigInt::parse_bytes(b"123456789012345678901234567890", 10).unwrap();
         let (s, e) = sk.sign_schnorr(msg.clone()).unwrap();
-        println!("s {:?}", s.x.to_string());
-        println!("s {:?}", s.y.to_string());
-        println!("e {:?}", e.to_string());
         let verification = verify_schnorr(pk, msg, s, e).unwrap();
         assert_eq!(true, verification);
+    }
+
+    #[test]
+    fn test_circomlib_testvector() {
+        let sk_raw_bytes =
+            hex::decode("0001020304050607080900010203040506070809000102030405060708090001")
+                .unwrap();
+
+        // test blake compatible with circomlib implementation
+        let h = blake_hash::Blake512::digest(&sk_raw_bytes);
+        assert_eq!(h.to_hex(), "c992db23d6290c70ffcc02f7abeb00b9d00fa8b43e55d7949c28ba6be7545d3253882a61bd004a236ef1cdba01b27ba0aedfb08eefdbfb7c19657c880b43ddf1");
+
+        // test private key
+        let sk = PrivateKey::import(
+            hex::decode("0001020304050607080900010203040506070809000102030405060708090001")
+                .unwrap(),
+        )
+            .unwrap();
+        assert_eq!(
+            sk.scalar_key().to_string(),
+            "6466070937662820620902051049739362987537906109895538826186780010858059362905"
+        );
+
+        // test public key
+        let pk = sk.public();
+        assert_eq!(
+            pk.x.to_string(),
+            "Fr(0x1d5ac1f31407018b7d413a4f52c8f74463b30e6ac2238220ad8b254de4eaa3a2)"
+        );
+        assert_eq!(
+            pk.y.to_string(),
+            "Fr(0x1e1de8a908826c3f9ac2e0ceee929ecd0caf3b99b3ef24523aaab796a6f733c4)"
+        );
+
+        // test signature & verification
+        let msg = BigInt::from_bytes_le(Sign::Plus, &hex::decode("00010203040506070809").unwrap());
+        println!("msg {:?}", msg.to_string());
+        let sig = sk.sign(msg.clone()).unwrap();
+        assert_eq!(
+            sig.r_b8.x.to_string(),
+            "Fr(0x192b4e51adf302c8139d356d0e08e2404b5ace440ef41fc78f5c4f2428df0765)"
+        );
+        assert_eq!(
+            sig.r_b8.y.to_string(),
+            "Fr(0x2202bebcf57b820863e0acc88970b6ca7d987a0d513c2ddeb42e3f5d31b4eddf)"
+        );
+        assert_eq!(
+            sig.s.to_string(),
+            "1398758333392199195742243841591064350253744445503462896781493968760929513778"
+        );
+        let v = verify(pk, sig, msg);
+        assert_eq!(v, true);
     }
 }

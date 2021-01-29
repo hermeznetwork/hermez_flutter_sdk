@@ -200,7 +200,10 @@ pub extern fn unpack_point(compressed_point: *const c_char) ->  *mut c_char {
 
 #[no_mangle]
 pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
-
+    /*let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    let pk = PrivateKey { key: pk_bigint };
+    pk.public();*/
     let private_key_str = unsafe { CStr::from_ptr(private_key) };
     //let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
     /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();*/
@@ -247,9 +250,9 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
 
 #[no_mangle]
 pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /*[u8; 64]*/ *mut c_char {
-    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    /*let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
-    let pk = PrivateKey { key: pk_bigint };
+    let pk = PrivateKey { key: pk_bigint };*/
     let message_c_str = unsafe { CStr::from_ptr(msg) };
     let message_str = match message_c_str.to_str() {
         Err(_) => "there",
@@ -267,9 +270,9 @@ pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /
 
 #[no_mangle]
 pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: *const c_char, message: *const c_char) ->  *mut c_char {
-    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    /*let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
-    let pk = PrivateKey { key: pk_bigint };
+    let pk = PrivateKey { key: pk_bigint };*/
     let compressed_signature_str = unsafe { CStr::from_ptr(compressed_signature) }.to_str().unwrap();
     let signature_bytes_raw = compressed_signature_str.from_hex().unwrap();
     let mut signature_bytes: [u8; 64] = [0; 64];
