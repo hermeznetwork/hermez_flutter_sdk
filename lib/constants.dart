@@ -16,6 +16,6 @@ const Map<String, String> contractAddresses = {
 
 const DEFAULT_PAGE_SIZE = 20;
 
-const BASE_API_URL = '192.168.1.132:8086';
+//const BASE_API_URL = '192.168.1.132:8086';
 //const BASE_API_URL = '192.168.250.101:8086';
-//const BASE_API_URL = '167.71.59.190:4010';
+const BASE_API_URL = '167.71.59.190:4010';

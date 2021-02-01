@@ -21,7 +21,7 @@ class HermezWallet {
   dynamic publicKeyHex;
   String publicKeyCompressed;
   String publicKeyCompressedHex;
-  dynamic publicKeyBase64;
+  String publicKeyBase64;
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
@@ -36,7 +36,6 @@ class HermezWallet {
       throw new ArgumentError('Invalid Hermez Ethereum address');
     }
 
-    //final publicKey = circomlib.eddsa.prv2pub(privateKey);
     final priv = eddsaBabyJub.PrivateKey(privateKey);
     final eddsaBabyJub.PublicKey publicKey = priv.public();
     this.privateKey = privateKey;
@@ -50,12 +49,6 @@ class HermezWallet {
     this.publicKeyCompressed = compressedPublicKey.toString();
     this.publicKeyCompressedHex =
         compressedPublicKey.toRadixString(16).padLeft(32, '0');
-    /*Uint8ArrayUtils.uint8ListToString(
-            Uint8ArrayUtils.hexZeroPad(
-                Uint8ArrayUtils.uint8ListfromString(
-                    '0x' + ),
-                32))*/
-    //.substring(2);
     this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }

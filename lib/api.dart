@@ -168,7 +168,7 @@ Future<String> getToken(int tokenId) async {
 /// GET request to the /state endpoint.
 /// @returns {object} Response data with the current state of the coordinator
 Future<String> getState() async {
-  dynamic state = extractJSON(await get(baseApiUrl, STATE_URL));
+  return extractJSON(await get(baseApiUrl, STATE_URL));
   // Remove once hermez-node is ready
   /*state.network.nextForgers = [{
     coordinator: {
@@ -179,7 +179,6 @@ Future<String> getState() async {
   // state.withdrawalDelayer.emergencyMode = true
   // state.withdrawalDelayer.withdrawalDelay = 60
   // state.rollup.buckets[0].withdrawals = 0
-  return state;
 }
 
 /// GET request to the /batches endpoint. Returns a filtered list of batches
