@@ -21,6 +21,8 @@ const Map<String, String> txType = {
   "Exit": "Exit"
 };
 
+enum TxType { Deposit, CreateAccountDeposit, Transfer, Withdraw, Exit }
+
 const Map<String, String> txState = {
   "Forged": "fged",
   "Forging": "fing",

@@ -1,3 +1,14 @@
+import 'package:hermez_plugin/utils/contract_parser.dart';
+import 'package:web3dart/credentials.dart';
+import 'package:web3dart/web3dart.dart';
+
+import 'constants.dart';
+
+ContractFunction _approve(DeployedContract contract) =>
+    contract.function('approve');
+ContractFunction _allowance(DeployedContract contract) =>
+    contract.function('allowance');
+
 /// Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
 ///
 /// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
@@ -7,37 +18,51 @@
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 ///
 /// @returns {Promise} transaction
-Future<String> approve(BigInt amount, String accountAddress,
-    String contractAddress, String providerUrl, dynamic signerData) async {
-  //final txSignerData =
-  //    signerData || {type: SignerType.JSON_RPC, addressOrIndex: accountAddress};
-  /*Map erc20ABI =
-      json.decode(await new File('abis/ERC20ABI.json').readAsString());
+Future<bool> approve(
+    BigInt amount,
+    String accountAddress,
+    String tokenContractAddress,
+    String tokenContractName,
+    Web3Client web3client) async {
+  final contract = await ContractParser.fromAssets(
+      'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
-  dynamic erc20Contract =
-      getContract(contractAddress, erc20ABI, providerUrl, signerData);
-  final allowance = await erc20Contract.allowance(
-      accountAddress, contractAddresses['Hermez']);
+  try {
+    final allowanceCall = await web3client
+        .call(contract: contract, function: _allowance(contract), params: [
+      EthereumAddress.fromHex(accountAddress),
+      EthereumAddress.fromHex(contractAddresses['Hermez'])
+    ]);
+    final allowance = allowanceCall.first as BigInt;
 
-  if (allowance < amount) {
-    return erc20Contract.approve(contractAddresses['Hermez'], amount);
+    if (allowance < amount) {
+      var response = await web3client.call(
+        contract: contract,
+        function: _approve(contract),
+        params: [EthereumAddress.fromHex(contractAddresses['Hermez']), amount],
+      );
+
+      return response.first as bool;
+    }
+
+    if (!(allowance.sign == 0)) {
+      var response = await web3client.call(
+        contract: contract,
+        function: _approve(contract),
+        params: [EthereumAddress.fromHex(contractAddresses['Hermez']), 0],
+      );
+      return response.first as bool;
+    }
+
+    var response = await web3client.call(
+      contract: contract,
+      function: _approve(contract),
+      params: [EthereumAddress.fromHex(accountAddress), amount],
+    );
+
+    return response.first as bool;
+  } catch (error, trace) {
+    print(error);
+    print(trace);
   }
-
-  if (!allowance.isZero(amount)) {
-    final tx = await erc20Contract.approve(contractAddresses['Hermez'], '0');
-    await tx.wait(1);
-  }
-
-  return erc20Contract.approve(contractAddresses['Hermez'], amount);*/
-
-  /*final contract = await ContractParser.fromAssets(
-      'ERC20ABI.json', contractAddress, tokenContractName);
-
-  var response = await client.call(
-    contract: contract,
-    function: _approve(contract),
-    params: [delegate, amount],
-  );
-
-  return response.first as bool;*/
 }

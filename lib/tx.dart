@@ -1,26 +1,35 @@
 import 'dart:convert' show json;
-import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:hermez_plugin/contracts.dart';
+import 'package:hermez_plugin/hermez_wallet.dart';
+import 'package:hermez_plugin/utils/contract_parser.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'addresses.dart' show getEthereumAddress, getAccountIndex;
 import 'api.dart' show getAccounts, postPoolTransaction;
 import 'constants.dart' show GAS_LIMIT, GAS_MULTIPLIER, contractAddresses;
-import 'providers.dart' show getProvider;
+import 'model/account.dart';
+import 'model/accounts_response.dart';
 import 'tokens.dart' show approve;
 import 'tx_pool.dart' show addPoolTransaction;
+import 'tx_utils.dart' show generateL2Transaction;
+
+ContractFunction _addL1Transaction(DeployedContract contract) =>
+    contract.function('addL1Transaction');
+ContractFunction _withdrawMerkleProof(DeployedContract contract) =>
+    contract.function('withdrawMerkleProof');
+ContractFunction _withdrawal(DeployedContract contract) =>
+    contract.function('withdrawal');
 
 /// Get current average gas price from the last ethereum blocks and multiply it
 /// @param {Number} multiplier - multiply the average gas price by this parameter
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @returns {Future<String>} - will return the gas price obtained.
-Future<String> getGasPrice(num multiplier, String providerUrl) async {
-  Web3Client provider = getProvider(providerUrl);
-  EtherAmount strAvgGas = await provider.getGasPrice();
+/// @param {Web3Client} web3Client - Network url (i.e, http://localhost:8545). Optional
+/// @returns {Future<int>} - will return the gas price obtained.
+Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
+  EtherAmount strAvgGas = await web3client.getGasPrice();
   BigInt avgGas = strAvgGas.getInEther;
   BigInt res = avgGas * BigInt.from(multiplier);
-  String retValue = res.toString();
+  int retValue = res.toInt(); //toString();
   return retValue;
 }
 
@@ -38,48 +47,58 @@ Future<String> getGasPrice(num multiplier, String providerUrl) async {
 /// @param {Number} gasMultiplier - Optional gas multiplier
 ///
 /// @returns {Promise} transaction
-Future<Transaction> deposit(BigInt amount, String hezEthereumAddress,
-    dynamic token, String babyJubJub, String providerUrl, dynamic signerData,
+Future<bool> deposit(BigInt amount, String hezEthereumAddress, dynamic token,
+    String babyJubJub, Web3Client web3client,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
-  Map hermezABI =
-      json.decode(await new File('abis/HermezABI.json').readAsString());
+  final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
-  dynamic hermezContract = getContract(
-      contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
+  final accountsResponse = await getAccounts(hezEthereumAddress, [token.id]);
 
-  dynamic ethereumAddress = getEthereumAddress(hezEthereumAddress);
-  dynamic account = (await getAccounts(ethereumAddress,
-      [token.id])); //.accounts[0]; parse json string to accounts
+  final AccountsResponse accounts =
+      AccountsResponse.fromJson(json.decode(accountsResponse));
+  final Account account = accounts != null && accounts.accounts.isNotEmpty
+      ? accounts.accounts[0]
+      : null;
 
-  String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  final Map<String, dynamic> overrides = {
-    'gasLimit': gasLimit,
-    'gasPrice': gasPrice
-  };
+  dynamic overrides = Uint8List.fromList(
+      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
-  final List<dynamic> transactionParameters = [
-    account ? 0 : '0x$babyJubJub',
-    account ? getAccountIndex(account.accountIndex) : 0,
-    amount.toDouble(),
-    0,
-    token.id,
-    0,
-    '0x'
+  final transactionParameters = [
+    account != null ? BigInt.zero : BigInt.parse('0x' + babyJubJub, radix: 16),
+    account != null
+        ? BigInt.from(getAccountIndex(account.accountIndex))
+        : BigInt.zero,
+    BigInt.from(1),
+    BigInt.zero,
+    BigInt.from(token.id),
+    BigInt.zero
   ];
 
+  print([...transactionParameters, overrides]);
+
   if (token.id == 0) {
-    overrides['value'] = amount;
-    final l1Tx = new List()..addAll(transactionParameters);
-    l1Tx.add(overrides);
-    return hermezContract.addL1Transaction(l1Tx);
+    overrides = Uint8List.fromList([amount.toInt()]);
+    print([...transactionParameters, overrides]);
+    final addL1TransactionCall = await web3client.call(
+        contract: hermezContract,
+        function: _addL1Transaction(hermezContract),
+        params: [...transactionParameters, overrides]);
+
+    return true;
   }
 
   await approve(
-      amount, ethereumAddress, token.ethereumAddress, providerUrl, signerData);
-  final l1Transaction = new List()..addAll(transactionParameters);
-  l1Transaction.add(overrides);
-  return hermezContract.addL1Transaction(l1Transaction);
+      amount, ethereumAddress, token.ethereumAddress, token.name, web3client);
+
+  final addL1TransactionCall = await web3client.call(
+      contract: hermezContract,
+      function: _addL1Transaction(hermezContract),
+      params: [...transactionParameters, overrides]);
+
+  return true;
 }
 
 /// Makes a force Exit. This is the L1 transaction equivalent of Exit.
@@ -91,35 +110,29 @@ Future<Transaction> deposit(BigInt amount, String hezEthereumAddress,
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasMultiplier - Optional gas multiplier
-void forceExit(BigInt amount, String accountIndex, dynamic token,
-    String providerUrl, dynamic signerData,
+void forceExit(
+    BigInt amount, String accountIndex, dynamic token, Web3Client web3client,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
-  Map hermezABI =
-      json.decode(await new File('abis/HermezABI.json').readAsString());
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  dynamic hermezContract = getContract(
-      contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
+  dynamic overrides = Uint8List.fromList(
+      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
-  String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
-
-  final Map<String, dynamic> overrides = {
-    'gasLimit': gasLimit,
-    'gasPrice': gasPrice
-  };
-
-  final List<dynamic> transactionParameters = [
-    0,
+  final transactionParameters = [
+    BigInt.zero,
     getAccountIndex(accountIndex),
-    0,
-    amount.toDouble(),
+    BigInt.zero,
+    amount,
     token.id,
     1,
     '0x'
   ];
 
-  final l1Transaction = new List()..addAll(transactionParameters);
-  l1Transaction.add(overrides);
-  return hermezContract.addL1Transaction(l1Transaction);
+  final addL1TransactionCall = await web3client.call(
+      contract: hermezContract,
+      function: _addL1Transaction(hermezContract),
+      params: [...transactionParameters, overrides]);
 }
 
 /// Finalise the withdraw. This a L1 transaction.
@@ -141,38 +154,37 @@ void withdraw(
     String accountIndex,
     dynamic token,
     String babyJubJub,
-    BigInt merkleRoot,
+    BigInt batchNumber,
     List<BigInt> merkleSiblings,
-    String providerUrl,
-    dynamic signerData,
-    {isInstant = true,
+    Web3Client web3client,
+    {bool isInstant = true,
     gasLimit = GAS_LIMIT,
     gasMultiplier = GAS_MULTIPLIER}) async {
-  Map hermezABI =
-      json.decode(await new File('abis/HermezABI.json').readAsString());
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  dynamic hermezContract = getContract(
-      contractAddresses["Hermez"], hermezABI, providerUrl, signerData);
+  dynamic overrides = Uint8List.fromList(
+      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
-  String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
-
-  final Map<String, dynamic> overrides = {
-    'gasLimit': gasLimit,
-    'gasPrice': gasPrice
-  };
-
-  final List<dynamic> transactionParameters = [
+  final transactionParameters = [
     token.id,
     amount,
     '0x$babyJubJub',
-    merkleRoot,
+    batchNumber,
     merkleSiblings,
     getAccountIndex(accountIndex),
     isInstant,
   ];
+
+  print([...transactionParameters, overrides]);
+
   final l1Transaction = new List()..addAll(transactionParameters);
   l1Transaction.add(overrides);
-  return hermezContract.withdrawMerkleProof(l1Transaction);
+
+  final withdrawMerkleProofCall = await web3client.call(
+      contract: hermezContract,
+      function: _withdrawMerkleProof(hermezContract),
+      params: [...transactionParameters, overrides]);
 }
 
 /// Makes the final withdrawal from the WithdrawalDelayer smart contract after enough time has passed.
@@ -183,35 +195,28 @@ void withdraw(
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Bumber} gasMultiplier - Optional gas multiplier
-void delayedWithdraw(String hezEthereumAddress, dynamic token,
-    String providerUrl, dynamic signerData,
+void delayedWithdraw(
+    String hezEthereumAddress, dynamic token, Web3Client web3client,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
-  Map withdrawalDelayerABI = json
-      .decode(await new File('abis/WithdrawalDelayerABI.json').readAsString());
+  final withdrawalDelayerContract = await ContractParser.fromAssets(
+      'WithdrawalDelayerABI.json',
+      contractAddresses['WithdrawalDelayer'],
+      "WithdrawalDelayer");
 
-  dynamic delayedWithdrawalContract = getContract(
-      contractAddresses["WithdrawalDelayer"],
-      withdrawalDelayerABI,
-      providerUrl,
-      signerData);
-
-  String gasPrice = await getGasPrice(gasMultiplier, providerUrl);
+  dynamic overrides = Uint8List.fromList(
+      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
   final String ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
-  final Map<String, dynamic> overrides = {
-    'gasLimit': gasLimit,
-    'gasPrice': gasPrice
-  };
-
-  final List<dynamic> transactionParameters = [
+  final transactionParameters = [
     ethereumAddress,
     token.id == 0 ? 0x0 : token.ethereumAddress
   ];
 
-  final l1Transaction = new List()..addAll(transactionParameters);
-  l1Transaction.add(overrides);
-  return delayedWithdrawalContract.withdrawal(l1Transaction);
+  final delayedWithdrawalCall = await web3client.call(
+      contract: withdrawalDelayerContract,
+      function: _withdrawal(withdrawalDelayerContract),
+      params: [...transactionParameters, overrides]);
 }
 
 /// Sends a L2 transaction to the Coordinator
@@ -232,4 +237,26 @@ dynamic sendL2Transaction(dynamic transaction, String bJJ) async {
     "id": result.data,
     "nonce": transaction.nonce,
   };
+}
+
+/// Compact L2 transaction generated and sent to a Coordinator.
+/// @param {Object} transaction - ethAddress and babyPubKey together
+/// @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
+/// @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
+/// @param {BigInt} transaction.amount - The amount being sent as a BigInt
+/// @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
+/// @param {Number} transaction.nonce - The current nonce of the sender's token account
+/// @param {Object} wallet - Transaction sender Hermez Wallet
+/// @param {Object} token - The token information object as returned from the Coordinator.
+dynamic generateAndSendL2Tx(
+    dynamic transaction, HermezWallet wallet, dynamic token) async {
+  final l2TxParams = await generateL2Transaction(
+      transaction, wallet.publicKeyCompressedHex, token);
+
+  wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction);
+
+  final l2TxResult = await sendL2Transaction(
+      l2TxParams.transaction, wallet.publicKeyCompressedHex);
+
+  return l2TxResult;
 }
