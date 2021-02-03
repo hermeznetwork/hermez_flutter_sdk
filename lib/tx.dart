@@ -1,4 +1,3 @@
-import 'dart:convert' show json;
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/hermez_wallet.dart';
@@ -9,7 +8,6 @@ import 'addresses.dart' show getEthereumAddress, getAccountIndex;
 import 'api.dart' show getAccounts, postPoolTransaction;
 import 'constants.dart' show GAS_LIMIT, GAS_MULTIPLIER, contractAddresses;
 import 'model/account.dart';
-import 'model/accounts_response.dart';
 import 'tokens.dart' show approve;
 import 'tx_pool.dart' show addPoolTransaction;
 import 'tx_utils.dart' show generateL2Transaction;
@@ -52,10 +50,8 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, dynamic token,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
-  final accountsResponse = await getAccounts(hezEthereumAddress, [token.id]);
+  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
 
-  final AccountsResponse accounts =
-      AccountsResponse.fromJson(json.decode(accountsResponse));
   final Account account = accounts != null && accounts.accounts.isNotEmpty
       ? accounts.accounts[0]
       : null;
@@ -249,7 +245,7 @@ dynamic sendL2Transaction(dynamic transaction, String bJJ) async {
 /// @param {Object} wallet - Transaction sender Hermez Wallet
 /// @param {Object} token - The token information object as returned from the Coordinator.
 dynamic generateAndSendL2Tx(
-    dynamic transaction, HermezWallet wallet, dynamic token) async {
+    Map transaction, HermezWallet wallet, dynamic token) async {
   final l2TxParams = await generateL2Transaction(
       transaction, wallet.publicKeyCompressedHex, token);
 

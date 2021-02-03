@@ -6,6 +6,7 @@ import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 const String hermezPrefix = 'hez:';
 final hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}\$'); //
 final bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}\$');
+final accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}\$');
 
 /// Get the hermez address representation of an ethereum address
 ///
@@ -66,6 +67,16 @@ num getAccountIndex(String hezAccountIndex) {
   } else {
     return -1;
   }
+}
+
+/// Checks if given string matches regex of a Hermez account index
+/// @param {String} test
+/// @returns {Boolean}
+bool isHermezAccountIndex(String test) {
+  if (accountIndexPattern.hasMatch(test)) {
+    return true;
+  }
+  return false;
 }
 
 /// Get API Bjj compressed data format

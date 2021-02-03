@@ -6,8 +6,10 @@ import 'dart:typed_data';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 
-import 'addresses.dart' show getAccountIndex;
+import 'addresses.dart'
+    show getAccountIndex, isHermezAccountIndex, isHermezEthereumAddress;
 import 'fee_factors.dart' show feeFactors;
+import 'model/token.dart';
 import 'providers.dart' show getProvider;
 import 'tx_pool.dart' show getPoolTransactions;
 
@@ -247,20 +249,24 @@ dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
 ///
 /// @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 
-Future<dynamic> generateL2Transaction(
-    dynamic tx, dynamic bjj, dynamic token) async {
+Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
+  final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
   Map<String, dynamic> transaction = {};
   transaction.putIfAbsent('type', () => getTransactionType(tx));
   transaction.putIfAbsent('tokenId', () => token.id);
-  transaction.putIfAbsent('fromAccountIndex', () => tx.from);
-  transaction.putIfAbsent('toAccountIndex', () => tx.to || null);
-  transaction.putIfAbsent('toHezEthereumAddress', () => null);
+  transaction.putIfAbsent('fromAccountIndex', () => tx['from']);
+  transaction.putIfAbsent('toAccountIndex',
+      () => tx['type'] == 'Exit' ? 'hez:${token.symbol}:1' : toAccountIndex);
+  transaction.putIfAbsent('toHezEthereumAddress',
+      () => isHermezEthereumAddress(tx['to']) ? tx['to'] : null);
   transaction.putIfAbsent('toBjj', () => null);
-  transaction.putIfAbsent('amount', () => tx.amount.toString());
+  // Corrects precision errors using the same system used in the Coordinator
+  transaction.putIfAbsent('amount',
+      () => /*float2Fix(floorFix2Float(*/ tx['amount'] /*))*/ .toString());
   transaction.putIfAbsent(
-      'fee', () => getFee(tx.fee, tx.amount, token.decimals));
-  transaction.putIfAbsent(
-      'nonce', () async => await getNonce(tx.nonce, tx.from, bjj, token.id));
+      'fee', () => getFee(tx['fee'], tx['amount'], token.decimals));
+  transaction.putIfAbsent('nonce',
+      () async => await getNonce(tx['nonce'], tx['from'], bjj, token.id));
   transaction.putIfAbsent('requestFromAccountIndex', () => null);
   transaction.putIfAbsent('requestToAccountIndex', () => null);
   transaction.putIfAbsent('requestToHezEthereumAddress', () => null);

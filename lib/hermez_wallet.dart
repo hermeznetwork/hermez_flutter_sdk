@@ -3,11 +3,14 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
+import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
+import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
 import "tx_utils.dart" show buildTransactionHashMessage;
 import 'utils/hd_key.dart';
@@ -134,6 +137,25 @@ class HermezWallet {
     // that generates the base signature wrong
     final signatureParams = ethers.utils.splitSignature(signature);
     return signatureParams.r + signatureParams.s + signatureParams.v;*/
+  }
+
+  /// Creates a HermezWallet from one of the Ethereum wallets in the provider
+  /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+  /// @param {String} privateKey - Signer data used to build a Signer to create the wallet
+  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
+  static dynamic createWalletFromEtherAccount(
+      String providerUrl, String privateKey) async {
+    final provider = getProvider(providerUrl);
+    final credentials = await provider.credentialsFromPrivateKey(privateKey);
+    final ethereumAddress = await credentials.extractAddress();
+    final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
+    final signature = await credentials
+        .sign(Uint8ArrayUtils.uint8ListfromString(MASTER_SECRET));
+    final hashedBufferSignature = keccak256(signature);
+    final hermezWallet =
+        new HermezWallet(hashedBufferSignature, hermezEthereumAddress);
+
+    return {hermezWallet, hermezEthereumAddress};
   }
 }
 

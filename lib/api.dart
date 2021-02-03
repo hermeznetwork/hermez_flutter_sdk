@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
+import 'package:hermez_plugin/model/tokens_response.dart';
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
 import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
+import 'model/accounts_response.dart';
 
 var baseApiUrl = BASE_API_URL;
 
@@ -22,23 +26,26 @@ const SLOTS_URL = "/slots";
 const BIDS_URL = "/bids";
 const ACCOUNT_CREATION_AUTH_URL = "/account-creation-authorization";
 
+enum PaginationOrder { ASC, DESC }
+
 /// Sets the query parameters related to pagination
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Includes the values `fromItem` and `limit`
 /// @private
-Map<String, String> getPageData(int fromItem) {
-  return {
-    "fromItem": !fromItem.isNaN ? fromItem.toString() : {},
-    "limit": DEFAULT_PAGE_SIZE.toString()
-  };
+Map<String, String> getPageData(
+    int fromItem, PaginationOrder order, int limit) {
+  Map<String, String> params = {};
+  params.putIfAbsent(
+      'fromItem', () => fromItem >= 0 ? fromItem.toString() : {});
+  params.putIfAbsent('order', () => order.toString().split(".")[1]);
+  params.putIfAbsent('limit', () => DEFAULT_PAGE_SIZE.toString());
+  return params;
 }
 
 /// Sets the current coordinator API URL
 /// @param {String} url - The currently forging Coordinator
 void setBaseApiUrl(String url) {
   baseApiUrl = url;
-  // TODO: Remove once this is fixed https://github.com/hermeznetwork/integration-testing/issues/34
-  baseApiUrl = BASE_API_URL;
 }
 
 /// Returns current coordinator API URL
@@ -52,8 +59,10 @@ String getBaseApiUrl() {
 /// @param {int[]} tokenIds - Array of token IDs as registered in the network
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered token accounts and pagination data
-Future<String> getAccounts(String address, List<int> tokenIds,
-    {int fromItem = 0, String order = "ASC"}) async {
+Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
+    {int fromItem,
+    PaginationOrder order = PaginationOrder.ASC,
+    int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
@@ -61,10 +70,13 @@ Future<String> getAccounts(String address, List<int> tokenIds,
     params.putIfAbsent('BJJ', () => address);
   if (tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
-  params.putIfAbsent('order', () => order);
-  params.addAll(getPageData(fromItem));
-  return extractJSON(
+  params.putIfAbsent('order', () => order.toString());
+  params.addAll(getPageData(fromItem, order, limit));
+  final response = await extractJSON(
       await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
+  final AccountsResponse accountsResponse =
+      AccountsResponse.fromJson(json.decode(response));
+  return accountsResponse;
 }
 
 /// GET request to the /accounts/:accountIndex endpoint. Returns a specific token account for an accountIndex
@@ -81,8 +93,11 @@ Future<String> getAccount(String accountIndex) async {
 /// @param {String} accountIndex - Filter by an account index that sent or received the transactions
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered transactions and pagination data
-Future<String> getTransactions(String address, List<int> tokenIds, int batchNum,
-    String accountIndex, int fromItem) async {
+Future<String> getTransactions(
+    String address, List<int> tokenIds, int batchNum, String accountIndex,
+    {int fromItem,
+    PaginationOrder order = PaginationOrder.ASC,
+    int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
@@ -92,7 +107,7 @@ Future<String> getTransactions(String address, List<int> tokenIds, int batchNum,
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
   params.putIfAbsent('batchNum', () => batchNum > 0 ? batchNum.toString() : '');
   params.putIfAbsent('accountIndex', () => accountIndex);
-  params.addAll(getPageData(fromItem));
+  params.addAll(getPageData(fromItem, order, limit));
   return extractJSON(
       await get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params));
 }
@@ -148,13 +163,21 @@ Future<String> getExit(int batchNum, String accountIndex) async {
 /// GET request to the /tokens endpoint. Returns a list of token data
 /// @param {int[]} tokenIds - An array of token IDs
 /// @returns {object} Response data with the list of tokens
-Future<String> getTokens(List<int> tokenIds) async {
-  Map<String, String> params = {
-    "tokenIds": tokenIds.isNotEmpty ? tokenIds.join(',') : ''
-  };
-
-  return extractJSON(
+Future<TokensResponse> getTokens(
+    {List<int> tokenIds,
+    int fromItem = 0,
+    order = PaginationOrder.ASC,
+    limit = DEFAULT_PAGE_SIZE}) async {
+  Map<String, String> params = {};
+  if (tokenIds != null && tokenIds.isNotEmpty)
+    params.putIfAbsent(
+        'tokenIds', () => tokenIds.isNotEmpty ? tokenIds.join(',') : '');
+  params.addAll(getPageData(fromItem, order, limit));
+  final response = await extractJSON(
       await get(baseApiUrl, TOKENS_URL, queryParameters: params));
+  final TokensResponse tokensResponse =
+      TokensResponse.fromJson(json.decode(response));
+  return tokensResponse;
 }
 
 /// GET request to the /tokens/:tokenId endpoint. Returns a specific token
