@@ -16,9 +16,10 @@ void main() {
     final expectedResult =
         "9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658";
     final messageArray = Uint8ArrayUtils.uint8ListfromString('test');
-    final keccak = keccak256(messageArray);
-    final result = Uint8ArrayUtils.beBuff2int(keccak).toRadixString(16);
-    expect(result, expectedResult);
+    final keccakBuf = keccak256(messageArray);
+    final keccak = Uint8ArrayUtils.beBuff2int(keccakBuf).toRadixString(16);
+    final keccakHex = keccak.startsWith('0x') ? keccak : '0x$keccak';
+    expect(keccakHex, expectedResult);
   });
 
   test('transfer', () async {

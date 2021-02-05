@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
 import 'package:hermez_plugin/model/tokens_response.dart';
+import 'package:http/http.dart' as http;
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
 import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
@@ -285,13 +286,12 @@ Future<String> getBids(int slotNum, String bidderAddr, int fromItem) async {
 /// @param {String} bJJ - BabyJubJub address of the account that makes the authorization
 /// @param {String} signature - The signature of the request
 /// @returns {Object} Response data
-Future<String> postCreateAccountAuthorization(
+Future<http.Response> postCreateAccountAuthorization(
     String hezEthereumAddress, String bJJ, String signature) async {
   Map<String, String> params = {};
   params.putIfAbsent('hezEthereumAddress',
       () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
   params.putIfAbsent('bJJ', () => bJJ.isNotEmpty ? bJJ : '');
   params.putIfAbsent('signature', () => signature.isNotEmpty ? signature : '');
-  return extractJSON(
-      await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params));
+  return await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params);
 }

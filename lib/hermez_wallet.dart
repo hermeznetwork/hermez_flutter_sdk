@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -117,25 +118,35 @@ class HermezWallet {
   /// @param {Object} signerData - Signer data used to build a Signer to create the walet
   /// @returns {String} The generated signature
   dynamic signCreateAccountAuthorization(
-      String providerUrl, dynamic signerData) async {
-    /*final provider = getProvider(providerUrl);
-    final signer = getSigner(provider, signerData);
+      Web3Client provider, String privateKey) async {
+    final signer = await provider.credentialsFromPrivateKey(privateKey);
 
-    final accountCreationAuthMsgArray = ethers.utils.toUtf8Bytes(CREATE_ACCOUNT_AUTH_MESSAGE);
-    final chainId = (await provider.getNetwork()).chainId.toString(16);
-    final chainIdHex = chainId.startsWith('0x') ? chainId : `0x${chainId}`;
-    final messageHex =
-    ethers.utils.hexlify(accountCreationAuthMsgArray) +
-    this.publicKeyCompressedHex +
-    ethers.utils.hexZeroPad(chainIdHex, 2).slice(2) +
-    getEthereumAddress(this.hermezEthereumAddress).slice(2);
+    final accountCreationAuthMsgArray =
+        Uint8List.fromList(utf8.encode(CREATE_ACCOUNT_AUTH_MESSAGE));
+    final chainId =
+        BigInt.from(await provider.getNetworkId()).toRadixString(16);
+    final chainIdHex = chainId.startsWith('0x') ? chainId : '0x$chainId';
+    final accountCreationAuthMsgHex =
+        Uint8ArrayUtils.beBuff2int(accountCreationAuthMsgArray)
+            .toRadixString(16);
+    final hexZeroPad = Uint8ArrayUtils.beBuff2int(
+            Uint8ArrayUtils.hexZeroPad(chainIdHex.codeUnits, 2).sublist(2))
+        .toRadixString(16);
+    final messageHex = accountCreationAuthMsgHex +
+        this.publicKeyCompressedHex +
+        hexZeroPad +
+        contractAddresses['Hermez'].substring(2);
 
-    final messageArray = ethers.utils.arrayify(messageHex);
-    final signature = await signer.signMessage(messageArray);
+    final messageHash = Uint8ArrayUtils.uint8ListfromString(messageHex);
+    final privateKeyBuf = Uint8ArrayUtils.uint8ListfromString(privateKey);
+    final signature = await signer.sign(messageHash); //signPersonalMessage?
+    final signatureHex =
+        Uint8ArrayUtils.beBuff2int(signature).toRadixString(16);
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong
-    final signatureParams = ethers.utils.splitSignature(signature);
-    return signatureParams.r + signatureParams.s + signatureParams.v;*/
+    final signatureParams = sign(messageHash, privateKeyBuf);
+    return signatureHex.substring(0, signatureHex.length - 2) +
+        signatureParams.v.toRadixString(16);
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider

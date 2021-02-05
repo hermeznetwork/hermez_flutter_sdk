@@ -3,14 +3,18 @@ import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
 import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/tx.dart';
+import 'package:hermez_plugin/tx_pool.dart';
 import 'package:hermez_plugin/utils.dart';
 
 import 'setup_util.dart';
 
 void main() {
-  test('create account authorization', () async {
+  test('creates accounts deposits', () async {
     final privKey1 = EXAMPLES_PRIVATE_KEY1;
     final privKey2 = EXAMPLES_PRIVATE_KEY2;
+
+    // initialize transaction pool
+    initializeTransactionPool();
 
     // load token to deposit information
     final tokenToDeposit = 0;
@@ -39,36 +43,13 @@ void main() {
         hermezWallet.publicKeyCompressedHex,
         getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
 
-    // performs create account authorization account 2
-    final signature = await hermezWallet2.signCreateAccountAuthorization(
-        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);
-    final response = await postCreateAccountAuthorization(
-        hermezWallet2.hermezEthereumAddress,
-        hermezWallet2.publicKeyBase64,
-        signature);
-    print('create account authorization response:${response.statusCode}');
-
-    // get sender account information
-    final infoAccountSender =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
-
-    // set amount to transfer
-    final amountTransfer = getTokenAmountBigInt(0.0001, 18);
-    // set fee in transaction
-    final state = await getState();
-    final recommendedFee = state.recommendedFee;
-
-    // generate L2 transaction
-    final l2TxTransfer = {
-      'from': infoAccountSender.accountIndex,
-      'to': hermezEthereumAddress2,
-      'amount': amountTransfer,
-      'fee': recommendedFee.createAccount
-    };
-
-    final transferResponse = await generateAndSendL2Tx(
-        l2TxTransfer, hermezWallet, infoAccountSender.token);
-    print('transferResponse: $transferResponse');
+    // perform deposit account 2
+    await deposit(
+        amountDeposit,
+        hermezEthereumAddress2,
+        tokenERC20,
+        hermezWallet2.publicKeyCompressedHex,
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });
 }

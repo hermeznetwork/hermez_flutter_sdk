@@ -3,6 +3,9 @@ const TRANSACTION_POOL_KEY = 'transactionPool';
 const MASTER_SECRET =
     'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS';
 
+const CREATE_ACCOUNT_AUTH_MESSAGE =
+    'I authorize this babyjubjub key for hermez rollup account creation';
+
 const ETHER_TOKEN_ID = 0;
 
 const GAS_LIMIT = 5000000;
