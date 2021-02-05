@@ -6,6 +6,8 @@ import 'package:hermez_plugin/model/tokens_response.dart';
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
 import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
 import 'model/accounts_response.dart';
+import 'model/exits_response.dart';
+import 'model/state_response.dart';
 
 var baseApiUrl = BASE_API_URL;
 
@@ -35,8 +37,8 @@ enum PaginationOrder { ASC, DESC }
 Map<String, String> getPageData(
     int fromItem, PaginationOrder order, int limit) {
   Map<String, String> params = {};
-  params.putIfAbsent(
-      'fromItem', () => fromItem >= 0 ? fromItem.toString() : {});
+  params.putIfAbsent('fromItem',
+      () => fromItem != null && fromItem >= 0 ? fromItem.toString() : {});
   params.putIfAbsent('order', () => order.toString().split(".")[1]);
   params.putIfAbsent('limit', () => DEFAULT_PAGE_SIZE.toString());
   return params;
@@ -60,7 +62,7 @@ String getBaseApiUrl() {
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered token accounts and pagination data
 Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
-    {int fromItem,
+    {int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
@@ -72,11 +74,15 @@ Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
   params.putIfAbsent('order', () => order.toString());
   params.addAll(getPageData(fromItem, order, limit));
-  final response = await extractJSON(
-      await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params));
-  final AccountsResponse accountsResponse =
-      AccountsResponse.fromJson(json.decode(response));
-  return accountsResponse;
+  final response = await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final AccountsResponse accountsResponse =
+        AccountsResponse.fromJson(json.decode(jsonResponse));
+    return accountsResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /accounts/:accountIndex endpoint. Returns a specific token account for an accountIndex
@@ -95,7 +101,7 @@ Future<String> getAccount(String accountIndex) async {
 /// @returns {object} Response data with filtered transactions and pagination data
 Future<String> getTransactions(
     String address, List<int> tokenIds, int batchNum, String accountIndex,
-    {int fromItem,
+    {int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
@@ -140,7 +146,8 @@ Future<String> postPoolTransaction(dynamic transaction) async {
 /// @param {string} address - Filter by the address associated to the exits. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
 /// @param {boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
 /// @returns {object} Response data with the list of exits
-Future<String> getExits(String address, bool onlyPendingWithdraws) async {
+Future<ExitsResponse> getExits(
+    String address, bool onlyPendingWithdraws) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
@@ -148,7 +155,11 @@ Future<String> getExits(String address, bool onlyPendingWithdraws) async {
     params.putIfAbsent('BJJ', () => address);
   params.putIfAbsent(
       'onlyPendingWithdraws', () => onlyPendingWithdraws.toString());
-  return extractJSON(await get(baseApiUrl, EXITS_URL, queryParameters: params));
+  final response = await extractJSON(
+      await get(baseApiUrl, EXITS_URL, queryParameters: params));
+  final ExitsResponse exitsResponse =
+      ExitsResponse.fromJson(json.decode(response));
+  return exitsResponse;
 }
 
 /// GET request to the /exits/:batchNum/:accountIndex endpoint. Returns a specific exit
@@ -171,7 +182,7 @@ Future<TokensResponse> getTokens(
   Map<String, String> params = {};
   if (tokenIds != null && tokenIds.isNotEmpty)
     params.putIfAbsent(
-        'tokenIds', () => tokenIds.isNotEmpty ? tokenIds.join(',') : '');
+        'ids', () => tokenIds.isNotEmpty ? tokenIds.join(',') : '');
   params.addAll(getPageData(fromItem, order, limit));
   final response = await extractJSON(
       await get(baseApiUrl, TOKENS_URL, queryParameters: params));
@@ -190,8 +201,11 @@ Future<String> getToken(int tokenId) async {
 
 /// GET request to the /state endpoint.
 /// @returns {object} Response data with the current state of the coordinator
-Future<String> getState() async {
-  return extractJSON(await get(baseApiUrl, STATE_URL));
+Future<StateResponse> getState() async {
+  final response = await extractJSON(await get(baseApiUrl, STATE_URL));
+  final StateResponse stateResponse =
+      StateResponse.fromJson(json.decode(response));
+  return stateResponse;
   // Remove once hermez-node is ready
   /*state.network.nextForgers = [{
     coordinator: {

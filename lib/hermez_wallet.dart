@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
-import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
@@ -40,9 +39,9 @@ class HermezWallet {
     }
 
     final priv = eddsaBabyJub.PrivateKey(privateKey);
-    final eddsaBabyJub.PublicKey publicKey = priv.public();
+    //final eddsaBabyJub.PublicKey publicKey = priv.public();
     this.privateKey = privateKey;
-    this.publicKey = [publicKey.p[0].toString(), publicKey.p[1].toString()];
+    /*this.publicKey = [publicKey.p[0].toString(), publicKey.p[1].toString()];
     this.publicKeyHex = [
       publicKey.p[0].toRadixString(16),
       publicKey.p[1].toRadixString(16)
@@ -52,7 +51,7 @@ class HermezWallet {
     this.publicKeyCompressed = compressedPublicKey.toString();
     this.publicKeyCompressedHex =
         compressedPublicKey.toRadixString(16).padLeft(32, '0');
-    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
+    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);*/
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
@@ -140,22 +139,19 @@ class HermezWallet {
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider
-  /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
   /// @param {String} privateKey - Signer data used to build a Signer to create the wallet
   /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromEtherAccount(
-      String providerUrl, String privateKey) async {
-    final provider = getProvider(providerUrl);
-    final credentials = await provider.credentialsFromPrivateKey(privateKey);
-    final ethereumAddress = await credentials.extractAddress();
+  static dynamic createWalletFromPrivateKey(String privateKey) async {
+    final prvKey = EthPrivateKey.fromHex(privateKey);
+    final ethereumAddress = await prvKey.extractAddress();
     final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
-    final signature = await credentials
-        .sign(Uint8ArrayUtils.uint8ListfromString(MASTER_SECRET));
+    final signature =
+        await prvKey.sign(Uint8ArrayUtils.uint8ListfromString(MASTER_SECRET));
     final hashedBufferSignature = keccak256(signature);
     final hermezWallet =
         new HermezWallet(hashedBufferSignature, hermezEthereumAddress);
 
-    return {hermezWallet, hermezEthereumAddress};
+    return List.from([hermezWallet, hermezEthereumAddress]);
   }
 }
 

@@ -37,6 +37,31 @@ class Uint8ArrayUtils {
     return res;
   }
 
+  static BigInt beBuff2int(Uint8List buff) {
+    BigInt res = BigInt.zero;
+    for (int i = 0; i < buff.length; i++) {
+      final n = BigInt.from(buff[buff.length - i - 1]);
+      res = res + (n << i * 8);
+    }
+    return res;
+  }
+
+  /*export function beInt2Buff(n, len) {
+    let r = n;
+    let o =len-1;
+    const buff = new Uint8Array(len);
+    while ((r.gt(bigInt.zero))&&(o>=0)) {
+      let c = Number(r.and(bigInt("255")));
+      buff[o] = c;
+      o--;
+      r = r.shiftRight(8);
+    }
+    if (!r.eq(bigInt.zero)) {
+      throw new Error("Number does not fit in this length");
+    }
+    return buff;
+  }*/
+
   static Uint8List leInt2Buff(BigInt n, int len) {
     BigInt r = n;
     int o = 0;

@@ -1,27 +1,14 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
+import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/tx.dart';
 import 'package:hermez_plugin/utils.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
-import 'package:web3dart/crypto.dart';
 
 import 'setup_util.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  test('Check keccak256', () async {
-    final expectedResult =
-        "9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658";
-    final messageArray = Uint8ArrayUtils.uint8ListfromString('test');
-    final keccak = keccak256(messageArray);
-    final result = Uint8ArrayUtils.beBuff2int(keccak).toRadixString(16);
-    expect(result, expectedResult);
-  });
-
-  test('transfer', () async {
+  test('create_account_auth', () async {
     final privKey1 = EXAMPLES_PRIVATE_KEY1;
     final privKey2 = EXAMPLES_PRIVATE_KEY2;
 
@@ -41,27 +28,37 @@ void main() {
     final HermezWallet hermezWallet2 = wallet2[0]; // hermezWallet
     final String hermezEthereumAddress2 = wallet2[1]; // hermezEthereumAddress
 
+    // set amount to transfer
+    final amountDeposit = getTokenAmountBigInt(0.1, 18);
+
+    // perform deposit account 1
+    await deposit(
+        amountDeposit,
+        hermezEthereumAddress,
+        tokenERC20,
+        hermezWallet.publicKeyCompressedHex,
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
+
+    // performs create account authorization account 2
+    final signature = await hermezWallet2.signCreateAccountAuthorization(
+        providerUrl, signerData);
+
     // get sender account information
     final infoAccountSender =
         (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
 
-    // get receiver account information
-    final infoAccountReceiver =
-        (await getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
-            .accounts[0];
-
     // set amount to transfer
     final amountTransfer = getTokenAmountBigInt(0.0001, 18);
     // set fee in transaction
-    final userFee = 0;
+    final state = await getState();
+    final recommendedFee = state.recommendedFee;
 
     // generate L2 transaction
     final l2TxTransfer = {
-      'type': 'Transfer',
       'from': infoAccountSender.accountIndex,
-      'to': infoAccountReceiver.accountIndex,
+      'to': hermezEthereumAddress2,
       'amount': amountTransfer,
-      'fee': userFee
+      'fee': recommendedFee.createAccount
     };
 
     final transferResponse = await generateAndSendL2Tx(

@@ -49,7 +49,7 @@ Future<dynamic> encodeTransaction(dynamic transaction,
     {String providerUrl}) async {
   final encodedTransaction = transaction.clone();
 
-  final provider = getProvider(providerUrl);
+  final provider = getProvider(providerUrl, providerUrl);
   //encodedTransaction.chainId = await provider.getNetwork().chainId
 
   encodedTransaction.fromAccountIndex =
