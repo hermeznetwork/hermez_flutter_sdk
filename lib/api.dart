@@ -1,14 +1,23 @@
 import 'dart:convert';
 
 import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
-import 'package:hermez_plugin/model/tokens_response.dart';
+import 'package:hermez_plugin/model/coordinator.dart';
+import 'package:hermez_plugin/model/coordinators_response.dart';
 import 'package:http/http.dart' as http;
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
 import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
+import 'model/account.dart';
 import 'model/accounts_response.dart';
+import 'model/create_account_authorization.dart';
+import 'model/exit.dart';
 import 'model/exits_response.dart';
+import 'model/forged_transaction.dart';
+import 'model/forged_transactions_response.dart';
 import 'model/state_response.dart';
+import 'model/token.dart';
+import 'model/tokens_response.dart';
+import 'model/transaction.dart';
 
 var baseApiUrl = BASE_API_URL;
 
@@ -73,7 +82,6 @@ Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
     params.putIfAbsent('BJJ', () => address);
   if (tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
-  params.putIfAbsent('order', () => order.toString());
   params.addAll(getPageData(fromItem, order, limit));
   final response = await get(baseApiUrl, ACCOUNTS_URL, queryParameters: params);
   if (response.statusCode == 200) {
@@ -89,8 +97,15 @@ Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
 /// GET request to the /accounts/:accountIndex endpoint. Returns a specific token account for an accountIndex
 /// @param {string} accountIndex - Account index in the format hez:DAI:4444
 /// @returns {object} Response data with the token account
-Future<String> getAccount(String accountIndex) async {
-  return extractJSON(await get(baseApiUrl, ACCOUNTS_URL + '/' + accountIndex));
+Future<Account> getAccount(String accountIndex) async {
+  final response = await get(baseApiUrl, ACCOUNTS_URL + '/' + accountIndex);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final Account accountResponse = Account.fromJson(json.decode(jsonResponse));
+    return accountResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /transactions-histroy endpoint. Returns a list of forged transaction based on certain filters
@@ -100,7 +115,7 @@ Future<String> getAccount(String accountIndex) async {
 /// @param {String} accountIndex - Filter by an account index that sent or received the transactions
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered transactions and pagination data
-Future<String> getTransactions(
+Future<List<ForgedTransaction>> getTransactions(
     String address, List<int> tokenIds, int batchNum, String accountIndex,
     {int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
@@ -115,24 +130,48 @@ Future<String> getTransactions(
   params.putIfAbsent('batchNum', () => batchNum > 0 ? batchNum.toString() : '');
   params.putIfAbsent('accountIndex', () => accountIndex);
   params.addAll(getPageData(fromItem, order, limit));
-  return extractJSON(
-      await get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params));
+  final response =
+      await get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final ForgedTransactionsResponse forgedTransactionsResponse =
+        ForgedTransactionsResponse.fromJson(json.decode(jsonResponse));
+    return forgedTransactionsResponse.transactions;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /transactions-history/:transactionId endpoint. Returns a specific forged transaction
 /// @param {string} transactionId - The ID for the specific transaction
 /// @returns {object} Response data with the transaction
-Future<String> getHistoryTransaction(String transactionId) async {
-  return extractJSON(
-      await get(baseApiUrl, TRANSACTIONS_HISTORY_URL + '/' + transactionId));
+Future<ForgedTransaction> getHistoryTransaction(String transactionId) async {
+  final response =
+      await get(baseApiUrl, TRANSACTIONS_HISTORY_URL + '/' + transactionId);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final ForgedTransaction forgedTransaction =
+        ForgedTransaction.fromJson(json.decode(jsonResponse));
+    return forgedTransaction;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /transactions-pool/:transactionId endpoint. Returns a specific unforged transaction
 /// @param {string} transactionId - The ID for the specific transaction
 /// @returns {object} Response data with the transaction
-Future<String> getPoolTransaction(String transactionId) async {
-  return extractJSON(
-      await get(baseApiUrl, TRANSACTIONS_POOL_URL + '/' + transactionId));
+Future<Transaction> getPoolTransaction(String transactionId) async {
+  final response =
+      await get(baseApiUrl, TRANSACTIONS_POOL_URL + '/' + transactionId);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final Transaction transaction =
+        Transaction.fromJson(json.decode(jsonResponse));
+    return transaction;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// POST request to the /transaction-pool endpoint. Sends an L2 transaction to the network
@@ -156,20 +195,31 @@ Future<ExitsResponse> getExits(
     params.putIfAbsent('BJJ', () => address);
   params.putIfAbsent(
       'onlyPendingWithdraws', () => onlyPendingWithdraws.toString());
-  final response = await extractJSON(
-      await get(baseApiUrl, EXITS_URL, queryParameters: params));
-  final ExitsResponse exitsResponse =
-      ExitsResponse.fromJson(json.decode(response));
-  return exitsResponse;
+  final response = await get(baseApiUrl, EXITS_URL, queryParameters: params);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final ExitsResponse exitsResponse =
+        ExitsResponse.fromJson(json.decode(jsonResponse));
+    return exitsResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /exits/:batchNum/:accountIndex endpoint. Returns a specific exit
 /// @param {int} batchNum - Filter by an exit in a specific batch number
 /// @param {string} accountIndex - Filter by an exit associated to an account index
 /// @returns {object} Response data with the specific exit
-Future<String> getExit(int batchNum, String accountIndex) async {
-  return extractJSON(await get(
-      baseApiUrl, EXITS_URL + '/' + batchNum.toString() + '/' + accountIndex));
+Future<Exit> getExit(int batchNum, String accountIndex) async {
+  final response = await get(
+      baseApiUrl, EXITS_URL + '/' + batchNum.toString() + '/' + accountIndex);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final Exit exitResponse = Exit.fromJson(json.decode(jsonResponse));
+    return exitResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /tokens endpoint. Returns a list of token data
@@ -195,9 +245,15 @@ Future<TokensResponse> getTokens(
 /// GET request to the /tokens/:tokenId endpoint. Returns a specific token
 /// @param {int} tokenId - A token ID
 /// @returns {object} Response data with a specific token
-Future<String> getToken(int tokenId) async {
-  return extractJSON(
-      await get(baseApiUrl, TOKENS_URL + '/' + tokenId.toString()));
+Future<Token> getToken(int tokenId) async {
+  final response = await get(baseApiUrl, TOKENS_URL + '/' + tokenId.toString());
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final tokenResponse = Token.fromJson(json.decode(jsonResponse));
+    return tokenResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /state endpoint.
@@ -247,15 +303,27 @@ Future<String> getBatch(int batchNum) async {
 /// @param {String} forgerAddr - A coordinator forger address
 /// @param {String} bidderAddr - A coordinator bidder address
 /// @returns {Object} Response data with a specific coordinator
-Future<String> getCoordinators(String forgerAddr, String bidderAddr) async {
+Future<List<Coordinator>> getCoordinators(String forgerAddr, String bidderAddr,
+    {int fromItem = 0,
+    PaginationOrder order = PaginationOrder.ASC,
+    int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
   params.putIfAbsent(
       'forgerAddr', () => forgerAddr.isNotEmpty ? forgerAddr : '');
   params.putIfAbsent(
       'bidderAddr', () => bidderAddr.isNotEmpty ? bidderAddr : '');
+  params.addAll(getPageData(fromItem, order, limit));
 
-  return extractJSON(
-      await get(baseApiUrl, COORDINATORS_URL, queryParameters: params));
+  final response =
+      await get(baseApiUrl, COORDINATORS_URL, queryParameters: params);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final coordinatorsResponse =
+        CoordinatorsResponse.fromJson(json.decode(jsonResponse));
+    return coordinatorsResponse.coordinators;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /slots/:slotNum endpoint. Returns the information for a specific slot
@@ -283,15 +351,33 @@ Future<String> getBids(int slotNum, String bidderAddr, int fromItem) async {
 
 /// POST request to the /account-creation-authorization endpoint. Sends an authorization to the coordinator to register token accounts on their behalf
 /// @param {String} hezEthereumAddress - The Hermez Ethereum address of the account that makes the authorization
-/// @param {String} bJJ - BabyJubJub address of the account that makes the authorization
+/// @param {String} bjj - BabyJubJub address of the account that makes the authorization
 /// @param {String} signature - The signature of the request
 /// @returns {Object} Response data
 Future<http.Response> postCreateAccountAuthorization(
-    String hezEthereumAddress, String bJJ, String signature) async {
+    String hezEthereumAddress, String bjj, String signature) async {
   Map<String, String> params = {};
   params.putIfAbsent('hezEthereumAddress',
       () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
-  params.putIfAbsent('bJJ', () => bJJ.isNotEmpty ? bJJ : '');
+  params.putIfAbsent('bjj', () => bjj.isNotEmpty ? bjj : '');
   params.putIfAbsent('signature', () => signature.isNotEmpty ? signature : '');
   return await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params);
+}
+
+Future<CreateAccountAuthorization> getCreateAccountAuthorization(
+    String hezEthereumAddress) async {
+  Map<String, String> params = {};
+  params.putIfAbsent('hezEthereumAddress',
+      () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
+
+  final response =
+      await get(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, queryParameters: params);
+  if (response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final authorizationResponse =
+        CreateAccountAuthorization.fromJson(json.decode(jsonResponse));
+    return authorizationResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }

@@ -14,7 +14,7 @@ void main() {
 
   test('Check keccak256', () async {
     final expectedResult =
-        "9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658";
+        "0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658";
     final messageArray = Uint8ArrayUtils.uint8ListfromString('test');
     final keccakBuf = keccak256(messageArray);
     final keccak = Uint8ArrayUtils.beBuff2int(keccakBuf).toRadixString(16);
