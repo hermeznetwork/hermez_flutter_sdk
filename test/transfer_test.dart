@@ -4,23 +4,11 @@ import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
 import 'package:hermez_plugin/tx.dart';
 import 'package:hermez_plugin/utils.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
-import 'package:web3dart/crypto.dart';
 
 import 'setup_util.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  test('Check keccak256', () async {
-    final expectedResult =
-        "0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658";
-    final messageArray = Uint8ArrayUtils.uint8ListfromString('test');
-    final keccakBuf = keccak256(messageArray);
-    final keccak = Uint8ArrayUtils.beBuff2int(keccakBuf).toRadixString(16);
-    final keccakHex = keccak.startsWith('0x') ? keccak : '0x$keccak';
-    expect(keccakHex, expectedResult);
-  });
 
   test('transfer', () async {
     final privKey1 = EXAMPLES_PRIVATE_KEY1;

@@ -7,7 +7,13 @@ import 'package:web3dart/web3dart.dart';
 
 import 'addresses.dart' show getEthereumAddress, getAccountIndex;
 import 'api.dart' show getAccounts, postPoolTransaction;
-import 'constants.dart' show GAS_LIMIT, GAS_MULTIPLIER, contractAddresses;
+import 'constants.dart'
+    show
+        BASE_WEB3_RDP_URL,
+        BASE_WEB3_URL,
+        GAS_LIMIT,
+        GAS_MULTIPLIER,
+        contractAddresses;
 import 'model/account.dart';
 import 'tokens.dart' show approve;
 import 'tx_pool.dart' show addPoolTransaction;
@@ -51,7 +57,12 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
   // TODO: remove mockup when babyjubjub works
   babyJubJub =
-      '21b0a1688b37f77b1d1d5539ec3b826db5ac78b2513f574a04c50a7d4f8246d7';
+      '170ac403cf45e78587e0fee0e1ac9deb18acd97793b6fd2b39b09dbdf8bac83b';
+
+  /*final Web3Client web3 =
+      Web3Client(BASE_WEB3_URL, Client(), socketConnector: () {
+    return IOWebSocketChannel.connect(BASE_WEB3_RDP_URL).cast<String>();
+  });*/
 
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
@@ -72,7 +83,8 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
     account != null
         ? BigInt.from(getAccountIndex(account.accountIndex))
         : BigInt.zero,
-    BigInt.from(1),
+    amount
+    /*fix2Float(amount)*/,
     BigInt.zero,
     BigInt.from(token.id),
     BigInt.zero
