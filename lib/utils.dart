@@ -68,6 +68,8 @@ BigInt hashBuffer(Uint8List msgBuff) {
 ///
 /// @returns {String}
 String getTokenAmountString(String amountBigInt, int decimals) {
+  return (BigInt.parse(amountBigInt) / BigInt.from(10).pow(decimals))
+      .toStringAsFixed(decimals);
   //return ethers.utils.formatUnits(amountBigInt, decimals);
 }
 
@@ -75,8 +77,8 @@ String getTokenAmountString(String amountBigInt, int decimals) {
 /// @param {String} amountString - String representing the amount as a Float
 /// @param {Number} decimals - Number of decimal points the amount has
 /// @returns {BigInt}
-BigInt getTokenAmountBigInt(double amountString, int decimals) {
-  return BigInt.parse(amountString.toStringAsFixed(decimals));
+BigInt getTokenAmountBigInt(double amount, int decimals) {
+  return BigInt.from(amount * BigInt.from(10).pow(decimals).toDouble());
 }
 
 Uint8List hexToBuffer(String source) {

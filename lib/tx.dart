@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/hermez_wallet.dart';
+import 'package:hermez_plugin/model/token.dart';
 import 'package:hermez_plugin/utils/contract_parser.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -45,9 +46,13 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @param {Number} gasMultiplier - Optional gas multiplier
 ///
 /// @returns {Promise} transaction
-Future<bool> deposit(BigInt amount, String hezEthereumAddress, dynamic token,
+Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
     String babyJubJub, Web3Client web3client,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+  // TODO: remove mockup when babyjubjub works
+  babyJubJub =
+      '21b0a1688b37f77b1d1d5539ec3b826db5ac78b2513f574a04c50a7d4f8246d7';
+
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
   final accounts = await getAccounts(hezEthereumAddress, [token.id]);
@@ -63,7 +68,7 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, dynamic token,
       [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
   final transactionParameters = [
-    account != null ? BigInt.zero : BigInt.parse('0x' + babyJubJub, radix: 16),
+    account != null ? BigInt.zero : BigInt.parse('0x' + babyJubJub),
     account != null
         ? BigInt.from(getAccountIndex(account.accountIndex))
         : BigInt.zero,
