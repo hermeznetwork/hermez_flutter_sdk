@@ -7,11 +7,12 @@ final _dylibExtension =
 final _dylibName = '${_dylibPrefix}babyjubjub$_dylibExtension';
 DynamicLibrary _dylib;
 
-final EXAMPLES_WEB3_URL = 'http://localhost:8545';
+final EXAMPLES_WEB3_URL = 'http://192.168.250.102:8545';
+final EXAMPLES_WEB3_RDP_URL = 'ws://192.168.250.102:8545';
 //final EXAMPLES_WEB3_URL =
 //    "https://ropsten.infura.io/v3/e2d8687b60b944d58adc96485cbab18c";
-final EXAMPLES_WEB3_RDP_URL =
-    "wss://ropsten.infura.io/ws/v3/e2d8687b60b944d58adc96485cbab18c";
+//final EXAMPLES_WEB3_RDP_URL =
+//    "wss://ropsten.infura.io/ws/v3/e2d8687b60b944d58adc96485cbab18c";
 final EXAMPLES_HERMEZ_API_URL = 'http://localhost:8086';
 final EXAMPLES_HERMEZ_ROLLUP_ADDRESS =
     '0x10465b16615ae36F350268eb951d7B0187141D3B';

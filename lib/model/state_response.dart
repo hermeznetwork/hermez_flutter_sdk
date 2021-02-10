@@ -1,9 +1,10 @@
 import 'dart:collection';
 
+import 'network.dart';
 import 'recommended_fee.dart';
 
 class StateResponse {
-  final LinkedHashMap<String, dynamic> network;
+  final Network network;
   final LinkedHashMap<String, dynamic> metrics;
   final LinkedHashMap<String, dynamic> rollup;
   final LinkedHashMap<String, dynamic> auction;
@@ -19,10 +20,11 @@ class StateResponse {
       this.recommendedFee});
 
   factory StateResponse.fromJson(Map<String, dynamic> json) {
+    Network network = Network.fromJson(json['network']);
     RecommendedFee recommendedFee =
         RecommendedFee.fromJson(json['recommendedFee']);
     return StateResponse(
-        network: json['network'],
+        network: network,
         metrics: json['metrics'],
         rollup: json['rollup'],
         auction: json['auction'],
@@ -31,11 +33,11 @@ class StateResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'network': network,
+        'network': network.toJson(),
         'metrics': metrics,
         'rollup': rollup,
         'auction': auction,
         'withdrawalDelayer': withdrawalDelayer,
-        'recommendedFee': recommendedFee,
+        'recommendedFee': recommendedFee.toJson(),
       };
 }

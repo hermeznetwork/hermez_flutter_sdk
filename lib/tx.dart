@@ -14,6 +14,7 @@ import 'constants.dart'
         GAS_LIMIT,
         GAS_MULTIPLIER,
         contractAddresses;
+import 'hermez_compressed_amount.dart';
 import 'model/account.dart';
 import 'tokens.dart' show approve;
 import 'tx_pool.dart' show addPoolTransaction;
@@ -59,11 +60,6 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
   babyJubJub =
       '170ac403cf45e78587e0fee0e1ac9deb18acd97793b6fd2b39b09dbdf8bac83b';
 
-  /*final Web3Client web3 =
-      Web3Client(BASE_WEB3_URL, Client(), socketConnector: () {
-    return IOWebSocketChannel.connect(BASE_WEB3_RDP_URL).cast<String>();
-  });*/
-
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
   final accounts = await getAccounts(hezEthereumAddress, [token.id]);
@@ -79,12 +75,11 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
       [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
 
   final transactionParameters = [
-    account != null ? BigInt.zero : BigInt.parse('0x' + babyJubJub),
+    account != null ? BigInt.zero : BigInt.parse('0x$babyJubJub'),
     account != null
         ? BigInt.from(getAccountIndex(account.accountIndex))
         : BigInt.zero,
-    amount
-    /*fix2Float(amount)*/,
+    HermezCompressedAmount.fix2Float(amount.toDouble()),
     BigInt.zero,
     BigInt.from(token.id),
     BigInt.zero
@@ -93,7 +88,7 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
   print([...transactionParameters, overrides]);
 
   if (token.id == 0) {
-    overrides = Uint8List.fromList([amount.toInt()]);
+    overrides = amount; //Uint8List.fromList([amount.toInt()]);
     print([...transactionParameters, overrides]);
     final addL1TransactionCall = await web3client.call(
         contract: hermezContract,
@@ -191,8 +186,8 @@ void withdraw(
 
   print([...transactionParameters, overrides]);
 
-  final l1Transaction = new List()..addAll(transactionParameters);
-  l1Transaction.add(overrides);
+  //final l1Transaction = new List()..addAll(transactionParameters);
+  //l1Transaction.add(overrides);
 
   final withdrawMerkleProofCall = await web3client.call(
       contract: hermezContract,

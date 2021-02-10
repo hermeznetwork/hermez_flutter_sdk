@@ -16,6 +16,8 @@ void main() {
     // initialize transaction pool
     initializeTransactionPool();
 
+    // setProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL);
+
     // load token to deposit information
     final tokenToDeposit = 0;
     final token = await getTokens();
