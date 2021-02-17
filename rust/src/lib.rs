@@ -6,22 +6,25 @@ use poseidon_rs::Poseidon;
 pub type Fr = poseidon_rs::Fr;
 
 #[macro_use]
-extern crate lazy_static;
+extern crate ff;
+
 #[macro_use]
 extern crate arrayref;
 extern crate generic_array;
-extern crate mimc_rs;
+//extern crate mimc_rs;
 extern crate num;
 extern crate num_bigint;
 extern crate num_traits;
 extern crate rand6;
 extern crate rand;
+extern crate blake; // compatible version with Blake used at circomlib
 #[macro_use]
-extern crate ff;
+extern crate lazy_static;
+
 use ff::*;
 use std::str;
 
-use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, compress_point, PointProjective, Q, new_key};
+use crate::eddsa::{Signature, decompress_point, Point, PrivateKey, verify, decompress_signature, /*compress_point,*/ PointProjective, Q, B8, new_key};
 use num_bigint::{Sign, BigInt, ToBigInt};
 use std::os::raw::{c_char};
 use std::ffi::{CStr, CString};
@@ -31,7 +34,7 @@ use num_traits::{Num, ToPrimitive};
 use rustc_hex::FromHex;
 use num::Zero;
 
-lazy_static! {
+/*lazy_static! {
  static ref B8: Point = Point {
         x: Fr::from_str(
             "5299619240641551281634865583518297030282874472190772894086521144482721001553",
@@ -43,7 +46,7 @@ lazy_static! {
         .unwrap(),
         // z: Fr::one(),
     };
-}
+}*/
 
 #[no_mangle]
 pub extern fn pack_signature(signature: *const c_char) -> *mut c_char {
@@ -170,7 +173,8 @@ pub extern fn pack_point(point_x: *const c_char, point_y: *const c_char) -> *mut
         x: Fr::from_str(point_x_str).unwrap(),
         y: Fr::from_str(point_y_str).unwrap(),
     };
-    let compressed_point = compress_point(&p);
+
+    let compressed_point = p.compress();
     let hex_string = to_hex_string(compressed_point.to_vec());
     CString::new(hex_string.as_str()).unwrap().into_raw()
 }
@@ -205,7 +209,7 @@ pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
     //let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
     /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();*/
     let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());
-    let pk = B8.mul_scalar(&sk).unwrap();
+    let pk = B8.mul_scalar(&sk);
     let mut r: [u8; 32] = [0; 32];
     let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();
     let y_big = BigInt::parse_bytes(to_hex(&pk.y).as_bytes(), 16).unwrap();
@@ -249,7 +253,10 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
 pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /*[u8; 64]*/ *mut c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
-    let pk = PrivateKey { key: pk_bigint };
+    let pk_bytes_raw = private_key_str.from_hex().unwrap();
+    let mut pk_bytes: [u8; 32] = [0; 32];
+    pk_bytes.copy_from_slice(&pk_bytes_raw);
+    let pk = PrivateKey { key: pk_bytes };
     let message_c_str = unsafe { CStr::from_ptr(msg) };
     let message_str = match message_c_str.to_str() {
         Err(_) => "there",
@@ -269,7 +276,10 @@ pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /
 pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: *const c_char, message: *const c_char) ->  *mut c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
     let pk_bigint = BigInt::from_str(private_key_str).unwrap();
-    let pk = PrivateKey { key: pk_bigint };
+    let pk_bytes_raw = private_key_str.from_hex().unwrap();
+    let mut pk_bytes: [u8; 32] = [0; 32];
+    pk_bytes.copy_from_slice(&pk_bytes_raw);
+    let pk = PrivateKey { key: pk_bytes };
     let compressed_signature_str = unsafe { CStr::from_ptr(compressed_signature) }.to_str().unwrap();
     let signature_bytes_raw = compressed_signature_str.from_hex().unwrap();
     let mut signature_bytes: [u8; 64] = [0; 64];
@@ -285,7 +295,7 @@ pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: 
         Err(e) => BigInt::zero(),
     };
 
-    if verify(pk.public().unwrap(), sig.clone(), message_bigint.clone()) {
+    if verify(pk.public(), sig.clone(), message_bigint.clone()) {
         CString::new("1".to_owned()).unwrap().into_raw()
     } else {
         CString::new("0".to_owned()).unwrap().into_raw()

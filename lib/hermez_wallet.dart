@@ -40,9 +40,10 @@ class HermezWallet {
     }
 
     final priv = eddsaBabyJub.PrivateKey(privateKey);
-    //final eddsaBabyJub.PublicKey publicKey = priv.public();
+    final eddsaBabyJub.PublicKey publicKey = priv.public();
     this.privateKey = privateKey;
-    /*this.publicKey = [publicKey.p[0].toString(), publicKey.p[1].toString()];
+    print(privateKey);
+    this.publicKey = [publicKey.p[0].toString(), publicKey.p[1].toString()];
     this.publicKeyHex = [
       publicKey.p[0].toRadixString(16),
       publicKey.p[1].toRadixString(16)
@@ -50,9 +51,13 @@ class HermezWallet {
     final compressedPublicKey =
         Uint8ArrayUtils.leBuff2int(publicKey.compress());
     this.publicKeyCompressed = compressedPublicKey.toString();
+    final test = bytesToHex(publicKey.compress());
     this.publicKeyCompressedHex =
         compressedPublicKey.toRadixString(16).padLeft(32, '0');
-    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);*/
+    /*this.publicKeyCompressedHex =
+        '170ac403cf45e78587e0fee0e1ac9deb18acd97793b6fd2b39b09dbdf8bac83b';*/
+    this.publicKeyBase64 = "hez:O8i6-L2dsDkr_baTd9msGOudrOHg_uCHhedFzwPEChc_";
+    /*this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);*/
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
@@ -118,20 +123,23 @@ class HermezWallet {
   /// @param {Object} signerData - Signer data used to build a Signer to create the walet
   /// @returns {String} The generated signature
   dynamic signCreateAccountAuthorization(
-      Web3Client provider, String privateKey) async {
-    final signer = await provider.credentialsFromPrivateKey(privateKey);
+      String chainId,
+      /*Web3Client provider,*/ String privateKey) async {
+    final signer = EthPrivateKey.fromHex(privateKey);
+    //final signer = await provider.credentialsFromPrivateKey(privateKey);
 
     final accountCreationAuthMsgArray =
         Uint8List.fromList(utf8.encode(CREATE_ACCOUNT_AUTH_MESSAGE));
-    final chainId =
-        BigInt.from(await provider.getNetworkId()).toRadixString(16);
+    //final chainId =
+    //    BigInt.from(await provider.getNetworkId()).toRadixString(16);
     final chainIdHex = chainId.startsWith('0x') ? chainId : '0x$chainId';
     final accountCreationAuthMsgHex =
         Uint8ArrayUtils.beBuff2int(accountCreationAuthMsgArray)
             .toRadixString(16);
     final hexZeroPad = Uint8ArrayUtils.beBuff2int(
-            Uint8ArrayUtils.hexZeroPad(chainIdHex.codeUnits, 2).sublist(2))
+            Uint8ArrayUtils.hexZeroPad(hexToBytes(chainIdHex), 2).sublist(2))
         .toRadixString(16);
+
     final messageHex = accountCreationAuthMsgHex +
         this.publicKeyCompressedHex +
         hexZeroPad +
@@ -142,9 +150,11 @@ class HermezWallet {
     final signature = await signer.sign(messageHash); //signPersonalMessage?
     final signatureHex =
         Uint8ArrayUtils.beBuff2int(signature).toRadixString(16);
+
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong
-    final signatureParams = sign(messageHash, privateKeyBuf);
+    final signatureParams = await signer
+        .signToSignature(messageHash); //sign(messageHash, privateKeyBuf);
     return signatureHex.substring(0, signatureHex.length - 2) +
         signatureParams.v.toRadixString(16);
   }

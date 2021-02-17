@@ -35,8 +35,10 @@ Future<http.Response> get(String baseAddress, String endpoint,
 Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic> body}) async {
   try {
+    var uri;
+    uri = Uri.http(baseAddress, endpoint);
     final response = await http.post(
-      '$baseAddress$endpoint',
+      uri,
       body: json.encode(body),
       headers: {
         HttpHeaders.acceptHeader: '*/*',

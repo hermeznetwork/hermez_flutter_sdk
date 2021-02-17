@@ -47,20 +47,20 @@ void main() {
     final amountDeposit = getTokenAmountBigInt(0.1, 18);
 
     // perform deposit account 1
-    await deposit(
+    /*await deposit(
         amountDeposit,
         hermezEthereumAddress,
         tokenERC20,
         hermezWallet.publicKeyCompressedHex,
-        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));*/
 
     // performs create account authorization account 2
-    final signature = await hermezWallet2.signCreateAccountAuthorization(
-        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);
+    /*final signature = await hermezWallet2.signCreateAccountAuthorization(
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);*/
     final response = await postCreateAccountAuthorization(
         hermezWallet2.hermezEthereumAddress,
-        hermezWallet2.publicKeyBase64,
-        signature);
+        hermezWallet2.publicKeyBase64,"");
+        //signature);
     print('create account authorization response:${response.statusCode}');
 
     // get sender account information

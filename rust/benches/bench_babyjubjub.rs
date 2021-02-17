@@ -10,6 +10,7 @@ extern crate num_bigint;
 use num_bigint::{BigInt, ToBigInt};
 
 use babyjubjub_rs::{utils, Point};
+use babyjubjub::eddsa::Point;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let p: Point = Point {

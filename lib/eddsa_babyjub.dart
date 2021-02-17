@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:web3dart/crypto.dart';
 
 import 'libs/circomlib.dart';
 import 'utils/structs.dart' as Structs;
@@ -98,8 +99,9 @@ class PublicKey {
     List<int> pointList = xList.toList();
     pointList.addAll(yList.toList());
     BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));*/
-    return Uint8ArrayUtils.uint8ListfromString(
-        circomLib.packPoint(p[0].toString(), p[1].toString()));
+    return hexToBytes(circomLib.packPoint(p[0].toString(), p[1].toString()));
+    /*return Uint8ArrayUtils.uint8ListfromString(
+        circomLib.packPoint(p[0].toString(), p[1].toString()));*/
   }
 
   bool verify(String messageHash, Signature signature) {

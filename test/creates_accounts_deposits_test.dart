@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/providers.dart';
-import 'package:hermez_plugin/tx.dart';
 import 'package:hermez_plugin/tx_pool.dart';
 import 'package:hermez_plugin/utils.dart';
 
@@ -38,20 +36,20 @@ void main() {
     final amountDeposit = getTokenAmountBigInt(0.1, 18);
 
     // perform deposit account 1
-    await deposit(
+    /*await deposit(
         amountDeposit,
         hermezEthereumAddress,
         tokenERC20,
         hermezWallet.publicKeyCompressedHex,
-        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));*/
 
     // perform deposit account 2
-    await deposit(
+    /*await deposit(
         amountDeposit,
         hermezEthereumAddress2,
         tokenERC20,
         hermezWallet2.publicKeyCompressedHex,
-        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));
+        getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL));*/
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });
 }
