@@ -287,7 +287,7 @@ impl PrivateKey {
         // compatible with circomlib implementation
         //let hash = blake_hash::Blake512::digest(&self.key.to_vec());
         let mut hash = [0; 64];
-        blake::hash(512,&self.key.to_vec(),&mut hash).unwrap();
+        blake::hash(512,&self.key,&mut hash).unwrap();
         let mut h: Vec<u8> = hash[..32].to_vec();
 
         h[0] = h[0] & 0xF8;

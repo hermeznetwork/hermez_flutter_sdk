@@ -203,23 +203,15 @@ pub extern fn unpack_point(compressed_point: *const c_char) ->  *mut c_char {
 }
 
 #[no_mangle]
-pub extern fn prv2pub(private_key: *const c_char) -> [u8; 32] {
-
-    let private_key_str = unsafe { CStr::from_ptr(private_key) };
-    //let sk: BigInt = BigInt::parse_bytes(private_key_str.to_bytes(), 16).unwrap();
-    /*let y_big: BigInt = BigInt::parse_bytes(&point[32..], 10).unwrap();*/
-    let sk = BigInt::from_bytes_be(Sign::Plus, private_key_str.to_bytes());
-    let pk = B8.mul_scalar(&sk);
-    let mut r: [u8; 32] = [0; 32];
-    let x_big = BigInt::parse_bytes(to_hex(&pk.x).as_bytes(), 16).unwrap();
-    let y_big = BigInt::parse_bytes(to_hex(&pk.y).as_bytes(), 16).unwrap();
-    let (_, y_bytes) = y_big.to_bytes_le();
-    let len = min(y_bytes.len(), r.len());
-    r[..len].copy_from_slice(&y_bytes[..len]);
-    if &x_big > &(&Q.clone() >> 1) {
-        r[31] = r[31] | 0x80;
-    }
-    r
+pub extern fn prv2pub(private_key: &[u8; 32]) -> *mut c_char {
+    let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
+    let private_key = PrivateKey::import(private_key_bytes.to_vec()).unwrap();
+    let public_key = private_key.public();
+    let mut result_string: String = "".to_owned();
+    result_string.push_str(&public_key.x.to_string());
+    result_string.push_str(",");
+    result_string.push_str(&public_key.y.to_string());
+    CString::new(result_string.as_str()).unwrap().into_raw()
 }
 
 #[no_mangle]
