@@ -19,10 +19,10 @@ const Map<String, String> contractAddresses = {
 
 const DEFAULT_PAGE_SIZE = 20;
 
-const BASE_API_URL = '192.168.1.134:8086';
-//const BASE_API_URL = '192.168.250.102:8086';
-//const BASE_WEB3_URL = 'http://192.168.250.102:8545';
-//const BASE_WEB3_RDP_URL = 'wss://192.168.250.102:8545';
-const BASE_WEB3_URL = 'http://192.168.1.134:8545';
-const BASE_WEB3_RDP_URL = 'wss://192.168.1.134:8545';
+//const BASE_API_URL = '192.168.1.134:8086';
+const BASE_API_URL = '192.168.250.102:8086';
+const BASE_WEB3_URL = 'http://192.168.250.102:8545';
+const BASE_WEB3_RDP_URL = 'wss://192.168.250.102:8545';
+//const BASE_WEB3_URL = 'http://192.168.1.134:8545';
+//const BASE_WEB3_RDP_URL = 'wss://192.168.1.134:8545';
 //const BASE_API_URL = '167.71.59.190:4010';

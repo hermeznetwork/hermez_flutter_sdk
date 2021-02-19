@@ -49,10 +49,8 @@ class HermezWallet {
     final compressedPublicKey =
         Uint8ArrayUtils.leBuff2int(publicKey.compress());
     this.publicKeyCompressed = compressedPublicKey.toString();
-    final test = bytesToHex(publicKey.compress());
     this.publicKeyCompressedHex =
         compressedPublicKey.toRadixString(16).padLeft(32, '0');
-    //this.publicKeyBase64 = "hez:O8i6-L2dsDkr_baTd9msGOudrOHg_uCHhedFzwPEChc_";
     this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
@@ -127,15 +125,15 @@ class HermezWallet {
       /*Web3Client provider,*/ String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
     //final signer = await provider.credentialsFromPrivateKey(privateKey);
-    //chainId = "0004";
     final accountCreationAuthMsgArray =
         utf8.encode(CREATE_ACCOUNT_AUTH_MESSAGE);
+    final accountCreationAuthMsgHex =
+        bytesToHex(accountCreationAuthMsgArray, include0x: true);
     //final chainId =
     //    BigInt.from(await provider.getNetworkId()).toRadixString(16);
     final chainIdHex = chainId.startsWith('0x') ? chainId : '0x$chainId';
-    final accountCreationAuthMsgHex =
-        bytesToHex(accountCreationAuthMsgArray, include0x: true);
-    final hexZeroPad = bytesToHex(
+    final hexZeroPad = chainId.padLeft(4, "0");
+    final hexZeroPad2 = bytesToHex(
         Uint8ArrayUtils.hexZeroPad(hexToBytes(chainIdHex), 2).sublist(2));
 
     final messageHex = accountCreationAuthMsgHex +
@@ -143,11 +141,14 @@ class HermezWallet {
         hexZeroPad +
         contractAddresses['Hermez'].substring(2);
 
-    final messageHash = Uint8ArrayUtils.uint8ListfromString(messageHex);
+    /// TODO:::CHECK
+
+    //final messageHash = hexToBytes(messageHex);
+    final messageHash = ascii.encode(CREATE_ACCOUNT_AUTH_MESSAGE);
     final privateKeyBuf = Uint8ArrayUtils.uint8ListfromString(privateKey);
     final signature = await signer.signPersonalMessage(messageHash);
-    final signatureHex =
-        Uint8ArrayUtils.beBuff2int(signature).toRadixString(16);
+    final signatureHex = bytesToHex(signature);
+    //Uint8ArrayUtils.beBuff2int(signature).toRadixString(16);
 
     // Generate the signature from params as there's a bug in ethers
     // that generates the base signature wrong

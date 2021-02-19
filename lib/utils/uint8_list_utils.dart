@@ -46,21 +46,21 @@ class Uint8ArrayUtils {
     return res;
   }
 
-  /*export function beInt2Buff(n, len) {
-    let r = n;
-    let o =len-1;
-    const buff = new Uint8Array(len);
-    while ((r.gt(bigInt.zero))&&(o>=0)) {
-      let c = Number(r.and(bigInt("255")));
+  static Uint8List beInt2Buff(BigInt n, int len) {
+    BigInt r = n;
+    int o = len - 1;
+    final buff = Uint8List(len);
+    while ((r > BigInt.zero) && (o >= 0)) {
+      final c = (r & BigInt.from(255)).toInt();
       buff[o] = c;
       o--;
-      r = r.shiftRight(8);
+      r = r >> 8;
     }
-    if (!r.eq(bigInt.zero)) {
-      throw new Error("Number does not fit in this length");
+    if (r != BigInt.zero) {
+      throw new ArgumentError("Number does not fit in this length");
     }
     return buff;
-  }*/
+  }
 
   static Uint8List leInt2Buff(BigInt n, int len) {
     BigInt r = n;
@@ -97,6 +97,7 @@ class Uint8ArrayUtils {
     return read(0, bytes.length);
   }
 
+  /// LITTLE ENDIAN!!
   static Uint8List bigIntToBytes(BigInt number) {
     // Not handling negative numbers. Decide how you want to do that.
     int bytes = (number.bitLength + 7) >> 3;
