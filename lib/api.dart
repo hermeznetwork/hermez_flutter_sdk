@@ -19,7 +19,7 @@ import 'model/token.dart';
 import 'model/tokens_response.dart';
 import 'model/transaction.dart';
 
-var baseApiUrl = BASE_API_URL;
+var baseApiUrl = '';
 
 const REGISTER_AUTH_URL = "/account-creation-authorization";
 const ACCOUNTS_URL = "/accounts";
@@ -361,7 +361,11 @@ Future<http.Response> postCreateAccountAuthorization(
       () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
   params.putIfAbsent('bjj', () => bjj.isNotEmpty ? bjj : '');
   params.putIfAbsent('signature', () => signature.isNotEmpty ? signature : '');
-  return await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params);
+  try {
+    return await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params);
+  } catch (e) {
+    return null;
+  }
 }
 
 Future<CreateAccountAuthorization> getCreateAccountAuthorization(
@@ -369,15 +373,18 @@ Future<CreateAccountAuthorization> getCreateAccountAuthorization(
   Map<String, String> params = {};
   params.putIfAbsent('hezEthereumAddress',
       () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
-
-  final response =
-      await get(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, queryParameters: params);
-  if (response.statusCode == 200) {
-    final jsonResponse = await extractJSON(response);
-    final authorizationResponse =
-        CreateAccountAuthorization.fromJson(json.decode(jsonResponse));
-    return authorizationResponse;
-  } else {
-    throw ('Error: $response.statusCode');
+  try {
+    final response = await get(baseApiUrl, ACCOUNT_CREATION_AUTH_URL,
+        queryParameters: params);
+    if (response.statusCode == 200) {
+      final jsonResponse = await extractJSON(response);
+      final authorizationResponse =
+          CreateAccountAuthorization.fromJson(json.decode(jsonResponse));
+      return authorizationResponse;
+    } else {
+      throw ('Error: $response.statusCode');
+    }
+  } catch (e) {
+    return null;
   }
 }

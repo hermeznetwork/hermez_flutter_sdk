@@ -116,46 +116,31 @@ class HermezWallet {
   /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
   /// @param {Object} signerData - Signer data used to build a Signer to create the walet
   /// @returns {String} The generated signature
-  /// 0x4920617574686f72697a65207468697320626162796a75626a7562206b657920666f72206865726d657a20726f6c6c7570206163636f756e74206372656174696f6e
-  /// 170ac403cf45e78587e0fee0e1ac9deb18acd97793b6fd2b39b09dbdf8bac83b
-  /// 0004
-  /// 5e61B3d99cAa3a5892781F53996d2128B40a3fAD
   dynamic signCreateAccountAuthorization(
-      String chainId,
-      /*Web3Client provider,*/ String privateKey) async {
+      String chainId, String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
-    //final signer = await provider.credentialsFromPrivateKey(privateKey);
     final accountCreationAuthMsgArray =
         utf8.encode(CREATE_ACCOUNT_AUTH_MESSAGE);
     final accountCreationAuthMsgHex =
         bytesToHex(accountCreationAuthMsgArray, include0x: true);
-    //final chainId =
-    //    BigInt.from(await provider.getNetworkId()).toRadixString(16);
-    final chainIdHex = chainId.startsWith('0x') ? chainId : '0x$chainId';
     final hexZeroPad = chainId.padLeft(4, "0");
-    final hexZeroPad2 = bytesToHex(
-        Uint8ArrayUtils.hexZeroPad(hexToBytes(chainIdHex), 2).sublist(2));
 
     final messageHex = accountCreationAuthMsgHex +
         this.publicKeyCompressedHex +
         hexZeroPad +
         contractAddresses['Hermez'].substring(2);
 
-    /// TODO:::CHECK
-
-    //final messageHash = hexToBytes(messageHex);
-    final messageHash = ascii.encode(CREATE_ACCOUNT_AUTH_MESSAGE);
-    final privateKeyBuf = Uint8ArrayUtils.uint8ListfromString(privateKey);
+    final messageHash = hexToBytes(messageHex);
     final signature = await signer.signPersonalMessage(messageHash);
-    final signatureHex = bytesToHex(signature);
-    //Uint8ArrayUtils.beBuff2int(signature).toRadixString(16);
+    final signatureHex = bytesToHex(signature, include0x: true);
+    return signatureHex;
 
-    // Generate the signature from params as there's a bug in ethers
-    // that generates the base signature wrong
-    final signatureParams = await signer
-        .signToSignature(messageHash); //sign(messageHash, privateKeyBuf);
-    return signatureHex.substring(0, signatureHex.length - 2) +
-        signatureParams.v.toRadixString(16);
+    /// NOT NEEDED: Generate the signature from params as there's a bug in ethers
+    /// that generates the base signature wrong
+    //final signatureParams = await signer
+    //    .signToSignature(messageHash); //sign(messageHash, privateKeyBuf);
+    //return signatureHex.substring(0, signatureHex.length - 2) +
+    //    signatureParams.v.toRadixString(16);
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider

@@ -87,9 +87,9 @@ Future<http.Response> _delete(String id) async {
 http.Response returnResponseOrThrowException(http.Response response) {
   if (response.statusCode == 404) {
     // Not found
-    throw ItemNotFoundException();
+    throw ItemNotFoundException(response.body);
   } else if (response.statusCode == 500) {
-    throw InternalServerErrorException();
+    throw InternalServerErrorException(response.body);
   } else if (response.statusCode > 400) {
     throw UnknownApiException(response.statusCode);
   } else {

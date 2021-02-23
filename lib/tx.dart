@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:hermez_plugin/environment.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
 import 'package:hermez_plugin/model/token.dart';
 import 'package:hermez_plugin/utils/contract_parser.dart';
@@ -147,7 +148,8 @@ Future<bool> deposit(BigInt amount, String hezEthereumAddress, Token token,
     print(
         'transfer --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $amount');
 
-    String txHash = await web3client.sendTransaction(credentials, transaction);
+    String txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
 
     print(txHash);
 
