@@ -11,9 +11,12 @@ class Env {
           "0x10465b16615ae36F350268eb951d7B0187141D3B", // Hermez
           "0x8EEaea23686c319133a7cC110b840d1591d9AeE0" // TargaryenCoin
         },
-        "192.168.250.101:8086",
-        '192.168.250.101:8545',
-        "192.168.250.101:8080",
+        "192.168.1.134:8086",
+        '192.168.1.134:8545',
+        "192.168.1.134:8080",
+        //"192.168.250.101:8086",
+        //'192.168.250.101:8545',
+        //"192.168.250.101:8080",
         "https://etherscan.io");
 
     params['rinkeby'] = EnvParams(
@@ -23,7 +26,7 @@ class Env {
           "0x44D3CBFBeca39F08623Cc6e8574c91c621599548", // TargaryenCoin
         },
         "api.testnet.hermez.io",
-        "api.testnet.hermez.io",
+        "rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
         "http://explorer.testnet.hermez.io",
         "https://rinkeby.etherscan.io");
   }

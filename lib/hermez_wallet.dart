@@ -124,13 +124,15 @@ class HermezWallet {
     final accountCreationAuthMsgHex =
         bytesToHex(accountCreationAuthMsgArray, include0x: true);
     final hexZeroPad = chainId.padLeft(4, "0");
+    final hermezContractAddress = contractAddresses['Hermez'].substring(2);
 
     final messageHex = accountCreationAuthMsgHex +
         this.publicKeyCompressedHex +
         hexZeroPad +
-        contractAddresses['Hermez'].substring(2);
+        hermezContractAddress;
 
-    final messageHash = hexToBytes(messageHex);
+    final messageInt = hexToInt(messageHex);
+    final messageHash = intToBytes(messageInt);
     final signature = await signer.signPersonalMessage(messageHash);
     final signatureHex = bytesToHex(signature, include0x: true);
     return signatureHex;

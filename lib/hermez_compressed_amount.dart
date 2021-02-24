@@ -5,7 +5,7 @@ const HERMEZ_COMPRESSED_AMOUNT_TYPE = 'HermezCompressedAmount';
 /// Class representing valid amounts in the Hermez network
 class HermezCompressedAmount {
   String type;
-  int value;
+  num value;
 
   /// Builds an instance of HermezCompressedAmount, a wrapper
   /// for compressed BigInts in 40 bits used within the Hermez network
@@ -25,26 +25,28 @@ class HermezCompressedAmount {
   /// Convert a HermezCompressedAmount to a fix
   /// @param {Scalar} fl - HermezCompressedAmount representation of the amount
   /// @returns {Scalar} Scalar encoded in fix
-  /*static BigInt decompressAmount(HermezCompressedAmount hermezCompressedAmount) {
-    if (!HermezCompressedAmount.isHermezCompressedAmount(hermezCompressedAmount)) {
-      throw new ArgumentError('The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount')
+  static BigInt decompressAmount(
+      HermezCompressedAmount hermezCompressedAmount) {
+    if (!HermezCompressedAmount.isHermezCompressedAmount(
+        hermezCompressedAmount)) {
+      throw new ArgumentError(
+          'The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount');
     }
     final fl = hermezCompressedAmount.value;
-    final m = (fl & 0x3FF);
-    final e = (fl >> 11);
-    final e5 = (fl >> 10) & 1;
+    final m = (fl % 0x800000000);
+    final e = (fl / 0x800000000).floor();
 
-    var exp = Scalar.e(1);
-    for (int i = 0; i < e; i++) {
-      exp *= Scalar.e(10);
+    var exp = BigInt.from(1);
+    for (var i = 0; i < e; i++) {
+      exp *= BigInt.from(10);
     }
 
-    var res = Scalar.mul(m, exp);
-    if (e5 && e) {
-      res = Scalar.add(res, Scalar.div(exp, 2));
-    }
-    return res;
-  }*/
+    //final exp = pow(10, e);
+
+    final res = m * exp.toInt();
+
+    return BigInt.from(res);
+  }
 
   /// Convert a fix to a float, always rounding down
   /// @param {double} _f - BigInt encoded in double
@@ -62,10 +64,36 @@ class HermezCompressedAmount {
   }*/
 
   /// Convert a fix to a float
-  /// @param {String} _f - Scalar encoded in fix
+  /// @param {num} _f - Scalar encoded in fix
   /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
-  /*static compressAmount (_f) {
-    final f = Scalar.e(_f);
+  static HermezCompressedAmount compressAmount(num _f) {
+    final f = BigInt.from(_f);
+
+    if (f.sign == 0) {
+      return new HermezCompressedAmount(0);
+    }
+
+    var m = f;
+    var e = 0;
+
+    while ((m % BigInt.from(10)).sign == 0 &&
+        (BigInt.from(m / BigInt.from(0x800000000)).sign != 0)) {
+      m = BigInt.from(m / BigInt.from(10));
+      e++;
+    }
+
+    if (e > 31) {
+      throw new ArgumentError("number too big");
+    }
+
+    if (BigInt.from(m / BigInt.from(0x800000000)).sign != 0) {
+      throw new ArgumentError("not enough precision");
+    }
+
+    final res = m.toDouble() + (e * 0x800000000);
+
+    return new HermezCompressedAmount(res);
+    /*final f = Scalar.e(_f);
 
     function dist (n1, n2) {
       const tmp = Scalar.sub(n1, n2)
@@ -101,8 +129,8 @@ class HermezCompressedAmount {
       res = fl3
     }
 
-    return new HermezCompressedAmount(res);
-  }*/
+    return new HermezCompressedAmount(res);*/
+  }
 
   /// Convert a float to a fix
   /// @param {Scalar} fl - Scalar encoded in float

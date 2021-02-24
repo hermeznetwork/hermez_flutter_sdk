@@ -370,12 +370,10 @@ Future<http.Response> postCreateAccountAuthorization(
 
 Future<CreateAccountAuthorization> getCreateAccountAuthorization(
     String hezEthereumAddress) async {
-  Map<String, String> params = {};
-  params.putIfAbsent('hezEthereumAddress',
-      () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
   try {
-    final response = await get(baseApiUrl, ACCOUNT_CREATION_AUTH_URL,
-        queryParameters: params);
+    final response = await get(
+        baseApiUrl, ACCOUNT_CREATION_AUTH_URL + '/' + hezEthereumAddress,
+        queryParameters: null);
     if (response.statusCode == 200) {
       final jsonResponse = await extractJSON(response);
       final authorizationResponse =

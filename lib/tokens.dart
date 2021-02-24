@@ -3,6 +3,7 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'constants.dart';
+import 'environment.dart';
 
 ContractFunction _approve(DeployedContract contract) =>
     contract.function('approve');
@@ -23,7 +24,8 @@ Future<bool> approve(
     String accountAddress,
     String tokenContractAddress,
     String tokenContractName,
-    Web3Client web3client) async {
+    Web3Client web3client,
+    Credentials credentials) async {
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
@@ -36,31 +38,62 @@ Future<bool> approve(
     final allowance = allowanceCall.first as BigInt;
 
     if (allowance < amount) {
-      var response = await web3client.call(
+      final transactionParameters = [
+        EthereumAddress.fromHex(contractAddresses['Hermez']),
+        amount
+      ];
+
+      Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
-        params: [EthereumAddress.fromHex(contractAddresses['Hermez']), amount],
+        parameters: transactionParameters,
       );
 
-      return response.first as bool;
+      String txHash = await web3client.sendTransaction(credentials, transaction,
+          chainId: getCurrentEnvironment().chainId);
+
+      print(txHash);
+
+      return txHash != null;
     }
 
     if (!(allowance.sign == 0)) {
-      var response = await web3client.call(
+      final transactionParameters = [
+        EthereumAddress.fromHex(contractAddresses['Hermez']),
+        BigInt.zero
+      ];
+
+      Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
-        params: [EthereumAddress.fromHex(contractAddresses['Hermez']), 0],
+        parameters: transactionParameters,
       );
-      return response.first as bool;
+
+      String txHash = await web3client.sendTransaction(credentials, transaction,
+          chainId: getCurrentEnvironment().chainId);
+
+      print(txHash);
+
+      return txHash != null;
     }
 
-    var response = await web3client.call(
+    final transactionParameters = [
+      EthereumAddress.fromHex(contractAddresses['Hermez']),
+      amount
+    ];
+
+    Transaction transaction = Transaction.callContract(
       contract: contract,
       function: _approve(contract),
-      params: [EthereumAddress.fromHex(accountAddress), amount],
+      parameters: transactionParameters,
     );
 
-    return response.first as bool;
+    String txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
+
+    print(txHash);
+
+    return txHash != null;
   } catch (error, trace) {
     print(error);
     print(trace);
