@@ -26,6 +26,7 @@ Future<bool> approve(
     String tokenContractName,
     Web3Client web3client,
     Credentials credentials) async {
+  // TODO SUBSCRIBE TO RESPONSE
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
@@ -43,10 +44,14 @@ Future<bool> approve(
         amount
       ];
 
+      //final nonce = await web3client
+      //    .getTransactionCount(EthereumAddress.fromHex(accountAddress));
+
       Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
         parameters: transactionParameters,
+        /*nonce: nonce*/
       );
 
       String txHash = await web3client.sendTransaction(credentials, transaction,
@@ -63,10 +68,14 @@ Future<bool> approve(
         BigInt.zero
       ];
 
+      /*final nonce = await web3client
+          .getTransactionCount(EthereumAddress.fromHex(accountAddress));*/
+
       Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
         parameters: transactionParameters,
+        /*nonce: nonce*/
       );
 
       String txHash = await web3client.sendTransaction(credentials, transaction,
@@ -82,10 +91,14 @@ Future<bool> approve(
       amount
     ];
 
+    //final nonce = await web3client
+    //    .getTransactionCount(EthereumAddress.fromHex(accountAddress));
+
     Transaction transaction = Transaction.callContract(
       contract: contract,
       function: _approve(contract),
       parameters: transactionParameters,
+      /*nonce: nonce*/
     );
 
     String txHash = await web3client.sendTransaction(credentials, transaction,

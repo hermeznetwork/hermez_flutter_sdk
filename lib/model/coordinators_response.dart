@@ -7,8 +7,11 @@ class CoordinatorsResponse {
   CoordinatorsResponse({this.coordinators, this.pendingItems});
 
   factory CoordinatorsResponse.fromJson(Map<String, dynamic> json) {
+    List<Coordinator> coordinators = (json['coordinators'] as List)
+        ?.map((item) => Coordinator.fromJson(item))
+        ?.toList();
     return CoordinatorsResponse(
-        coordinators: json['coordinators'], pendingItems: json['pendingItems']);
+        coordinators: coordinators, pendingItems: json['pendingItems']);
   }
 
   Map<String, dynamic> toJson() => {

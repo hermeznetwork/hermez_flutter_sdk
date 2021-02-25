@@ -116,19 +116,27 @@ Future<Account> getAccount(String accountIndex) async {
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered transactions and pagination data
 Future<List<ForgedTransaction>> getTransactions(
-    String address, List<int> tokenIds, int batchNum, String accountIndex,
-    {int fromItem = 0,
+    {String address,
+    List<int> tokenIds,
+    int batchNum,
+    String accountIndex,
+    int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
-  if (isHermezEthereumAddress(address) && address.isNotEmpty)
+  if (address != null && address.isNotEmpty && isHermezEthereumAddress(address))
     params.putIfAbsent('hezEthereumAddress', () => address);
-  if (isHermezBjjAddress(address) && address.isNotEmpty)
+  if (address != null && address.isNotEmpty && isHermezBjjAddress(address))
     params.putIfAbsent('BJJ', () => address);
-  if (tokenIds.isNotEmpty)
+  if (tokenIds != null && tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
-  params.putIfAbsent('batchNum', () => batchNum > 0 ? batchNum.toString() : '');
-  params.putIfAbsent('accountIndex', () => accountIndex);
+  if (batchNum != null) {
+    params.putIfAbsent(
+        'batchNum', () => batchNum > 0 ? batchNum.toString() : '');
+  }
+  if (accountIndex != null && accountIndex.isNotEmpty) {
+    params.putIfAbsent('accountIndex', () => accountIndex);
+  }
   params.addAll(getPageData(fromItem, order, limit));
   final response =
       await get(baseApiUrl, TRANSACTIONS_HISTORY_URL, queryParameters: params);
@@ -138,7 +146,7 @@ Future<List<ForgedTransaction>> getTransactions(
         ForgedTransactionsResponse.fromJson(json.decode(jsonResponse));
     return forgedTransactionsResponse.transactions;
   } else {
-    throw ('Error: $response.statusCode');
+    throw ('Error: ${response.body}');
   }
 }
 

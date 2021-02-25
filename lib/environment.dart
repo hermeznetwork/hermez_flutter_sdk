@@ -9,24 +9,26 @@ class Env {
         1337,
         {
           "0x10465b16615ae36F350268eb951d7B0187141D3B", // Hermez
-          "0x8EEaea23686c319133a7cC110b840d1591d9AeE0" // TargaryenCoin
+          "0x8EEaea23686c319133a7cC110b840d1591d9AeE0" // WithdrawalDelayer
         },
-        "192.168.1.134:8086",
-        '192.168.1.134:8545',
-        "192.168.1.134:8080",
-        //"192.168.250.101:8086",
-        //'192.168.250.101:8545',
-        //"192.168.250.101:8080",
+        //"192.168.1.134:8086",
+        //'192.168.1.134:8545',
+        //"192.168.1.134:8080",
+        "192.168.250.101:8086",
+        'http://192.168.250.101:8545',
+        'wss://192.168.250.101:8545',
+        "192.168.250.101:8080",
         "https://etherscan.io");
 
     params['rinkeby'] = EnvParams(
         4,
         {
           "0x5e61B3d99cAa3a5892781F53996d2128B40a3fAD", // Hermez
-          "0x44D3CBFBeca39F08623Cc6e8574c91c621599548", // TargaryenCoin
+          "0x44D3CBFBeca39F08623Cc6e8574c91c621599548", // WithdrawalDelayer
         },
         "api.testnet.hermez.io",
-        "rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "wss://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
         "http://explorer.testnet.hermez.io",
         "https://rinkeby.etherscan.io");
   }
@@ -41,11 +43,12 @@ class Env {
 
 class EnvParams {
   EnvParams(this.chainId, this.contracts, this.baseApiUrl, this.baseWeb3Url,
-      this.batchExplorerUrl, this.etherscanUrl);
+      this.baseWeb3RdpUrl, this.batchExplorerUrl, this.etherscanUrl);
   final int chainId;
   final Set<String> contracts;
   final String baseApiUrl;
   final String baseWeb3Url;
+  final String baseWeb3RdpUrl;
   final String batchExplorerUrl;
   final String etherscanUrl;
 }
