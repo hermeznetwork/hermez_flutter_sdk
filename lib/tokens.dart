@@ -26,9 +26,10 @@ Future<bool> approve(
     String tokenContractName,
     Web3Client web3client,
     Credentials credentials) async {
-  // TODO SUBSCRIBE TO RESPONSE
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
+
+  EthereumAddress ethereumAddress = await credentials.extractAddress();
 
   try {
     final allowanceCall = await web3client
@@ -39,19 +40,13 @@ Future<bool> approve(
     final allowance = allowanceCall.first as BigInt;
 
     if (allowance < amount) {
-      final transactionParameters = [
-        EthereumAddress.fromHex(contractAddresses['Hermez']),
-        amount
-      ];
-
-      //final nonce = await web3client
-      //    .getTransactionCount(EthereumAddress.fromHex(accountAddress));
-
       Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
-        parameters: transactionParameters,
-        /*nonce: nonce*/
+        parameters: [
+          EthereumAddress.fromHex(contractAddresses['Hermez']),
+          amount
+        ],
       );
 
       String txHash = await web3client.sendTransaction(credentials, transaction,
@@ -63,27 +58,20 @@ Future<bool> approve(
     }
 
     if (!(allowance.sign == 0)) {
-      final transactionParameters = [
-        EthereumAddress.fromHex(contractAddresses['Hermez']),
-        BigInt.zero
-      ];
 
-      /*final nonce = await web3client
-          .getTransactionCount(EthereumAddress.fromHex(accountAddress));*/
-
-      Transaction transaction = Transaction.callContract(
-        contract: contract,
-        function: _approve(contract),
-        parameters: transactionParameters,
-        /*nonce: nonce*/
-      );
-
-      String txHash = await web3client.sendTransaction(credentials, transaction,
+      String txHash = await web3client.sendTransaction(
+          credentials,
+          Transaction.callContract(
+              contract: contract,
+              function: _approve(contract),
+              parameters: [
+                EthereumAddress.fromHex(contractAddresses['Hermez']),
+                BigInt.zero
+              ]),
           chainId: getCurrentEnvironment().chainId);
 
       print(txHash);
 
-      return txHash != null;
     }
 
     final transactionParameters = [
@@ -91,15 +79,13 @@ Future<bool> approve(
       amount
     ];
 
-    //final nonce = await web3client
-    //    .getTransactionCount(EthereumAddress.fromHex(accountAddress));
+    int nonce = await web3client.getTransactionCount(ethereumAddress);
 
     Transaction transaction = Transaction.callContract(
-      contract: contract,
-      function: _approve(contract),
-      parameters: transactionParameters,
-      /*nonce: nonce*/
-    );
+        contract: contract,
+        function: _approve(contract),
+        parameters: transactionParameters,
+        nonce: nonce++);
 
     String txHash = await web3client.sendTransaction(credentials, transaction,
         chainId: getCurrentEnvironment().chainId);

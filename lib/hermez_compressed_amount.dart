@@ -66,9 +66,7 @@ class HermezCompressedAmount {
   /// Convert a fix to a float
   /// @param {num} _f - Scalar encoded in fix
   /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
-  static HermezCompressedAmount compressAmount(num _f) {
-    final f = BigInt.from(_f);
-
+  static HermezCompressedAmount compressAmount(BigInt f) {
     if (f.sign == 0) {
       return new HermezCompressedAmount(0);
     }

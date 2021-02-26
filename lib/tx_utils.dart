@@ -3,12 +3,14 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
-import 'package:hex/hex.dart';
+import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'
     show getAccountIndex, isHermezAccountIndex, isHermezEthereumAddress;
 import 'fee_factors.dart' show feeFactors;
+import 'hermez_compressed_amount.dart';
 import 'model/token.dart';
 import 'providers.dart' show getProvider;
 import 'tx_pool.dart' show getPoolTransactions;
@@ -64,25 +66,89 @@ Future<dynamic> encodeTransaction(dynamic transaction,
   return encodedTransaction;
 }
 
-/// TxID (12 bytes) for L2Tx is:
-/// bytes:  |  1   |    6    |   5   |
-/// values: | type | FromIdx | Nonce |
-/// where type for L2Tx is '2'
-///
-/// @param {Number} fromIdx
-/// @param {Number} nonce
+/// Generates the L1 Transaction Id based on the spec
+/// TxID (32 bytes) for L1Tx is the Keccak256 (ethereum) hash of:
+/// bytes:   | 1 byte |             32 bytes                |
+///                     SHA256(    8 bytes      |  2 bytes )
+/// content: |  type  | SHA256([ToForgeL1TxsNum | Position ])
+/// where type for L1UserTx is 0
+/// @param {Number} toForgeL1TxsNum
+/// @param {Number} currentPosition
 ///
 /// @returns {String}
-String getTxId(int fromIdx, int nonce) {
-  final fromIdxBytes = Uint8List(8);
-  fromIdxBytes.add(fromIdx);
+String getL1UserTxId(int toForgeL1TxsNum, int currentPosition) {
+  final toForgeL1TxsNumBytes = Uint8List(8);
+  final toForgeL1TxsNumView = ByteData.view(toForgeL1TxsNumBytes.buffer);
+  toForgeL1TxsNumView.setUint64(0, toForgeL1TxsNum);
+
+  final positionBytes = Uint8List(8);
+  final positionView = ByteData.view(positionBytes.buffer);
+  positionView.setUint64(0, currentPosition);
+
+  /*toForgeL1TxsNumBytes.add(toForgeL1TxsNum);
+  toForgeL1TxsNumBytes.buffer.asByteData().setUint64(byteOffset, value)
   final fromIdxHex = HEX.encode(fromIdxBytes.buffer.asUint8List(2, 8).toList());
 
   final nonceBytes = Uint8List(8);
   nonceBytes.add(nonce);
-  final nonceHex = HEX.encode(nonceBytes.buffer.asUint8List(3, 8).toList());
+  final nonceHex = HEX.encode(nonceBytes.buffer.asUint8List(3, 8).toList());*/
 
-  return '0x02' + fromIdxHex + nonceHex;
+  final toForgeL1TxsNumHex =
+      bytesToHex(toForgeL1TxsNumView.buffer.asUint8List());
+  final positionHex =
+      bytesToHex(positionView.buffer.asUint8List().sublist(6, 8));
+
+  final v = toForgeL1TxsNumHex + positionHex;
+  final h = bytesToHex(keccak256(hexToBytes(v)));
+
+  return '0x00' + h;
+}
+
+/// Generates the Transaction Id based on the spec
+/// TxID (33 bytes) for L2Tx is:
+/// bytes:   | 1 byte |                    32 bytes                           |
+///                     SHA256( 6 bytes | 4 bytes | 2 bytes| 5 bytes | 1 byte )
+/// content: |  type  | SHA256([FromIdx | TokenID | Amount |  Nonce  | Fee    ])
+/// where type for L2Tx is '2'
+/// @param {Number} fromIdx - The account index that sends the transaction
+/// @param {Number} tokenId - The tokenId being transacted
+/// @param {BigInt} amount - The amount being transacted
+/// @param {Number} nonce - Nonce of the transaction
+/// @param {Number} fee - The fee of the transaction
+/// @returns {String} Transaction Id
+String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
+  final fromIdxBytes = Uint8List(8);
+  final fromIdxView = ByteData.view(fromIdxBytes.buffer);
+  fromIdxView.setUint64(0, fromIdx);
+
+  final tokenIdBytes = Uint8List(8);
+  final tokenIdView = ByteData.view(tokenIdBytes.buffer);
+  tokenIdView.setUint64(0, tokenId);
+
+  final amountF40 = HermezCompressedAmount.compressAmount(amount).value;
+  final amountBytes = Uint8List(8);
+  final amountView = ByteData.view(amountBytes.buffer);
+  amountView.setUint64(0, BigInt.from(amountF40).toInt());
+
+  final nonceBytes = Uint8List(8);
+  final nonceView = ByteData.view(nonceBytes.buffer);
+  nonceView.setUint64(0, nonce);
+
+  final fromIdxHex = bytesToHex(fromIdxView.buffer.asUint8List().sublist(2, 8));
+  final tokenIdHex = bytesToHex(tokenIdView.buffer.asUint8List().sublist(4, 8));
+  final amountHex = bytesToHex(
+      amountView.buffer.asUint8List().sublist(3, 8)); // float40: 5 bytes
+  final nonceHex = bytesToHex(nonceView.buffer.asUint8List().sublist(3, 8));
+
+  String feeHex = fee.toRadixString(16);
+  if (feeHex.length == 1) {
+    feeHex = '0' + feeHex;
+  }
+
+  final v = fromIdxHex + tokenIdHex + amountHex + nonceHex + feeHex;
+  final h = bytesToHex(keccak256(hexToBytes(v)));
+
+  return '0x02' + h;
 }
 
 /// Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
@@ -119,8 +185,12 @@ int getFee(int fee, String amount, int decimals) {
 ///
 /// @return {String} transactionType
 String getTransactionType(dynamic transaction) {
-  if (transaction.to && transaction.to.includes('hez:')) {
-    return 'Transfer';
+  if (transaction.to) {
+    if (isHermezAccountIndex(transaction.to)) {
+      return 'Transfer';
+    } else if (isHermezEthereumAddress(transaction.to)) {
+      return 'TransferToEthAddr';
+    }
   } else {
     return 'Exit';
   }
@@ -176,6 +246,19 @@ BigInt buildTxCompressedData(dynamic tx) {
       res + BigInt.from((tx.nonce ? tx.nonce : 0) << 192); // nonce --> 40 bits
   res = res + BigInt.from((tx.fee ? tx.fee : 0) << 232); // userFee --> 8 bits
   res = res + BigInt.from((tx.toBjjSign ? 1 : 0) << 240); // toBjjSign --> 1 bit
+
+  return res;
+}
+
+/// Build element_1 for L2HashSignature
+/// @param {Object} tx - Transaction object returned by `encodeTransaction`
+/// @returns {BigInt} element_1 L2 signature
+BigInt buildElement1(tx) {
+  BigInt res = BigInt.zero;
+
+  /*res = res + Scalar.add(res, Scalar.fromString(tx.toEthereumAddress || '0', 16)) // ethAddr --> 160 bits
+  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 160)) // amountF --> 40 bits
+  res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 200)) // maxNumBatch --> 32 bits*/
 
   return res;
 }
@@ -251,6 +334,8 @@ dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
 
 Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
+  final decompressedAmount =
+      HermezCompressedAmount.decompressAmount(tx['amount']);
   Map<String, dynamic> transaction = {};
   transaction.putIfAbsent('type', () => getTransactionType(tx));
   transaction.putIfAbsent('tokenId', () => token.id);
@@ -261,10 +346,9 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
       () => isHermezEthereumAddress(tx['to']) ? tx['to'] : null);
   transaction.putIfAbsent('toBjj', () => null);
   // Corrects precision errors using the same system used in the Coordinator
-  transaction.putIfAbsent('amount',
-      () => /*float2Fix(floorFix2Float(*/ tx['amount'] /*))*/ .toString());
-  transaction.putIfAbsent(
-      'fee', () => getFee(tx['fee'], tx['amount'], token.decimals));
+  transaction.putIfAbsent('amount', () => decompressedAmount.toString());
+  transaction.putIfAbsent('fee',
+      () => getFee(tx['fee'], decompressedAmount.toString(), token.decimals));
   transaction.putIfAbsent('nonce',
       () async => await getNonce(tx['nonce'], tx['from'], bjj, token.id));
   transaction.putIfAbsent('requestFromAccountIndex', () => null);
@@ -278,7 +362,11 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
   dynamic encodedTransaction = await encodeTransaction(transaction);
   transaction.putIfAbsent(
       'id',
-      () => getTxId(
-          encodedTransaction.fromAccountIndex, encodedTransaction.nonce));
+      () => getL2TxId(
+          encodedTransaction.fromAccountIndex,
+          encodedTransaction.tokenId,
+          encodedTransaction.amount,
+          encodedTransaction.nonce,
+          encodedTransaction.fee));
   return {transaction, encodedTransaction};
 }

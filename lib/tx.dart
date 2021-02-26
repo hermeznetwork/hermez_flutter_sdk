@@ -77,6 +77,9 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   final credentials = await web3client.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
+  final gasPrice = EtherAmount.fromUnitAndValue(
+      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));
+
   final transactionParameters = [
     account != null ? BigInt.zero : hexToInt(babyJubJub),
     account != null
@@ -88,9 +91,6 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     BigInt.zero,
     hexToBytes('0x')
   ];
-
-  final gasPrice = EtherAmount.fromUnitAndValue(
-      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));
 
   final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
 
@@ -115,8 +115,18 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     return txHash != null;
   }
 
+  int nonceBefore = await web3client.getTransactionCount(from);
+
   await approve(decompressedAmount, ethereumAddress, token.ethereumAddress,
       token.name, web3client, credentials);
+
+  int nonceAfter = await web3client.getTransactionCount(from);
+
+  int correctNonce = nonceAfter;
+
+  if (nonceBefore == nonceAfter) {
+    correctNonce = nonceAfter + 1;
+  }
 
   // Keep in mind that web3.eth.getTransactionCount(walletAddress)
   // will only give you the last CONFIRMED nonce.
@@ -127,8 +137,8 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
       maxGas: gasLimit,
-      gasPrice: gasPrice);
-  //nonce: nonce);
+      gasPrice: gasPrice,
+      nonce: correctNonce);
 
   print('sendTransaction');
   print(
@@ -421,7 +431,7 @@ void forceExit(
 /// @param {Boolean} filterSiblings - Whether siblings should be filtered
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Bumber} gasMultiplier - Optional gas multiplier
-void withdraw(
+Future withdraw(
     BigInt amount,
     String accountIndex,
     dynamic token,
@@ -467,7 +477,7 @@ void withdraw(
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Bumber} gasMultiplier - Optional gas multiplier
-void delayedWithdraw(
+Future delayedWithdraw(
     String hezEthereumAddress, dynamic token, Web3Client web3client,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
   final withdrawalDelayerContract = await ContractParser.fromAssets(
