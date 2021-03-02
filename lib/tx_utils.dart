@@ -8,7 +8,11 @@ import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'
-    show getAccountIndex, isHermezAccountIndex, isHermezEthereumAddress;
+    show
+        getAccountIndex,
+        getEthereumAddress,
+        isHermezAccountIndex,
+        isHermezEthereumAddress;
 import 'fee_factors.dart' show feeFactors;
 import 'hermez_compressed_amount.dart';
 import 'model/token.dart';
@@ -63,6 +67,11 @@ Future<dynamic> encodeTransaction(dynamic transaction,
     encodedTransaction.toAccountIndex = 1;
   }
 
+  if (transaction.toHezEthereumAddress) {
+    encodedTransaction.toEthereumAddress =
+        getEthereumAddress(transaction.toHezEthereumAddress);
+  }
+
   return encodedTransaction;
 }
 
@@ -84,14 +93,6 @@ String getL1UserTxId(int toForgeL1TxsNum, int currentPosition) {
   final positionBytes = Uint8List(8);
   final positionView = ByteData.view(positionBytes.buffer);
   positionView.setUint64(0, currentPosition);
-
-  /*toForgeL1TxsNumBytes.add(toForgeL1TxsNum);
-  toForgeL1TxsNumBytes.buffer.asByteData().setUint64(byteOffset, value)
-  final fromIdxHex = HEX.encode(fromIdxBytes.buffer.asUint8List(2, 8).toList());
-
-  final nonceBytes = Uint8List(8);
-  nonceBytes.add(nonce);
-  final nonceHex = HEX.encode(nonceBytes.buffer.asUint8List(3, 8).toList());*/
 
   final toForgeL1TxsNumHex =
       bytesToHex(toForgeL1TxsNumView.buffer.asUint8List());
@@ -270,16 +271,11 @@ BigInt buildElement1(tx) {
 /// @returns {Scalar} message to sign
 dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
   final BigInt txCompressedData = buildTxCompressedData(encodedTransaction);
+  final element1 = buildElement1(encodedTransaction);
 
   final List<BigInt> params = [
     txCompressedData,
-    BigInt.parse(
-        encodedTransaction.toEthAddr.isNotEmpty
-            ? (encodedTransaction.toEthAddr.startsWith('0x')
-                ? encodedTransaction.toEthAddr.substring(2)
-                : encodedTransaction.toEthAddr)
-            : '0',
-        radix: 16),
+    element1,
     BigInt.parse(
         encodedTransaction.toBjjAy.isNotEmpty
             ? (encodedTransaction.toBjjAy.startsWith('0x')

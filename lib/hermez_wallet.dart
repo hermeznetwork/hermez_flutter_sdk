@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
+import 'package:hermez_plugin/utils/eip712.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
@@ -126,6 +127,39 @@ class HermezWallet {
     final hexZeroPad = chainId.padLeft(4, "0");
     final hermezContractAddress = contractAddresses['Hermez'].substring(2);
 
+    final bJJ = this.publicKeyCompressedHex.startsWith('0x')
+        ? this.publicKeyCompressedHex
+        : '0x${this.publicKeyCompressedHex}';
+
+    final Map<String, String> domain = {
+      'name': EIP_712_PROVIDER,
+      'version': EIP_712_VERSION,
+      'chainId': chainId,
+      'verifyingContract': contractAddresses['Hermez']
+    };
+
+    final Map<String, List<Map<String, String>>> types = {
+      'Authorize': [
+        {'name': 'Provider', 'type': 'string'},
+        {'name': 'Authorisation', 'type': 'string'},
+        {'name': 'BJJKey', 'type': 'bytes32'}
+      ]
+    };
+
+    final Map<String, String> message = {
+      'Provider': EIP_712_PROVIDER,
+      'Authorisation': CREATE_ACCOUNT_AUTH_MESSAGE,
+      'BJJKey': bJJ
+    };
+
+    final String primaryType = 'EIP712Domain'; //???
+
+    eip712.sign(domain, primaryType, message, types, signer);
+
+    //signer.signToSignature(payload)
+
+    //signer._signTypedData(domain, types, value)????
+
     final messageHex = accountCreationAuthMsgHex +
         this.publicKeyCompressedHex +
         hexZeroPad +
@@ -152,8 +186,8 @@ class HermezWallet {
     final prvKey = EthPrivateKey.fromHex(privateKey);
     final ethereumAddress = await prvKey.extractAddress();
     final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
-    final signature =
-        await prvKey.sign(Uint8ArrayUtils.uint8ListfromString(MASTER_SECRET));
+    final signature = await prvKey.sign(
+        Uint8ArrayUtils.uint8ListfromString(HERMEZ_ACCOUNT_ACCESS_MESSAGE));
     final hashedBufferSignature = keccak256(signature);
     final hermezWallet =
         new HermezWallet(hashedBufferSignature, hermezEthereumAddress);

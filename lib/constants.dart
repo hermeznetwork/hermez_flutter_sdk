@@ -1,10 +1,11 @@
 const TRANSACTION_POOL_KEY = 'transactionPool';
 
-const MASTER_SECRET =
-    'HERMEZ_ACCOUNT. Don\'t share this signature with anyone as this would reveal your Hermez private key. Unless you are in a trusted application, DO NOT SIGN THIS';
+const HERMEZ_ACCOUNT_ACCESS_MESSAGE =
+    'Hermez Network account access.\n\nSign this message if you are in a trusted application only.';
 
-const CREATE_ACCOUNT_AUTH_MESSAGE =
-    'I authorize this babyjubjub key for hermez rollup account creation';
+const CREATE_ACCOUNT_AUTH_MESSAGE = 'Account creation';
+const EIP_712_VERSION = '1';
+const EIP_712_PROVIDER = 'Hermez Network';
 
 const ETHER_TOKEN_ID = 0;
 
@@ -38,3 +39,6 @@ final Map<String, String> contractAddresses = {
   ContractNames['WithdrawalDelayer']:
       '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
 };
+
+const STORAGE_VERSION_KEY = 'hermezStorageVersion';
+const STORAGE_VERSION = 1;

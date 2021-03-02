@@ -7,7 +7,7 @@ import 'package:pointycastle/digests/sha512.dart';
 import 'package:pointycastle/macs/hmac.dart';
 import 'package:tweetnacl/tweetnacl.dart' as ED25519;
 
-import '../constants.dart' show MASTER_SECRET;
+import '../constants.dart' show HERMEZ_ACCOUNT_ACCESS_MESSAGE;
 
 class KeyData {
   List<int> key;
@@ -18,7 +18,7 @@ class KeyData {
 const int HARDENED_OFFSET = 0x80000000;
 
 class _HDKey {
-  static final _curveBytes = utf8.encode(MASTER_SECRET);
+  static final _curveBytes = utf8.encode(HERMEZ_ACCOUNT_ACCESS_MESSAGE);
   static final _pathRegex = RegExp(r"^(m\/)?(\d+'?\/)*\d+'?$");
 
   const _HDKey();
