@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
 import 'package:hermez_plugin/utils/eip712.dart';
+import 'package:hermez_plugin/utils/eip7122.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
@@ -120,55 +120,135 @@ class HermezWallet {
   dynamic signCreateAccountAuthorization(
       String chainId, String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
-    final accountCreationAuthMsgArray =
-        utf8.encode(CREATE_ACCOUNT_AUTH_MESSAGE);
-    final accountCreationAuthMsgHex =
-        bytesToHex(accountCreationAuthMsgArray, include0x: true);
-    final hexZeroPad = chainId.padLeft(4, "0");
-    final hermezContractAddress = contractAddresses['Hermez'].substring(2);
 
     final bJJ = this.publicKeyCompressedHex.startsWith('0x')
         ? this.publicKeyCompressedHex
         : '0x${this.publicKeyCompressedHex}';
 
-    final Map<String, String> domain = {
+    final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId': chainId,
-      'verifyingContract': contractAddresses['Hermez']
+      'chainId': BigInt.parse(chainId),
+      'verifyingContract': EthereumAddress.fromHex(contractAddresses['Hermez'])
     };
 
-    final Map<String, List<Map<String, String>>> types = {
-      'Authorize': [
-        {'name': 'Provider', 'type': 'string'},
-        {'name': 'Authorisation', 'type': 'string'},
-        {'name': 'BJJKey', 'type': 'bytes32'}
+    final Map<String, dynamic> message = {
+      'Provider': EIP_712_PROVIDER,
+      'Authorisation': CREATE_ACCOUNT_AUTH_MESSAGE,
+      'BJJKey': hexToBytes(bJJ)
+    };
+
+    final String primaryType = 'Authorise'; //???
+
+    final Map<String, List<TypedDataArgument>> types = {
+      'Authorise': [
+        TypedDataArgument('Provider', 'string'),
+        TypedDataArgument('Authorisation', 'string'),
+        TypedDataArgument('BJJKey', 'bytes32')
+      ],
+      'EIP712Domain': [
+        TypedDataArgument('name', 'string'),
+        TypedDataArgument('version', 'string'),
+        TypedDataArgument('chainId', 'uint256'),
+        TypedDataArgument('verifyingContract', 'address')
       ]
     };
 
-    final Map<String, String> message = {
-      'Provider': EIP_712_PROVIDER,
-      'Authorisation': CREATE_ACCOUNT_AUTH_MESSAGE,
-      'BJJKey': bJJ
+    final Map<String, List<Map<String, String>>> types2 = {
+      'Authorise': [
+        {'name': 'Provider', 'type': 'string'},
+        {'name': 'Authorisation', 'type': 'string'},
+        {'name': 'BJJKey', 'type': 'bytes32'},
+      ],
+      'EIP712Domain': [
+        {'name': 'name', 'type': 'string'},
+        {'name': 'version', 'type': 'string'},
+        {'name': 'chainId', 'type': 'uint256'},
+        {'name': 'verifyingContract', 'type': 'address'}
+      ]
     };
 
-    final String primaryType = 'EIP712Domain'; //???
+    final signature =
+        await eip712.sign(domain, primaryType, message, types2, signer);
 
-    eip712.sign(domain, primaryType, message, types, signer);
+    final typedData = TypedData(types, primaryType, domain, message);
+
+    final messageHash = eip7122.encodeDigest(typedData);
+
+    /*final Map<String, List<TypedDataArgument>> types3 = {
+      'EIP712Domain': [
+        TypedDataArgument('name', 'string'),
+        TypedDataArgument('version', 'string'),
+        TypedDataArgument('chainId', 'uint256'),
+        TypedDataArgument('verifyingContract', 'address')
+      ],
+      'Person': [
+        TypedDataArgument('name', 'string'),
+        TypedDataArgument('wallet', 'address')
+      ],
+      'Mail': [
+        TypedDataArgument('from', 'Person'),
+        TypedDataArgument('to', 'Person'),
+        TypedDataArgument('contents', 'string'),
+      ]
+    };
+
+    final primaryType3 = "Mail";
+
+    final Map<String, dynamic> domain3 = {
+      'name': 'Ether Mail',
+      'version': '1',
+      'chainId': BigInt.parse('1'),
+      'verifyingContract':
+          EthereumAddress.fromHex('0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC')
+    };
+
+    final Map<String, dynamic> message3 = {
+      'from': {
+        'name': 'Cow',
+        'wallet': EthereumAddress.fromHex(
+            '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'),
+      },
+      'to': {
+        'name': 'Bob',
+        'wallet': EthereumAddress.fromHex(
+            '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'),
+      },
+      'contents': 'Hello, Bob!'
+    };
+
+    final typedData2 = TypedData(types3, primaryType3, domain3, message3);
+    final messageHash2 = eip7122.encodeDigest(typedData2);*/
 
     //signer.signToSignature(payload)
 
     //signer._signTypedData(domain, types, value)????
 
-    final messageHex = accountCreationAuthMsgHex +
-        this.publicKeyCompressedHex +
-        hexZeroPad +
-        hermezContractAddress;
+    //final signer2 = EthPrivateKey.fromHex(bytesToHex(keccakUtf8('cow')));
+    //final address = await signer2.extractAddress();
+    //print(address.hex);
+    final signature2 = await signer.sign(
+      messageHash, /*chainId: int.parse(chainId)*/
+    );
+    /*final signature2 = /*bytesToHex(*/ await signer2
+        .signToSignature(messageHash2);*/
+    //include0x: true);
+    /*BigInt r = hexToInt('0x' + signature.substring(2).substring(0, 64));
+    BigInt s = hexToInt('0x' + signMsg.substring(2).substring(64, 128));
+    String vString = '0x' + signMsg.substring(2).substring(128, 130);
+    int v = hexToDartInt('0x' + signMsg.substring(2).substring(128, 130));
 
-    final messageInt = hexToInt(messageHex);
-    final messageHash = intToBytes(messageInt);
-    final signature = await signer.signPersonalMessage(messageHash);
+    final signature2 = MsgSignature(r, s, v);*/
+    /*print(bytesToHex(intToBytes(BigInt.from(signature.v))));
+    print(bytesToHex(intToBytes(signature.r)));
+    print(bytesToHex(intToBytes(signature.s)));
+    final signatureHex = "";*/
+
+    print(bytesToHex(messageHash));
     final signatureHex = bytesToHex(signature, include0x: true);
+    final signatureHex2 = bytesToHex(signature2, include0x: true);
+    print(signatureHex);
+    print(signatureHex2);
     return signatureHex;
 
     /// NOT NEEDED: Generate the signature from params as there's a bug in ethers

@@ -49,6 +49,8 @@ Future<http.Response> post(String baseAddress, String endpoint,
     return returnResponseOrThrowException(response);
   } on IOException {
     throw NetworkException();
+  } catch (e) {
+    print(e);
   }
 }
 
@@ -90,6 +92,9 @@ http.Response returnResponseOrThrowException(http.Response response) {
     throw ItemNotFoundException(response.body);
   } else if (response.statusCode == 500) {
     throw InternalServerErrorException(response.body);
+  } else if (response.statusCode == 400) {
+    String responseBody = response.body;
+    throw BadRequestException(response.body);
   } else if (response.statusCode > 400) {
     throw UnknownApiException(response.statusCode);
   } else {
