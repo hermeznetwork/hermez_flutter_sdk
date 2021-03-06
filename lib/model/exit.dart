@@ -7,10 +7,12 @@ class Exit {
   final int itemId;
   final MerkleProof merkleProof;
   final String balance;
-  final int instantWithdrawn;
+  final int instantWithdraw;
   final String delayedWithdrawRequest;
-  final int delayedWithdrawn;
+  final int delayedWithdraw;
   final Token token;
+  final String bjj;
+  final String hezEthereumAddress;
 
   Exit(
       {this.batchNum,
@@ -18,10 +20,12 @@ class Exit {
       this.itemId,
       this.merkleProof,
       this.balance,
-      this.instantWithdrawn,
+      this.instantWithdraw,
       this.delayedWithdrawRequest,
-      this.delayedWithdrawn,
-      this.token});
+      this.delayedWithdraw,
+      this.token,
+      this.bjj,
+      this.hezEthereumAddress});
 
   factory Exit.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
@@ -32,10 +36,12 @@ class Exit {
         itemId: json['itemId'],
         merkleProof: merkleProof,
         balance: json['balance'],
-        instantWithdrawn: json['instantWithdrawn'],
+        instantWithdraw: json['instantWithdraw'],
         delayedWithdrawRequest: json['delayedWithdrawRequest'],
-        delayedWithdrawn: json['delayedWithdrawn'],
-        token: token);
+        delayedWithdraw: json['delayedWithdraw'],
+        token: token,
+        bjj: json['bjj'],
+        hezEthereumAddress: json['hezEthereumAddress']);
   }
 
   Map<String, dynamic> toJson() => {
@@ -44,9 +50,11 @@ class Exit {
         'itemId': itemId,
         'merkleProof': merkleProof.toJson(),
         'balance': balance,
-        'instantWithdrawn': instantWithdrawn,
+        'instantWithdrawn': instantWithdraw,
         'delayedWithdrawRequest': delayedWithdrawRequest,
-        'delayedWithdrawn': delayedWithdrawn,
-        'token': token.toJson()
+        'delayedWithdrawn': delayedWithdraw,
+        'token': token.toJson(),
+        'bjj': bjj,
+        'hezEthereumAddress': hezEthereumAddress
       };
 }
