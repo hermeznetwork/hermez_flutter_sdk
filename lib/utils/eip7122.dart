@@ -201,11 +201,7 @@ class eip7122 {
     for (int i = 0; i < encTypes.length; i++) {
       String name = encTypes[i];
       dynamic data = encValues[i];
-      //final encoded =
-      //uint8ListFromList(rlp.encode(_encodeToRlp(transaction, innerSignature)));
       LengthTrackingByteSink buffer = new LengthTrackingByteSink();
-      // ignore: invalid_use_of_visible_for_testing_member
-      //final encoded = Uint8List.fromList(rlp.encode(data));
       // ignore: invalid_use_of_visible_for_testing_member
       parseAbiType(name).encode(data, buffer);
       print(buffer.asBytes());

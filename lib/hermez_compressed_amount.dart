@@ -64,9 +64,10 @@ class HermezCompressedAmount {
   }*/
 
   /// Convert a fix to a float
-  /// @param {num} _f - Scalar encoded in fix
+  /// @param {String} _f - Scalar encoded in fix
   /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
-  static HermezCompressedAmount compressAmount(BigInt f) {
+  static HermezCompressedAmount compressAmount(double f) {
+    //double f = double.parse(_f);
     if (f.sign == 0) {
       return new HermezCompressedAmount(0);
     }
@@ -74,60 +75,23 @@ class HermezCompressedAmount {
     var m = f;
     var e = 0;
 
-    while ((m % BigInt.from(10)).sign == 0 &&
-        (BigInt.from(m / BigInt.from(0x800000000)).sign != 0)) {
-      m = BigInt.from(m / BigInt.from(10));
+    while ((m % 10).sign == 0 && (m / 0x800000000).sign != 0) {
+      m = m / 10;
       e++;
     }
 
     if (e > 31) {
       throw new ArgumentError("number too big");
     }
+    var eight = BigInt.from(0x800000000);
 
-    if (BigInt.from(m / BigInt.from(0x800000000)).sign != 0) {
+    if ((m / 0x800000000).toInt().sign != 0) {
       throw new ArgumentError("not enough precision");
     }
 
-    final res = m.toDouble() + (e * 0x800000000);
+    final res = m + (e * 0x800000000);
 
     return new HermezCompressedAmount(res);
-    /*final f = Scalar.e(_f);
-
-    function dist (n1, n2) {
-      const tmp = Scalar.sub(n1, n2)
-
-      return Scalar.abs(tmp)
-    }
-
-    final fl1 = HermezCompressedAmount._floorCompressAmount(f);
-    final fi1 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl1));
-    final fl2 = fl1 | 0x400;
-    final fi2 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl2));
-
-    var m3 = (fl1 & 0x3FF) + 1;
-    var e3 = (fl1 >> 11);
-    if (m3 == 0x400) {
-      m3 = 0x66; // 0x400 / 10
-      e3++;
-    }
-    const fl3 = m3 + (e3 << 11)
-    final fi3 = HermezCompressedAmount.decompressAmount(new HermezCompressedAmount(fl3));
-
-    let res = fl1
-    let d = dist(fi1, f)
-
-    const d2 = dist(fi2, f)
-    if (Scalar.gt(d, d2)) {
-      res = fl2
-      d = d2
-    }
-
-    const d3 = dist(fi3, f)
-    if (Scalar.gt(d, d3)) {
-      res = fl3
-    }
-
-    return new HermezCompressedAmount(res);*/
   }
 
   /// Convert a float to a fix

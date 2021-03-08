@@ -1,9 +1,9 @@
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:hermez_plugin/utils.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -13,7 +13,7 @@ import 'addresses.dart'
         getEthereumAddress,
         isHermezAccountIndex,
         isHermezEthereumAddress;
-import 'fee_factors.dart' show feeFactors;
+import 'fee_factors.dart' show feeFactors, feeFactorsAsBigInts;
 import 'hermez_compressed_amount.dart';
 import 'model/token.dart';
 import 'providers.dart' show getProvider;
@@ -41,6 +41,10 @@ const Map<String, String> txState = {
 final DynamicLibrary nativeExampleLib = Platform.isAndroid
     ? DynamicLibrary.open("libbabyjubjub.so")
     : DynamicLibrary.process();
+
+// 60 bits is the minimum bits to achieve enough precision among fee factor values < 192
+// no shift value is applied for fee factor values >= 192
+const bitsShiftPrecision = 60;
 
 //final circomlib = CircomLib(lib: await SetupUtil.getDylibAsync());
 
@@ -126,7 +130,8 @@ String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
   final tokenIdView = ByteData.view(tokenIdBytes.buffer);
   tokenIdView.setUint64(0, tokenId);
 
-  final amountF40 = HermezCompressedAmount.compressAmount(amount).value;
+  final amountF40 =
+      HermezCompressedAmount.compressAmount(amount.toDouble()).value;
   final amountBytes = Uint8List(8);
   final amountView = ByteData.view(amountBytes.buffer);
   amountView.setUint64(0, BigInt.from(amountF40).toInt());
@@ -155,19 +160,16 @@ String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
 /// Calculates the appropriate fee factor depending on what's the fee as a percentage of the amount
 ///
 /// @param {Number} fee - The fee in token value
-/// @param {String} amount - The amount as a BigInt string
-/// @param {Number} decimals - The decimals
+/// @param {BigInt} amount - The amount as a BigInt string
 ///
 /// @return {Number} feeFactor
-int getFee(int fee, String amount, int decimals) {
-  int amountFloat = BigInt.parse(amount).toInt() ~/ pow(10, decimals);
-  num percentage = fee / amountFloat;
+int getFeeIndex(num fee, BigInt amount) {
   num low = 0;
   int mid;
   int high = feeFactors.length - 1;
   while (high - low > 1) {
     mid = ((low + high) / 2).floor();
-    if (feeFactors[mid] < percentage) {
+    if (getFeeValue(mid, amount).toInt() < fee) {
       low = mid;
     } else {
       high = mid;
@@ -175,6 +177,19 @@ int getFee(int fee, String amount, int decimals) {
   }
 
   return high;
+}
+
+/// Compute fee in token value with an amount and a fee index
+/// @param {BigInt} amount - The amount of the transaction as a Scalar
+/// @param {Number} feeIndex - Fee selected among 0 - 255
+/// @returns {BigInt} Resulting fee in token value
+BigInt getFeeValue(feeIndex, amount) {
+  if (feeIndex < 192) {
+    final fee = amount * feeFactorsAsBigInts[feeIndex];
+    return fee >> bitsShiftPrecision;
+  } else {
+    return amount * feeFactorsAsBigInts[feeIndex];
+  }
 }
 
 /// Gets the transaction type depending on the information in the transaction object
@@ -185,11 +200,11 @@ int getFee(int fee, String amount, int decimals) {
 /// @param {Object} transaction - Transaction object sent to generateL2Transaction
 ///
 /// @return {String} transactionType
-String getTransactionType(dynamic transaction) {
-  if (transaction.to) {
-    if (isHermezAccountIndex(transaction.to)) {
+String getTransactionType(Map transaction) {
+  if (transaction["to"] != null) {
+    if (isHermezAccountIndex(transaction['to'])) {
       return 'Transfer';
-    } else if (isHermezEthereumAddress(transaction.to)) {
+    } else if (isHermezEthereumAddress(transaction['to'])) {
       return 'TransferToEthAddr';
     }
   } else {
@@ -332,6 +347,7 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
   final decompressedAmount =
       HermezCompressedAmount.decompressAmount(tx['amount']);
+  final feeBigInt = getTokenAmountBigInt(tx['fee'], token.decimals);
   Map<String, dynamic> transaction = {};
   transaction.putIfAbsent('type', () => getTransactionType(tx));
   transaction.putIfAbsent('tokenId', () => token.id);
@@ -343,10 +359,12 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
   transaction.putIfAbsent('toBjj', () => null);
   // Corrects precision errors using the same system used in the Coordinator
   transaction.putIfAbsent('amount', () => decompressedAmount.toString());
-  transaction.putIfAbsent('fee',
-      () => getFee(tx['fee'], decompressedAmount.toString(), token.decimals));
-  transaction.putIfAbsent('nonce',
-      () async => await getNonce(tx['nonce'], tx['from'], bjj, token.id));
+  transaction.putIfAbsent(
+      'fee', () => getFeeIndex(feeBigInt.toDouble(), decompressedAmount));
+  transaction.putIfAbsent(
+      'nonce',
+      () async =>
+          await getNonce(tx['nonce'], int.parse(tx['from']), bjj, token.id));
   transaction.putIfAbsent('requestFromAccountIndex', () => null);
   transaction.putIfAbsent('requestToAccountIndex', () => null);
   transaction.putIfAbsent('requestToHezEthereumAddress', () => null);
