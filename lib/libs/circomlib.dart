@@ -134,16 +134,23 @@ class CircomLib {
             "prv2pub")
         .asFunction();
 
-    /*_hashPoseidon = lib
-        .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Uint8>)>>(
-            "hash_poseidon")
-        .asFunction();*/
+    _hashPoseidon = lib
+        .lookup<
+            NativeFunction<
+                Pointer<Utf8> Function(
+                    Pointer<Utf8>,
+                    Pointer<Utf8>,
+                    Pointer<Utf8>,
+                    Pointer<Utf8>,
+                    Pointer<Utf8>,
+                    Pointer<Utf8>)>>("hash_poseidon")
+        .asFunction();
 
     _signPoseidon = lib
         .lookup<
             NativeFunction<
                 Pointer<Utf8> Function(
-                    Pointer<Utf8>, Pointer<Utf8>)>>("sign_poseidon")
+                    Pointer<Uint8>, Pointer<Utf8>)>>("sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
@@ -188,19 +195,29 @@ class CircomLib {
   }
 
   // circomlib.poseidon -> hashPoseidon
-  Pointer<Uint8> Function(Pointer<Uint8>) _hashPoseidon;
-  Pointer<Uint8> hashPoseidon(Uint8List buf) {
-    final ptr = Uint8ArrayUtils.toPointer(buf);
-    final resultPtr = _hashPoseidon(ptr);
-    return resultPtr;
+  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>,
+      Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>) _hashPoseidon;
+  String hashPoseidon(String txCompressedData, String toEthAddr, String toBjjAy,
+      String rqTxCompressedDatav2, String rqToEthAddr, String rqToBjjAy) {
+    final ptr1 = Utf8.toUtf8(txCompressedData);
+    final ptr2 = Utf8.toUtf8(toEthAddr);
+    final ptr3 = Utf8.toUtf8(toBjjAy);
+    final ptr4 = Utf8.toUtf8(rqTxCompressedDatav2);
+    final ptr5 = Utf8.toUtf8(rqToEthAddr);
+    final ptr6 = Utf8.toUtf8(rqToBjjAy);
+    final resultPtr = _hashPoseidon(ptr1, ptr2, ptr3, ptr4, ptr5, ptr6);
+    String resultString = Utf8.fromUtf8(resultPtr);
+    resultString = resultString.replaceAll("Fr(", "");
+    resultString = resultString.replaceAll(")", "");
+    return resultString;
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
-  String signPoseidon(String privateKey, String msg) {
-    final pvtKeyPtr = Utf8.toUtf8(privateKey);
+  Pointer<Utf8> Function(Pointer<Uint8>, Pointer<Utf8>) _signPoseidon;
+  String signPoseidon(Uint8List privateKey, String msg) {
+    final prvKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
     final msgPtr = Utf8.toUtf8(msg);
-    final resultPtr = _signPoseidon(pvtKeyPtr, msgPtr);
+    final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);
     final String compressedSignature = Utf8.fromUtf8(resultPtr);
     return compressedSignature;
   }

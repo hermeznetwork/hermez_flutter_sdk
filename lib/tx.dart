@@ -532,13 +532,16 @@ dynamic sendL2Transaction(dynamic transaction, String bJJ) async {
 /// @param {Object} token - The token information object as returned from the Coordinator.
 dynamic generateAndSendL2Tx(
     dynamic transaction, HermezWallet wallet, dynamic token) async {
-  final l2TxParams = await generateL2Transaction(
+  final Set<Map<String, dynamic>> l2TxParams = await generateL2Transaction(
       transaction, wallet.publicKeyCompressedHex, token);
 
-  wallet.signTransaction(l2TxParams.transaction, l2TxParams.encodedTransaction);
+  Map<String, dynamic> l2Transaction = l2TxParams.first;
+  Map<String, dynamic> l2EncodedTransaction = l2TxParams.last;
 
-  final l2TxResult = await sendL2Transaction(
-      l2TxParams.transaction, wallet.publicKeyCompressedHex);
+  wallet.signTransaction(l2Transaction, l2EncodedTransaction);
+
+  final l2TxResult =
+      await sendL2Transaction(l2Transaction, wallet.publicKeyCompressedHex);
 
   return l2TxResult;
 }

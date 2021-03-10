@@ -258,4 +258,4 @@ const feeFactors = [
 ];
 
 final feeFactorsAsBigInts =
-    feeFactors.map((feeFactor) => BigInt.parse(feeFactor)).toList();
+    feeFactors.map((feeFactor) => double.parse(feeFactor)).toList();

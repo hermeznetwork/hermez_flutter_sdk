@@ -102,14 +102,15 @@ class HermezWallet {
   /// @param {object} transaction - Transaction object
   /// @param {Object} encodedTransaction - Transaction encoded object
   /// @returns {object} The signed transaction object
-  dynamic signTransaction(transaction, encodedTransaction) {
+  Map<String, dynamic> signTransaction(Map<String, dynamic> transaction,
+      Map<String, dynamic> encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
     final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
     final signature = privKey.sign(hashMessage);
     final Uint8List compressedSigLE =
         Uint8ArrayUtils.uint8ListfromString(signature);
     final packedSignature = eddsaBabyJub.packSignature(compressedSigLE);
-    transaction.signature = packedSignature; // HEX.encode
+    transaction['signature'] = packedSignature; // HEX.encode*/
     return transaction;
   }
 

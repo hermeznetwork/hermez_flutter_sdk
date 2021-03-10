@@ -20,7 +20,7 @@ ContractFunction _allowance(DeployedContract contract) =>
 ///
 /// @returns {Promise} transaction
 Future<bool> approve(
-    BigInt amount,
+    num amount,
     String accountAddress,
     String tokenContractAddress,
     String tokenContractName,
@@ -39,7 +39,7 @@ Future<bool> approve(
     ]);
     final allowance = allowanceCall.first as BigInt;
 
-    if (allowance < amount) {
+    if (allowance.toInt() < amount) {
       Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
@@ -58,7 +58,6 @@ Future<bool> approve(
     }
 
     if (!(allowance.sign == 0)) {
-
       String txHash = await web3client.sendTransaction(
           credentials,
           Transaction.callContract(
@@ -71,7 +70,6 @@ Future<bool> approve(
           chainId: getCurrentEnvironment().chainId);
 
       print(txHash);
-
     }
 
     final transactionParameters = [

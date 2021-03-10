@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:hermez_plugin/api.dart' as api;
 import 'package:hermez_plugin/utils.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'
@@ -15,8 +15,8 @@ import 'addresses.dart'
         isHermezEthereumAddress;
 import 'fee_factors.dart' show feeFactors, feeFactorsAsBigInts;
 import 'hermez_compressed_amount.dart';
+import 'libs/circomlib.dart';
 import 'model/token.dart';
-import 'providers.dart' show getProvider;
 import 'tx_pool.dart' show getPoolTransactions;
 
 const String hermezPrefix = "hez:";
@@ -55,25 +55,25 @@ const bitsShiftPrecision = 60;
 /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
 ///
 /// @returns {Object} encodedTransaction
-Future<dynamic> encodeTransaction(dynamic transaction,
-    {String providerUrl}) async {
-  final encodedTransaction = transaction.clone();
+Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
+    {String providerUrl}) {
+  final Map<String, dynamic> encodedTransaction = Map.from(transaction);
 
-  final provider = getProvider(providerUrl, providerUrl);
-  //encodedTransaction.chainId = await provider.getNetwork().chainId
+  //inal provider = getProvider(providerUrl, providerUrl);
+  encodedTransaction["chainId"] = 4;
 
-  encodedTransaction.fromAccountIndex =
-      getAccountIndex(transaction.fromAccountIndex);
-  if (transaction.toAccountIndex) {
-    encodedTransaction.toAccountIndex =
-        getAccountIndex(transaction.toAccountIndex);
-  } else if (transaction.runtimeType.toString() == 'Exit') {
-    encodedTransaction.toAccountIndex = 1;
+  encodedTransaction["fromAccountIndex"] =
+      getAccountIndex(transaction["fromAccountIndex"]);
+  if (transaction["toAccountIndex"] != null) {
+    encodedTransaction["toAccountIndex"] =
+        getAccountIndex(transaction["toAccountIndex"]);
+  } else if (transaction["type"] == 'Exit') {
+    encodedTransaction["toAccountIndex"] = 1;
   }
 
-  if (transaction.toHezEthereumAddress) {
-    encodedTransaction.toEthereumAddress =
-        getEthereumAddress(transaction.toHezEthereumAddress);
+  if (transaction["toHezEthereumAddress"] != null) {
+    encodedTransaction["toEthereumAddress"] =
+        getEthereumAddress(transaction["toHezEthereumAddress"]);
   }
 
   return encodedTransaction;
@@ -117,11 +117,11 @@ String getL1UserTxId(int toForgeL1TxsNum, int currentPosition) {
 /// where type for L2Tx is '2'
 /// @param {Number} fromIdx - The account index that sends the transaction
 /// @param {Number} tokenId - The tokenId being transacted
-/// @param {BigInt} amount - The amount being transacted
+/// @param {Number} amount - The amount being transacted
 /// @param {Number} nonce - Nonce of the transaction
 /// @param {Number} fee - The fee of the transaction
 /// @returns {String} Transaction Id
-String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
+String getL2TxId(int fromIdx, int tokenId, num amount, int nonce, int fee) {
   final fromIdxBytes = Uint8List(8);
   final fromIdxView = ByteData.view(fromIdxBytes.buffer);
   fromIdxView.setUint64(0, fromIdx);
@@ -130,8 +130,7 @@ String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
   final tokenIdView = ByteData.view(tokenIdBytes.buffer);
   tokenIdView.setUint64(0, tokenId);
 
-  final amountF40 =
-      HermezCompressedAmount.compressAmount(amount.toDouble()).value;
+  final amountF40 = HermezCompressedAmount.compressAmount(amount).value;
   final amountBytes = Uint8List(8);
   final amountView = ByteData.view(amountBytes.buffer);
   amountView.setUint64(0, BigInt.from(amountF40).toInt());
@@ -163,13 +162,13 @@ String getL2TxId(int fromIdx, int tokenId, BigInt amount, int nonce, int fee) {
 /// @param {BigInt} amount - The amount as a BigInt string
 ///
 /// @return {Number} feeFactor
-int getFeeIndex(num fee, BigInt amount) {
+int getFeeIndex(num fee, num amount) {
   num low = 0;
   int mid;
   int high = feeFactors.length - 1;
   while (high - low > 1) {
     mid = ((low + high) / 2).floor();
-    if (getFeeValue(mid, amount).toInt() < fee) {
+    if (getFeeValue(mid, amount).toDouble() < fee) {
       low = mid;
     } else {
       high = mid;
@@ -180,15 +179,15 @@ int getFeeIndex(num fee, BigInt amount) {
 }
 
 /// Compute fee in token value with an amount and a fee index
-/// @param {BigInt} amount - The amount of the transaction as a Scalar
+/// @param {Number} amount - The amount of the transaction as a Scalar
 /// @param {Number} feeIndex - Fee selected among 0 - 255
 /// @returns {BigInt} Resulting fee in token value
-BigInt getFeeValue(feeIndex, amount) {
+BigInt getFeeValue(num feeIndex, num amount) {
   if (feeIndex < 192) {
-    final fee = amount * feeFactorsAsBigInts[feeIndex];
+    final fee = BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
     return fee >> bitsShiftPrecision;
   } else {
-    return amount * feeFactorsAsBigInts[feeIndex];
+    return BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
   }
 }
 
@@ -216,22 +215,32 @@ String getTransactionType(Map transaction) {
 /// It needs to find the lowest nonce available as transactions in the pool may fail and the Coordinator only forges
 /// transactions in the order set by nonces.
 ///
-/// @param {Number} currentNonce - The current token account nonce
+/// @param {Number} currentNonce - The current token account nonce returned by the Coordinator (optional)
+/// @param {String} accountIndex - The account index
 /// @param {String} bjj - The account's BabyJubJub
 /// @param {Number} tokenId - The token id of the token in the transaction
 ///
 /// @return {Number} nonce
 Future<num> getNonce(
-    num currentNonce, num accountIndex, String bjj, num tokenId) async {
-  final List<dynamic> poolTxs =
-      await getPoolTransactions(accountIndex.toString(), bjj);
+    num currentNonce, String accountIndex, String bjj, num tokenId) async {
+  if (currentNonce.runtimeType != null) {
+    return currentNonce;
+  }
+
+  final accountData = await api.getAccount(accountIndex);
+  var nonce = accountData.nonce;
+
+  final List<dynamic> poolTxs = await getPoolTransactions(accountIndex, bjj);
+
   poolTxs.removeWhere((tx) => tx.token.id == tokenId);
   final List<int> poolTxsNonces = poolTxs.map((tx) => tx.nonce);
   poolTxs.sort();
 
-  int nonce = currentNonce + 1;
-  while (poolTxsNonces.indexOf(nonce) != -1) {
-    nonce++;
+  // return current nonce if no transactions are pending
+  if (poolTxsNonces.length > 0) {
+    while (poolTxsNonces.indexOf(nonce) != -1) {
+      nonce++;
+    }
   }
 
   return nonce;
@@ -240,28 +249,33 @@ Future<num> getNonce(
 /// Encode tx compressed data
 /// @param {Object} tx - Transaction object
 /// @returns {BigInt} Encoded tx compressed data
-BigInt buildTxCompressedData(dynamic tx) {
+BigInt buildTxCompressedData(Map<String, dynamic> tx) {
   final signatureConstant = BigInt.parse('3322668559');
   BigInt res = BigInt.zero;
 
   res = res + signatureConstant; // SignConst --> 32 bits
   res = res +
-      BigInt.from((tx.chainId ? tx.chainId : 0) << 32); // chainId --> 16 bits
+      BigInt.from((tx['chainId'] != null ? tx['chainId'] : 0) <<
+          32); // chainId --> 16 bits
   res = res +
-      BigInt.from((tx.fromAccountIndex ? tx.fromAccountIndex : 0) <<
-          48); // fromIdx --> 48 bits
+      BigInt.from(
+          (tx['fromAccountIndex'] != null ? tx['fromAccountIndex'] : 0) <<
+              48); // fromIdx --> 48 bits
   res = res +
-      BigInt.from((tx.toAccountIndex ? tx.toAccountIndex : 0) <<
+      BigInt.from((tx['toAccountIndex'] != null ? tx['toAccountIndex'] : 0) <<
           96); // toIdx --> 48 bits
   res = res +
-      BigInt.from((tx.amount.toDouble() ? tx.amount.toDouble() : 0) <<
-          144); // amounf16 --> 16 bits
+      BigInt.from((tx['tokenId'] != null ? tx['tokenId'] : 0) <<
+          144); // tokenID --> 32 bits
   res = res +
-      BigInt.from((tx.tokenId ? tx.tokenId : 0) << 160); // tokenID --> 32 bits
-  res =
-      res + BigInt.from((tx.nonce ? tx.nonce : 0) << 192); // nonce --> 40 bits
-  res = res + BigInt.from((tx.fee ? tx.fee : 0) << 232); // userFee --> 8 bits
-  res = res + BigInt.from((tx.toBjjSign ? 1 : 0) << 240); // toBjjSign --> 1 bit
+      BigInt.from(
+          (tx['nonce'] != null ? tx['nonce'] : 0) << 176); // nonce --> 40 bits
+  res = res +
+      BigInt.from(
+          (tx['fee'] != null ? tx['fee'] : 0) << 216); // userFee --> 8 bits
+  res = res +
+      BigInt.from(
+          (tx['toBjjSign'] != null ? 1 : 0) << 224); // toBjjSign --> 1 bit
 
   return res;
 }
@@ -269,12 +283,22 @@ BigInt buildTxCompressedData(dynamic tx) {
 /// Build element_1 for L2HashSignature
 /// @param {Object} tx - Transaction object returned by `encodeTransaction`
 /// @returns {BigInt} element_1 L2 signature
-BigInt buildElement1(tx) {
+BigInt buildElement1(Map<String, dynamic> tx) {
   BigInt res = BigInt.zero;
 
-  /*res = res + Scalar.add(res, Scalar.fromString(tx.toEthereumAddress || '0', 16)) // ethAddr --> 160 bits
-  res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 160)) // amountF --> 40 bits
-  res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 200)) // maxNumBatch --> 32 bits*/
+  res = res +
+      BigInt.parse(
+          tx['toEthereumAddress'] != null ? tx['toEthereumAddress'] : '0',
+          radix: 16); // ethAddr --> 160 bits
+  res = res +
+      BigInt.from((HermezCompressedAmount.compressAmount(
+                  tx['amount'] != null ? tx['amount'] : 0)
+              .value
+              .toInt() <<
+          160)); // amountF --> 40 bits
+  res = res +
+      BigInt.from(((tx['maxNumBatch'] != null ? tx['maxNumBatch'] : 0) <<
+          200)); // maxNumBatch --> 32 bits
 
   return res;
 }
@@ -283,51 +307,43 @@ BigInt buildElement1(tx) {
 ///
 /// @param {Object} encodedTransaction - Transaction object
 ///
-/// @returns {Scalar} message to sign
-dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
+/// @returns {BigInt} message to sign
+BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
   final BigInt txCompressedData = buildTxCompressedData(encodedTransaction);
   final element1 = buildElement1(encodedTransaction);
+  final toBjjAy = encodedTransaction['toBjjAy'] != null
+      ? (encodedTransaction['toBjjAy'].startsWith('0x')
+          ? encodedTransaction['toBjjAy'].substring(2)
+          : encodedTransaction['toBjjAy'])
+      : '0';
+  final rqTxCompressedDataV2 =
+      encodedTransaction['rqTxCompressedDataV2'] != null
+          ? (encodedTransaction['rqTxCompressedDataV2'].startsWith('0x')
+              ? encodedTransaction['rqTxCompressedDataV2'].substring(2)
+              : encodedTransaction['rqTxCompressedDataV2'])
+          : '0';
+  final rqToEthAddr = encodedTransaction['rqToEthAddr'] != null
+      ? (encodedTransaction['rqToEthAddr'].startsWith('0x')
+          ? encodedTransaction['rqToEthAddr'].substring(2)
+          : encodedTransaction['rqToEthAddr'])
+      : '0';
 
-  final List<BigInt> params = [
-    txCompressedData,
-    element1,
-    BigInt.parse(
-        encodedTransaction.toBjjAy.isNotEmpty
-            ? (encodedTransaction.toBjjAy.startsWith('0x')
-                ? encodedTransaction.toBjjAy.substring(2)
-                : encodedTransaction.toBjjAy)
-            : '0',
-        radix: 16),
-    BigInt.parse(
-        encodedTransaction.rqTxCompressedDataV2.isNotEmpty
-            ? (encodedTransaction.rqTxCompressedDataV2.startsWith('0x')
-                ? encodedTransaction.rqTxCompressedDataV2.substring(2)
-                : encodedTransaction.rqTxCompressedDataV2)
-            : '0',
-        radix: 16),
-    BigInt.parse(
-        encodedTransaction.rqToEthAddr.isNotEmpty
-            ? (encodedTransaction.rqToEthAddr.startsWith('0x')
-                ? encodedTransaction.rqToEthAddr.substring(2)
-                : encodedTransaction.rqToEthAddr)
-            : '0',
-        radix: 16),
-    BigInt.parse(
-        encodedTransaction.rqToBjjAy.isNotEmpty
-            ? (encodedTransaction.rqToBjjAy.startsWith('0x')
-                ? encodedTransaction.rqToBjjAy.substring(2)
-                : encodedTransaction.rqToBjjAy)
-            : '0',
-        radix: 16),
-  ];
+  final rqToBjjAy = encodedTransaction['rqToBjjAy'] != null
+      ? (encodedTransaction['rqToBjjAy'].startsWith('0x')
+          ? encodedTransaction['rqToBjjAy'].substring(2)
+          : encodedTransaction['rqToBjjAy'])
+      : '0';
 
-  final List<int> lint = params.map((bigint) => bigint.toInt());
-
-  final uint8list = Uint8List.fromList(lint);
-  Pointer<Uint8> ptr = Uint8ArrayUtils.toPointer(uint8list);
-  //final h = hashPoseidon(ptr);
-  //final point = h.ref;
-  //return h;
+  CircomLib circomLib = CircomLib();
+  String hashPoseidon = circomLib.hashPoseidon(
+      txCompressedData.toString(),
+      element1.toString(),
+      toBjjAy,
+      rqTxCompressedDataV2,
+      rqToEthAddr,
+      rqToBjjAy);
+  BigInt h = hexToInt(hashPoseidon);
+  return h;
 }
 
 /// Prepares a transaction to be ready to be sent to a Coordinator.
@@ -343,7 +359,9 @@ dynamic buildTransactionHashMessage(dynamic encodedTransaction) {
 ///
 /// @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 
-Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
+Future<Set<Map<String, dynamic>>> generateL2Transaction(
+    Map tx, String bjj, Token token) async {
+  final nonce = await getNonce(tx['nonce'], tx['from'], bjj, token.id);
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
   final decompressedAmount =
       HermezCompressedAmount.decompressAmount(tx['amount']);
@@ -358,13 +376,10 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
       () => isHermezEthereumAddress(tx['to']) ? tx['to'] : null);
   transaction.putIfAbsent('toBjj', () => null);
   // Corrects precision errors using the same system used in the Coordinator
-  transaction.putIfAbsent('amount', () => decompressedAmount.toString());
+  transaction.putIfAbsent('amount', () => decompressedAmount);
   transaction.putIfAbsent(
       'fee', () => getFeeIndex(feeBigInt.toDouble(), decompressedAmount));
-  transaction.putIfAbsent(
-      'nonce',
-      () async =>
-          await getNonce(tx['nonce'], int.parse(tx['from']), bjj, token.id));
+  transaction.putIfAbsent('nonce', () => nonce);
   transaction.putIfAbsent('requestFromAccountIndex', () => null);
   transaction.putIfAbsent('requestToAccountIndex', () => null);
   transaction.putIfAbsent('requestToHezEthereumAddress', () => null);
@@ -373,14 +388,15 @@ Future<dynamic> generateL2Transaction(Map tx, String bjj, Token token) async {
   transaction.putIfAbsent('requestAmount', () => null);
   transaction.putIfAbsent('requestFee', () => null);
   transaction.putIfAbsent('requestNonce', () => null);
-  dynamic encodedTransaction = await encodeTransaction(transaction);
+  Map<String, dynamic> encodedTransaction =
+      await encodeTransaction(transaction);
   transaction.putIfAbsent(
       'id',
       () => getL2TxId(
-          encodedTransaction.fromAccountIndex,
-          encodedTransaction.tokenId,
-          encodedTransaction.amount,
-          encodedTransaction.nonce,
-          encodedTransaction.fee));
+          encodedTransaction['fromAccountIndex'],
+          encodedTransaction['tokenId'],
+          encodedTransaction['amount'],
+          encodedTransaction['nonce'],
+          encodedTransaction['fee']));
   return {transaction, encodedTransaction};
 }

@@ -215,7 +215,7 @@ pub extern fn prv2pub(private_key: &[u8; 32]) -> *mut c_char {
 }
 
 #[no_mangle]
-pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_char, to_bjj_ay: *const c_char, rq_txcompressed_data_v2: *const c_char, rq_to_eth_addr: *const c_char, rq_to_bjj_ay: *const c_char) -> *const [u8] {
+pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *const c_char, to_bjj_ay: *const c_char, rq_txcompressed_data_v2: *const c_char, rq_to_eth_addr: *const c_char, rq_to_bjj_ay: *const c_char) -> *mut c_char {
     let tx_compressed_data_str = unsafe { CStr::from_ptr(tx_compressed_data) }.to_str().unwrap();
     let b0: Fr = Fr::from_str(tx_compressed_data_str).unwrap();
     let to_eth_addr_str = unsafe { CStr::from_ptr(to_eth_addr) }.to_str().unwrap();
@@ -238,17 +238,14 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
     big_arr.push(b5.clone());
     let poseidon = Poseidon::new();
     let h = poseidon.hash(big_arr.clone()).unwrap();
-    return h.to_string().as_bytes();
+    return CString::new(h.to_string().as_str()).unwrap().into_raw();
+    //return ;//.as_bytes();
 }
 
 #[no_mangle]
-pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> /*[u8; 64]*/ *mut c_char {
-    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
-    let pk_bigint = BigInt::from_str(private_key_str).unwrap();
-    let pk_bytes_raw = private_key_str.from_hex().unwrap();
-    let mut pk_bytes: [u8; 32] = [0; 32];
-    pk_bytes.copy_from_slice(&pk_bytes_raw);
-    let pk = PrivateKey { key: pk_bytes };
+pub extern fn sign_poseidon(private_key: &[u8; 32], msg: *const c_char) -> *mut c_char {
+    let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
+    let pk = PrivateKey::import(private_key_bytes.to_vec()).unwrap();
     let message_c_str = unsafe { CStr::from_ptr(msg) };
     let message_str = match message_c_str.to_str() {
         Err(_) => "there",

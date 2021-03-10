@@ -155,8 +155,7 @@ class PrivateKey {
 
   String sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    String signature = circomLib.signPoseidon(
-        Uint8ArrayUtils.uint8ListToString(this.sk), messageHash.toString());
+    String signature = circomLib.signPoseidon(this.sk, messageHash.toString());
     return signature;
   }
 }
