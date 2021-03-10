@@ -93,8 +93,11 @@ http.Response returnResponseOrThrowException(http.Response response) {
   } else if (response.statusCode == 500) {
     throw InternalServerErrorException(response.body);
   } else if (response.statusCode == 400) {
-    String responseBody = response.body;
-    throw BadRequestException(response.body);
+    String responseBody = '';
+    if (response.bodyBytes != null) {
+      responseBody = response.body;
+    }
+    throw BadRequestException(responseBody);
   } else if (response.statusCode > 400) {
     throw UnknownApiException(response.statusCode);
   } else {

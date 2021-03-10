@@ -107,10 +107,10 @@ class HermezWallet {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
     final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
     final signature = privKey.sign(hashMessage);
-    final Uint8List compressedSigLE =
+    /*final Uint8List compressedSigLE =
         Uint8ArrayUtils.uint8ListfromString(signature);
-    final packedSignature = eddsaBabyJub.packSignature(compressedSigLE);
-    transaction['signature'] = packedSignature; // HEX.encode*/
+    final packedSignature = eddsaBabyJub.packSignature(compressedSigLE);*/
+    transaction['signature'] = signature; // HEX.encode*/
     return transaction;
   }
 

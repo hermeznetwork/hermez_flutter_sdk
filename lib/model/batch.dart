@@ -6,7 +6,7 @@ class Batch {
   final String timestamp;
   final String forgerAddr;
   final dynamic collectedFees;
-  final int historicTotalCollectedFeesUSD;
+  final double historicTotalCollectedFeesUSD;
   final String stateRoot;
   final int numAccounts;
   final String exitRoot;
@@ -39,7 +39,8 @@ class Batch {
       timestamp: json['timestamp'],
       forgerAddr: json['forgerAddr'],
       collectedFees: json['collectedFees'],
-      historicTotalCollectedFeesUSD: json['historicTotalCollectedFeesUSD'],
+      historicTotalCollectedFeesUSD:
+          json['historicTotalCollectedFeesUSD'].toDouble(),
       stateRoot: json['stateRoot'],
       numAccounts: json['numAccounts'],
       exitRoot: json['exitRoot'],

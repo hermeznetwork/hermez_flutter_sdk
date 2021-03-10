@@ -25,7 +25,8 @@ class HermezCompressedAmount {
   /// Convert a HermezCompressedAmount to a fix
   /// @param {Scalar} fl - HermezCompressedAmount representation of the amount
   /// @returns {Scalar} Scalar encoded in fix
-  static num decompressAmount(HermezCompressedAmount hermezCompressedAmount) {
+  static double decompressAmount(
+      HermezCompressedAmount hermezCompressedAmount) {
     if (!HermezCompressedAmount.isHermezCompressedAmount(
         hermezCompressedAmount)) {
       throw new ArgumentError(
@@ -35,14 +36,14 @@ class HermezCompressedAmount {
     final m = (fl % 0x800000000);
     final e = (fl / 0x800000000).floor();
 
-    /*var exp = BigInt.from(1);
+    var exp = BigInt.from(1);
     for (var i = 0; i < e; i++) {
       exp *= BigInt.from(10);
-    }*/
+    }
 
     //final exp = pow(10, e);
 
-    final res = m * pow(10, e);
+    final double res = m * exp.toDouble();
 
     return res;
   }
