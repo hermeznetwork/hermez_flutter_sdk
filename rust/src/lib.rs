@@ -31,7 +31,7 @@ use std::ffi::{CStr, CString};
 use std::cmp::min;
 use std::str::FromStr;
 use num_traits::{Num, ToPrimitive};
-use rustc_hex::FromHex;
+use rustc_hex::{FromHex, ToHex};
 use num::Zero;
 
 /*lazy_static! {
@@ -229,35 +229,21 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
     let rq_to_bjj_ay_str = unsafe { CStr::from_ptr(rq_to_bjj_ay) }.to_str().unwrap();
     let b5: Fr = Fr::from_str(rq_to_bjj_ay_str).unwrap();
 
-    let mut big_arr: Vec<Fr> = Vec::new();
-    big_arr.push(b0.clone());
-    big_arr.push(b1.clone());
-    big_arr.push(b2.clone());
-    big_arr.push(b3.clone());
-    big_arr.push(b4.clone());
-    big_arr.push(b5.clone());
+    let hm_input = vec![b0.clone(), b1.clone(), b2.clone(), b3.clone(), b4.clone(), b5.clone()];
     let poseidon = Poseidon::new();
-    let h = poseidon.hash(big_arr.clone()).unwrap();
-    return CString::new(h.to_string().as_str()).unwrap().into_raw();
-    //return ;//.as_bytes();
+    let hm = poseidon.hash(hm_input).unwrap();
+    return CString::new(to_hex(&hm).as_str()).unwrap().into_raw();
 }
 
 #[no_mangle]
 pub extern fn sign_poseidon(private_key: &[u8; 32], msg: *const c_char) -> *mut c_char {
     let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
     let pk = PrivateKey::import(private_key_bytes.to_vec()).unwrap();
-    let message_c_str = unsafe { CStr::from_ptr(msg) };
-    let message_str = match message_c_str.to_str() {
-        Err(_) => "there",
-        Ok(string) => string,
-    };
-    let message_bigint = match message_str.parse::<i32>() {
-        Ok(n) => BigInt::from(n),
-        Err(e) => BigInt::zero(),
-    };
+    let message_str = unsafe { CStr::from_ptr(msg) }.to_str().unwrap();
+    let message_bigint = BigInt::from_str(message_str).unwrap();
     let sig = pk.sign(message_bigint.clone()).unwrap();
     let compressed_signature = sig.compress();
-    let hex_string = to_hex_string(compressed_signature.to_vec());
+    let hex_string = compressed_signature.to_hex();
     CString::new(hex_string.as_str()).unwrap().into_raw()
 }
 

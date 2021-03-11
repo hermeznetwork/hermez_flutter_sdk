@@ -185,9 +185,9 @@ Future<Transaction> getPoolTransaction(String transactionId) async {
 /// POST request to the /transaction-pool endpoint. Sends an L2 transaction to the network
 /// @param {object} transaction - Transaction data returned by TxUtils.generateL2Transaction
 /// @returns {string} Transaction id
-Future<String> postPoolTransaction(dynamic transaction) async {
-  return extractJSON(
-      await post(baseApiUrl, TRANSACTIONS_POOL_URL, body: transaction));
+Future<http.Response> postPoolTransaction(
+    Map<String, dynamic> transaction) async {
+  return post(baseApiUrl, TRANSACTIONS_POOL_URL, body: transaction);
 }
 
 /// GET request to the /exits endpoint. Returns a list of exits based on certain filters

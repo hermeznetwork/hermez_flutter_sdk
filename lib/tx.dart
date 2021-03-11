@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/environment.dart';
@@ -5,6 +6,7 @@ import 'package:hermez_plugin/hermez_wallet.dart';
 import 'package:hermez_plugin/model/token.dart';
 import 'package:hermez_plugin/tokens.dart';
 import 'package:hermez_plugin/utils/contract_parser.dart';
+import 'package:http/http.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -507,17 +509,17 @@ Future delayedWithdraw(
 /// @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
 ///
 /// @return {Object} - Object with the response status, transaction id and the transaction nonce
-dynamic sendL2Transaction(dynamic transaction, String bJJ) async {
-  dynamic result = await postPoolTransaction(transaction);
+dynamic sendL2Transaction(Map<String, dynamic> transaction, String bJJ) async {
+  Response result = await postPoolTransaction(transaction);
 
-  if (result.status == 200) {
-    addPoolTransaction(transaction, bJJ);
+  if (result.statusCode == 200) {
+    addPoolTransaction(json.encode(transaction), bJJ);
   }
 
   return {
-    "status": result.status,
-    "id": result.data,
-    "nonce": transaction.nonce,
+    "status": result.statusCode,
+    "id": result.body,
+    "nonce": transaction['nonce'],
   };
 }
 
