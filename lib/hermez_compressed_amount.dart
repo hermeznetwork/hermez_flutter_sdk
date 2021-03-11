@@ -67,7 +67,6 @@ class HermezCompressedAmount {
   /// @param {String} _f - Scalar encoded in fix
   /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
   static HermezCompressedAmount compressAmount(double f) {
-    //double f = double.parse(_f);
     if (f.sign == 0) {
       return new HermezCompressedAmount(0);
     }
@@ -75,7 +74,7 @@ class HermezCompressedAmount {
     var m = f;
     var e = 0;
 
-    while ((m % 10).sign == 0 && (m / 0x800000000).sign != 0) {
+    while ((m % 10).floor().sign == 0 && (m / 0x800000000).floor().sign != 0) {
       m = m / 10;
       e++;
     }
@@ -85,7 +84,7 @@ class HermezCompressedAmount {
     }
     var eight = BigInt.from(0x800000000);
 
-    if ((m / 0x800000000).toInt().sign != 0) {
+    if ((m / 0x800000000).floor().sign != 0) {
       throw new ArgumentError("not enough precision");
     }
 
