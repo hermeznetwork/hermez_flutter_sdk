@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/tx_pool.dart';
 import 'package:hermez_plugin/utils.dart';
 
 import 'setup_util.dart';
@@ -12,7 +11,7 @@ void main() {
     final privKey2 = EXAMPLES_PRIVATE_KEY2;
 
     // initialize transaction pool
-    initializeTransactionPool();
+    //initializeTransactionPool();
 
     // setProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL);
 
