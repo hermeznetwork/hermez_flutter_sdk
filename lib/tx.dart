@@ -433,7 +433,7 @@ void forceExit(
 /// @param {Boolean} filterSiblings - Whether siblings should be filtered
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Bumber} gasMultiplier - Optional gas multiplier
-Future withdraw(
+Future<bool> withdraw(
     BigInt amount,
     String accountIndex,
     dynamic token,
@@ -441,34 +441,47 @@ Future withdraw(
     BigInt batchNumber,
     List<BigInt> merkleSiblings,
     Web3Client web3client,
+    String privateKey,
     {bool isInstant = true,
     gasLimit = GAS_LIMIT,
     gasMultiplier = GAS_MULTIPLIER}) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  dynamic overrides = Uint8List.fromList(
-      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
+  final credentials = await web3client.credentialsFromPrivateKey(privateKey);
+  final from = await credentials.extractAddress();
+
+  final gasPrice = EtherAmount.fromUnitAndValue(
+      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));
+
+  int nonce = await web3client.getTransactionCount(from);
 
   final transactionParameters = [
-    token.id,
+    BigInt.from(token.id),
     amount,
-    '0x$babyJubJub',
+    hexToInt('0x$babyJubJub'),
     batchNumber,
     merkleSiblings,
-    getAccountIndex(accountIndex),
+    BigInt.from(getAccountIndex(accountIndex)),
     isInstant,
   ];
 
-  print([...transactionParameters, overrides]);
+  print(transactionParameters);
 
-  //final l1Transaction = new List()..addAll(transactionParameters);
-  //l1Transaction.add(overrides);
-
-  final withdrawMerkleProofCall = await web3client.call(
+  Transaction transaction = Transaction.callContract(
       contract: hermezContract,
       function: _withdrawMerkleProof(hermezContract),
-      params: [...transactionParameters, overrides]);
+      parameters: transactionParameters,
+      maxGas: gasLimit,
+      gasPrice: gasPrice,
+      nonce: nonce);
+
+  String txHash = await web3client.sendTransaction(credentials, transaction,
+      chainId: getCurrentEnvironment().chainId);
+
+  print(txHash);
+
+  return txHash != null;
 }
 
 /// Makes the final withdrawal from the WithdrawalDelayer smart contract after enough time has passed.

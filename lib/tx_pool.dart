@@ -52,11 +52,11 @@ void addPoolTransaction(String transaction, String bJJ) async {
       json.decode(prefs.get(TRANSACTION_POOL_KEY));
   List<String> newAccountTransactionPool;
   if (transactionPool.containsKey(bJJ)) {
-    final List<String> accountTransactionPool = transactionPool[bJJ];
+    final List<dynamic> accountTransactionPool = transactionPool[bJJ];
     if (accountTransactionPool.isNotEmpty)
       accountTransactionPool.add(transaction);
     newAccountTransactionPool =
-        accountTransactionPool.isEmpty ? [transaction] : List<String>()
+        accountTransactionPool.isEmpty ? [transaction] : List<dynamic>()
           ..addAll(accountTransactionPool);
   } else {
     newAccountTransactionPool = [transaction];

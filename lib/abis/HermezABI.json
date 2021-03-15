@@ -23,9 +23,15 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "batchNum",
-        "type": "uint64"
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "l1UserTxsLen",
+        "type": "uint16"
       }
     ],
     "name": "ForgeBatch",
@@ -35,10 +41,35 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "forgeL1L2BatchTimeout",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "feeAddToken",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint64",
-        "name": "queueIndex",
+        "name": "withdrawalDelay",
         "type": "uint64"
+      }
+    ],
+    "name": "InitializeHermezEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "queueIndex",
+        "type": "uint32"
       },
       {
         "indexed": true,
@@ -54,6 +85,50 @@
       }
     ],
     "name": "L1UserTxEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "SafeMode",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint8",
+        "name": "numBucket",
+        "type": "uint8"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "blockStamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawals",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdateBucketWithdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256[4][5]",
+        "name": "arrayBuckets",
+        "type": "uint256[4][5]"
+      }
+    ],
+    "name": "UpdateBucketsParameters",
     "type": "event"
   },
   {
@@ -86,6 +161,38 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "addressArray",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64[]",
+        "name": "valueArray",
+        "type": "uint64[]"
+      }
+    ],
+    "name": "UpdateTokenExchange",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "newWithdrawalDelay",
+        "type": "uint64"
+      }
+    ],
+    "name": "UpdateWithdrawalDelay",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint48",
         "name": "idx",
@@ -93,9 +200,9 @@
       },
       {
         "indexed": true,
-        "internalType": "uint48",
+        "internalType": "uint32",
         "name": "numExitRoot",
-        "type": "uint48"
+        "type": "uint32"
       },
       {
         "indexed": true,
@@ -133,14 +240,14 @@
         "type": "uint48"
       },
       {
-        "internalType": "uint16",
+        "internalType": "uint40",
         "name": "loadAmountF",
-        "type": "uint16"
+        "type": "uint40"
       },
       {
-        "internalType": "uint16",
+        "internalType": "uint40",
         "name": "amountF",
-        "type": "uint16"
+        "type": "uint40"
       },
       {
         "internalType": "uint32",
@@ -151,11 +258,34 @@
         "internalType": "uint48",
         "name": "toIdx",
         "type": "uint48"
+      },
+      {
+        "internalType": "bytes",
+        "name": "permit",
+        "type": "bytes"
       }
     ],
     "name": "addL1Transaction",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "permit",
+        "type": "bytes"
+      }
+    ],
+    "name": "addToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -200,9 +330,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       },
       {
         "internalType": "uint48",
@@ -224,9 +354,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "exitRootsMap",
@@ -277,7 +407,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "l2TxsData",
+        "name": "l1L2TxsData",
         "type": "bytes"
       },
       {
@@ -334,7 +464,7 @@
     "name": "hermezAuctionContract",
     "outputs": [
       {
-        "internalType": "contract AuctionInterface",
+        "internalType": "contract IHermezAuctionProtocol",
         "name": "",
         "type": "address"
       }
@@ -344,7 +474,7 @@
   },
   {
     "inputs": [],
-    "name": "hermezGovernanceDAOAddress",
+    "name": "hermezGovernanceAddress",
     "outputs": [
       {
         "internalType": "address",
@@ -409,12 +539,7 @@
       },
       {
         "internalType": "address",
-        "name": "_hermezGovernanceDAOAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_safetyAddress",
+        "name": "_hermezGovernanceAddress",
         "type": "address"
       },
       {
@@ -458,13 +583,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "name": "l1L2TxsDataHashMap",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastForgedBatch",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -499,9 +643,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "mapL1TxQueue",
@@ -520,9 +664,9 @@
     "name": "nextL1FillingQueue",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -533,9 +677,9 @@
     "name": "nextL1ToForgeQueue",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -585,30 +729,30 @@
   },
   {
     "inputs": [],
-    "name": "safeMode",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "safetyAddress",
+    "name": "rollupVerifiersLength",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "safeMode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "stateRootMap",
@@ -690,44 +834,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "userData",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "operatorData",
-        "type": "bytes"
-      }
-    ],
-    "name": "tokensReceived",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -828,9 +934,9 @@
         "type": "uint192"
       },
       {
-        "internalType": "uint48",
+        "internalType": "uint32",
         "name": "numExitRoot",
-        "type": "uint48"
+        "type": "uint32"
       },
       {
         "internalType": "uint48",
@@ -853,7 +959,7 @@
     "name": "withdrawDelayerContract",
     "outputs": [
       {
-        "internalType": "contract WithdrawalDelayerInterface",
+        "internalType": "contract IWithdrawalDelayer",
         "name": "",
         "type": "address"
       }
@@ -879,9 +985,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint48",
+        "internalType": "uint32",
         "name": "numExitRoot",
-        "type": "uint48"
+        "type": "uint32"
       },
       {
         "internalType": "uint256[]",

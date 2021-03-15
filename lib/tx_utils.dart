@@ -223,7 +223,7 @@ String getTransactionType(Map transaction) {
 /// @return {Number} nonce
 Future<num> getNonce(
     num currentNonce, String accountIndex, String bjj, num tokenId) async {
-  if (currentNonce.runtimeType != null) {
+  if (currentNonce != null) {
     return currentNonce;
   }
 
@@ -233,7 +233,8 @@ Future<num> getNonce(
   final List<dynamic> poolTxs = await getPoolTransactions(accountIndex, bjj);
 
   poolTxs.removeWhere((tx) => tx.token.id == tokenId);
-  final List<int> poolTxsNonces = poolTxs.map((tx) => tx.nonce);
+  final List poolTxsNonces =
+      poolTxs.where((tx) => tx.nonce).toList(); //map((tx) => tx.nonce);
   poolTxs.sort();
 
   // return current nonce if no transactions are pending
@@ -370,8 +371,11 @@ Future<Set<Map<String, dynamic>>> generateL2Transaction(
   transaction.putIfAbsent('type', () => getTransactionType(tx));
   transaction.putIfAbsent('tokenId', () => token.id);
   transaction.putIfAbsent('fromAccountIndex', () => tx['from']);
-  transaction.putIfAbsent('toAccountIndex',
-      () => tx['type'] == 'Exit' ? 'hez:${token.symbol}:1' : toAccountIndex);
+  transaction.putIfAbsent(
+      'toAccountIndex',
+      () => getTransactionType(tx) == 'Exit'
+          ? 'hez:${token.symbol}:1'
+          : toAccountIndex);
   transaction.putIfAbsent('toHezEthereumAddress',
       () => isHermezEthereumAddress(tx['to']) ? tx['to'] : null);
   transaction.putIfAbsent('toBjj', () => null);
