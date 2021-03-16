@@ -1,3 +1,5 @@
+import 'package:hermez_plugin/model/transaction.dart';
+
 import 'merkle_proof.dart';
 import 'token.dart';
 
@@ -42,6 +44,24 @@ class Exit {
         token: token,
         bjj: json['bjj'],
         hezEthereumAddress: json['hezEthereumAddress']);
+  }
+
+  factory Exit.fromTransaction(Transaction transaction) {
+    //Token token = Token.fromJson(json['token']);
+    //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
+    return Exit(
+      //batchNum: json['batchNum'],
+      accountIndex: transaction.fromAccountIndex,
+      //itemId: transaction.id,
+      //merkleProof: merkleProof,
+      balance: transaction.amount,
+      //instantWithdraw: json['instantWithdraw'],
+      //delayedWithdrawRequest: json['delayedWithdrawRequest'],
+      //delayedWithdraw: json['delayedWithdraw'],
+      //token: token,
+      //bjj: json['bjj'],
+      //hezEthereumAddress: json['hezEthereumAddress']
+    );
   }
 
   Map<String, dynamic> toJson() => {

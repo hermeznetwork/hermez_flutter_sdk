@@ -6,7 +6,7 @@ class Transaction {
   final String toEthereumAddress;
   final String toBjj;
   final int tokenId;
-  final int amount;
+  final String amount;
   final int fee;
   final int nonce;
   final String state;

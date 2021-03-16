@@ -436,7 +436,7 @@ void forceExit(
 Future<bool> withdraw(
     BigInt amount,
     String accountIndex,
-    dynamic token,
+    Token token,
     String babyJubJub,
     BigInt batchNumber,
     List<BigInt> merkleSiblings,
