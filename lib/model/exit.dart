@@ -1,4 +1,4 @@
-import 'package:hermez_plugin/model/transaction.dart';
+import 'package:hermez_plugin/model/pool_transaction.dart';
 
 import 'merkle_proof.dart';
 import 'token.dart';
@@ -46,7 +46,7 @@ class Exit {
         hezEthereumAddress: json['hezEthereumAddress']);
   }
 
-  factory Exit.fromTransaction(Transaction transaction) {
+  factory Exit.fromTransaction(PoolTransaction transaction) {
     //Token token = Token.fromJson(json['token']);
     //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
     return Exit(
@@ -58,7 +58,7 @@ class Exit {
       //instantWithdraw: json['instantWithdraw'],
       //delayedWithdrawRequest: json['delayedWithdrawRequest'],
       //delayedWithdraw: json['delayedWithdraw'],
-      //token: token,
+      token: transaction.token,
       //bjj: json['bjj'],
       //hezEthereumAddress: json['hezEthereumAddress']
     );

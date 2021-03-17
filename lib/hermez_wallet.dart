@@ -143,13 +143,13 @@ class HermezWallet {
         TypedDataArgument('Provider', 'string'),
         TypedDataArgument('Authorisation', 'string'),
         TypedDataArgument('BJJKey', 'bytes32')
-      ] /*,
+      ],
       'EIP712Domain': [
         TypedDataArgument('name', 'string'),
         TypedDataArgument('version', 'string'),
         TypedDataArgument('chainId', 'uint256'),
         TypedDataArgument('verifyingContract', 'address')
-      ]*/
+      ]
     };
 
     final Map<String, List<Map<String, String>>> types2 = {
@@ -157,13 +157,13 @@ class HermezWallet {
         {'name': 'Provider', 'type': 'string'},
         {'name': 'Authorisation', 'type': 'string'},
         {'name': 'BJJKey', 'type': 'bytes32'},
-      ] /*,
+      ],
       'EIP712Domain': [
         {'name': 'name', 'type': 'string'},
         {'name': 'version', 'type': 'string'},
         {'name': 'chainId', 'type': 'uint256'},
         {'name': 'verifyingContract', 'type': 'address'}
-      ]*/
+      ]
     };
 
     final signature =

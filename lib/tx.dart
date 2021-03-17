@@ -543,10 +543,10 @@ dynamic sendL2Transaction(Map<String, dynamic> transaction, String bJJ) async {
 /// @param {BigInt} transaction.amount - The amount being sent as a BigInt
 /// @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
 /// @param {Number} transaction.nonce - The current nonce of the sender's token account
-/// @param {Object} wallet - Transaction sender Hermez Wallet
-/// @param {Object} token - The token information object as returned from the Coordinator.
+/// @param {HermezWallet} wallet - Transaction sender Hermez Wallet
+/// @param {Token} token - The token information object as returned from the Coordinator.
 dynamic generateAndSendL2Tx(
-    dynamic transaction, HermezWallet wallet, dynamic token) async {
+    dynamic transaction, HermezWallet wallet, Token token) async {
   final Set<Map<String, dynamic>> l2TxParams = await generateL2Transaction(
       transaction, wallet.publicKeyCompressedHex, token);
 

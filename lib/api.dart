@@ -14,10 +14,10 @@ import 'model/exit.dart';
 import 'model/exits_response.dart';
 import 'model/forged_transaction.dart';
 import 'model/forged_transactions_response.dart';
+import 'model/pool_transaction.dart';
 import 'model/state_response.dart';
 import 'model/token.dart';
 import 'model/tokens_response.dart';
-import 'model/transaction.dart';
 
 var baseApiUrl = '';
 
@@ -169,14 +169,14 @@ Future<ForgedTransaction> getHistoryTransaction(String transactionId) async {
 /// GET request to the /transactions-pool/:transactionId endpoint. Returns a specific unforged transaction
 /// @param {string} transactionId - The ID for the specific transaction
 /// @returns {object} Response data with the transaction
-Future<Transaction> getPoolTransaction(String transactionId) async {
+Future<PoolTransaction> getPoolTransaction(String transactionId) async {
   final response =
       await get(baseApiUrl, TRANSACTIONS_POOL_URL + '/' + transactionId);
   if (response.statusCode == 200) {
     final jsonResponse = await extractJSON(response);
-    final Transaction transaction =
-        Transaction.fromJson(json.decode(jsonResponse));
-    return transaction;
+    final PoolTransaction poolTransaction =
+        PoolTransaction.fromJson(json.decode(jsonResponse));
+    return poolTransaction;
   } else {
     throw ('Error: $response.statusCode');
   }

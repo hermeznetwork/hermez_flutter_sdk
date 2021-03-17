@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart' show getPoolTransaction;
 import 'constants.dart' show TRANSACTION_POOL_KEY;
 import 'environment.dart';
+import 'model/pool_transaction.dart';
 
 Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
@@ -16,7 +17,7 @@ Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 /// @param {String} bjj - The account's BabyJubJub
 ///
 /// @returns {List<Transaction>}
-Future<List<Transaction>> getPoolTransactions(
+Future<List<PoolTransaction>> getPoolTransactions(
     String accountIndex, String bJJ) async {
   final chainId = getCurrentEnvironment().chainId.toString();
 
@@ -38,30 +39,25 @@ Future<List<Transaction>> getPoolTransactions(
       accountIndex != null &&
       Transaction.fromJson(json.decode(transaction)).fromAccountIndex !=
           accountIndex);
-  List<Transaction> successfulTransactions = List();
-  await accountTransactionPool.forEach((transactionString) async {
+  List<PoolTransaction> successfulTransactions = List();
+  for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
-    await getPoolTransaction(transaction.id)
-        .then((transaction) => {
-              if (transaction.state == 'fged')
-                {
-                  removePoolTransaction(bJJ, transaction.id)
-                  //return null;
-                }
-              else
-                {
-                  successfulTransactions.add(transaction)
-                  //return transaction;
-                }
-            })
-        .catchError((error) => {
-              print(error)
-              //if (error.response.status == 'fged') {
-              //removePoolTransaction(bJJ, transaction.id);
-              //return null;
-              //}
-            });
-  });
+    PoolTransaction poolTransaction = await getPoolTransaction(transaction.id);
+    if (poolTransaction.state == 'fged') {
+      removePoolTransaction(bJJ, poolTransaction.id);
+      //return null;
+    } else {
+      successfulTransactions.add(poolTransaction);
+      //return transaction;
+    }
+  }
+  /*  catchError((error) => {
+      print(error)
+      //if (error.response.status == 'Not found') {
+      //removePoolTransaction(bJJ, transaction.id);
+      //return null;
+      //}
+    });*/
 
   return successfulTransactions;
 }
