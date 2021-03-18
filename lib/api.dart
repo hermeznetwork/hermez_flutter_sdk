@@ -47,8 +47,9 @@ enum PaginationOrder { ASC, DESC }
 Map<String, String> getPageData(
     int fromItem, PaginationOrder order, int limit) {
   Map<String, String> params = {};
-  params.putIfAbsent('fromItem',
-      () => fromItem != null && fromItem >= 0 ? fromItem.toString() : {});
+  if (fromItem != null && fromItem > 0) {
+    params.putIfAbsent('fromItem', () => fromItem.toString());
+  }
   params.putIfAbsent('order', () => order.toString().split(".")[1]);
   params.putIfAbsent('limit', () => DEFAULT_PAGE_SIZE.toString());
   return params;
@@ -124,15 +125,15 @@ Future<List<ForgedTransaction>> getTransactions(
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
   Map<String, String> params = {};
+
   if (address != null && address.isNotEmpty && isHermezEthereumAddress(address))
     params.putIfAbsent('hezEthereumAddress', () => address);
   if (address != null && address.isNotEmpty && isHermezBjjAddress(address))
     params.putIfAbsent('BJJ', () => address);
   if (tokenIds != null && tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
-  if (batchNum != null) {
-    params.putIfAbsent(
-        'batchNum', () => batchNum > 0 ? batchNum.toString() : '');
+  if (batchNum != null && batchNum > 0) {
+    params.putIfAbsent('batchNum', () => batchNum.toString());
   }
   if (accountIndex != null && accountIndex.isNotEmpty) {
     params.putIfAbsent('accountIndex', () => accountIndex);

@@ -1,22 +1,21 @@
 import 'forged_transaction.dart';
-import 'pagination.dart';
 
 class ForgedTransactionsResponse {
   final List<ForgedTransaction> transactions;
-  final Pagination pagination;
+  final int pendingItems;
 
-  ForgedTransactionsResponse({this.transactions, this.pagination});
+  ForgedTransactionsResponse({this.transactions, this.pendingItems});
 
   factory ForgedTransactionsResponse.fromJson(Map<String, dynamic> json) {
     List<ForgedTransaction> transactions = (json['transactions'] as List)
         ?.map((item) => ForgedTransaction.fromJson(item))
         ?.toList();
     return ForgedTransactionsResponse(
-        transactions: transactions, pagination: json['pagination']);
+        transactions: transactions, pendingItems: json['pendingItems']);
   }
 
   Map<String, dynamic> toJson() => {
         'transactions': transactions,
-        'pagination': pagination,
+        'pendingItems': pendingItems,
       };
 }
