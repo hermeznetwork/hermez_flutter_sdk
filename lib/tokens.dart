@@ -45,7 +45,7 @@ Future<bool> approve(
         function: _approve(contract),
         parameters: [
           EthereumAddress.fromHex(contractAddresses['Hermez']),
-          amount
+          BigInt.from(amount)
         ],
       );
 

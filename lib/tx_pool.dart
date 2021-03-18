@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:hermez_plugin/api.dart';
+import 'package:hermez_plugin/model/pool_transaction.dart';
 import 'package:hermez_plugin/model/transaction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart' show getPoolTransaction;
 import 'constants.dart' show TRANSACTION_POOL_KEY;
 import 'environment.dart';
-import 'model/pool_transaction.dart';
 
 Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
@@ -42,13 +42,11 @@ Future<List<PoolTransaction>> getPoolTransactions(
   List<PoolTransaction> successfulTransactions = List();
   for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
-    PoolTransaction poolTransaction = await getPoolTransaction(transaction.id);
-    if (poolTransaction.state == 'fged') {
+    final poolTransaction = await getPoolTransaction(transaction.id);
+    if (poolTransaction.info != null || poolTransaction.state == 'fged') {
       removePoolTransaction(bJJ, poolTransaction.id);
-      //return null;
     } else {
       successfulTransactions.add(poolTransaction);
-      //return transaction;
     }
   }
   /*  catchError((error) => {

@@ -44,7 +44,7 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
   EtherAmount strAvgGas = await web3client.getGasPrice();
   BigInt avgGas = strAvgGas.getInWei;
   BigInt res = avgGas * BigInt.from(multiplier);
-  int retValue = res.toInt(); //toString();
+  int retValue = res.toInt();
   return retValue;
 }
 
