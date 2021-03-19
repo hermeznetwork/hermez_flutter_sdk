@@ -17,9 +17,19 @@ extern crate num_bigint;
 extern crate num_traits;
 extern crate rand6;
 extern crate rand;
-extern crate blake; // compatible version with Blake used at circomlib
+
+#[cfg(feature = "default")]
+extern crate blake_hash; // compatible version with Blake used at circomlib
+#[cfg(feature = "default")]
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+use blake_hash::Digest;
+
+#[cfg(feature = "aarch64")]
+extern crate blake; // compatible version with Blake used at circomlib
+
+
 
 use ff::*;
 use std::str;

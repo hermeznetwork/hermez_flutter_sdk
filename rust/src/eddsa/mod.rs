@@ -1,3 +1,6 @@
+// BabyJubJub elliptic curve implementation in Rust.
+// For LICENSE check https://github.com/arnaucube/babyjubjub-rs
+
 //extern crate rand;
 //#[macro_use]
 //extern crate ff;
@@ -20,7 +23,7 @@ use rand6::Rng;
 //extern crate blake; // compatible version with Blake used at circomlib
 //#[macro_use]
 //use blake_hash::Digest;
-use blake::Blake;
+//use blake::Blake;
 
 use std::cmp::min;
 
@@ -230,6 +233,19 @@ pub fn decompress_point(bb: [u8; 32]) -> Result<Point, String> {
     Ok(Point { x: x_fr, y: y_fr })
 }
 
+#[cfg(feature = "default")]
+fn blh(b: &Vec<u8>) -> Vec<u8> {
+    let hash = blake_hash::Blake512::digest(&b);
+    hash.to_vec()
+}
+
+#[cfg(feature = "aarch64")]
+fn blh(b: &Vec<u8>) -> Vec<u8> {
+    let mut hash = [0; 64];
+    blake::hash(512, b, &mut hash).unwrap();
+    hash.to_vec()
+}
+
 #[derive(Debug, Clone)]
 pub struct Signature {
     pub r_b8: Point,
@@ -286,8 +302,9 @@ impl PrivateKey {
 
         // compatible with circomlib implementation
         //let hash = blake_hash::Blake512::digest(&self.key.to_vec());
-        let mut hash = [0; 64];
-        blake::hash(512,&self.key,&mut hash).unwrap();
+        //let mut hash = [0; 64];
+        //blake::hash(512,&self.key,&mut hash).unwrap();
+        let mut hash: Vec<u8> = blh(&self.key.to_vec());
         let mut h: Vec<u8> = hash[..32].to_vec();
 
         h[0] = h[0] & 0xF8;
@@ -312,8 +329,9 @@ impl PrivateKey {
         // let mut hasher = Blake2b::new();
         // hasher.update(sk_bytes);
         // let mut h = hasher.finalize(); // h: hash(sk), s: h[32:64]
-        let mut h = [0; 64];
-        blake::hash(512,&self.key,&mut h).unwrap();
+        //let mut h = [0; 64];
+        //blake::hash(512,&self.key,&mut h).unwrap();
+        let mut h: Vec<u8> = blh(&self.key.to_vec());
         //let mut h = blake_hash::Blake512::digest(&self.key);
 
         let (_, msg_bytes) = msg.to_bytes_le();
@@ -324,8 +342,9 @@ impl PrivateKey {
         // https://tools.ietf.org/html/rfc8032#section-5.1.6
         let s = GenericArray::<u8, generic_array::typenum::U32>::from_mut_slice(&mut h[32..64]);
         let r_bytes = utils::concatenate_arrays(s, &msg32);
-        let mut r_hashed = [0; 64];
-        blake::hash(512,&r_bytes,&mut r_hashed).unwrap();
+        //let mut r_hashed = [0; 64];
+        //blake::hash(512,&r_bytes,&mut r_hashed).unwrap();
+        let r_hashed: Vec<u8> = blh(&r_bytes);
         //let r_hashed = blake_hash::Blake512::digest(&r_bytes);
         let mut r = BigInt::from_bytes_le(Sign::Plus, &r_hashed[..]);
         r = utils::modulus(&r, &SUBORDER);
@@ -648,9 +667,10 @@ mod tests {
             let random_bytes = rand6::thread_rng().gen::<[u8; 32]>();
             let sk_raw: BigInt = BigInt::from_bytes_le(Sign::Plus, &random_bytes[..]);
             let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
-            let mut h = [0; 64];
-            blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
+            //let mut h = [0; 64];
+            //blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
             //let mut h = blake_hash::Blake512::digest(&sk_raw_bytes);
+            let mut h: Vec<u8> = blh(&sk_raw_bytes);
 
             h[0] = h[0] & 0xF8;
             h[31] = h[31] & 0x7F;
@@ -705,8 +725,9 @@ mod tests {
                 .unwrap();
 
         // test blake compatible with circomlib implementation
-        let mut h = [0; 64];
-        blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
+        //let mut h = [0; 64];
+        //blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
+        let mut h: Vec<u8> = blh(&sk_raw_bytes);
         //let h = blake_hash::Blake512::digest(&sk_raw_bytes);
         assert_eq!(h.to_hex(), "c992db23d6290c70ffcc02f7abeb00b9d00fa8b43e55d7949c28ba6be7545d3253882a61bd004a236ef1cdba01b27ba0aedfb08eefdbfb7c19657c880b43ddf1");
 
