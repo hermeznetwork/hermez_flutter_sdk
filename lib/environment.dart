@@ -23,8 +23,8 @@ class Env {
     params['rinkeby'] = EnvParams(
         4,
         {
-          "0x14A3B6f3328766c7421034e14472F5c14C5Ba090", // Hermez
-          "0x6eA0aBF3EF52D24427043cAd3ec26Aa4f2c8E8fd", // WithdrawalDelayer
+          "0x679b11E0229959C1D3D27C9d20529E4C5DF7997c", // Hermez
+          "0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724", // WithdrawalDelayer
         },
         "api.testnet.hermez.io",
         "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
