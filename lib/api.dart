@@ -196,7 +196,7 @@ Future<http.Response> postPoolTransaction(
 /// @param {boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
 /// @returns {object} Response data with the list of exits
 Future<ExitsResponse> getExits(
-    String address, bool onlyPendingWithdraws) async {
+    String address, bool onlyPendingWithdraws, int tokenId) async {
   Map<String, String> params = {};
   if (isHermezEthereumAddress(address) && address.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
@@ -204,6 +204,9 @@ Future<ExitsResponse> getExits(
     params.putIfAbsent('BJJ', () => address);
   params.putIfAbsent(
       'onlyPendingWithdraws', () => onlyPendingWithdraws.toString());
+  if (tokenId >= 0) {
+    params.putIfAbsent('tokenId', () => tokenId.toString());
+  }
   final response = await get(baseApiUrl, EXITS_URL, queryParameters: params);
   if (response.statusCode == 200) {
     final jsonResponse = await extractJSON(response);
