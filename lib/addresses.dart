@@ -1,11 +1,14 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:web3dart/crypto.dart';
 
 const String hermezPrefix = 'hez:';
 final hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}\$'); //
 final bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}\$');
+final accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}\$');
 
 /// Get the hermez address representation of an ethereum address
 ///
@@ -36,7 +39,7 @@ String getEthereumAddress(String hezEthereumAddress) {
 ///
 /// @returns {bool}
 bool isHermezEthereumAddress(String test) {
-  if (hezEthereumAddressPattern.hasMatch(test)) {
+  if (test != null && hezEthereumAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -48,7 +51,7 @@ bool isHermezEthereumAddress(String test) {
 ///
 /// @returns {bool}
 bool isHermezBjjAddress(String test) {
-  if (bjjAddressPattern.hasMatch(test)) {
+  if (test != null && bjjAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -68,36 +71,35 @@ num getAccountIndex(String hezAccountIndex) {
   }
 }
 
+/// Checks if given string matches regex of a Hermez account index
+/// @param {String} test
+/// @returns {Boolean}
+bool isHermezAccountIndex(String test) {
+  if (test != null && accountIndexPattern.hasMatch(test)) {
+    return true;
+  }
+  return false;
+}
+
 /// Get API Bjj compressed data format
 /// @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
 /// @returns {String} API adapted bjj compressed address
 String hexToBase64BJJ(String bjjCompressedHex) {
-  // swap endian
-  BigInt bjjScalar = Uint8ArrayUtils.bytesToBigInt(
-      Uint8ArrayUtils.uint8ListfromString(
-          bjjCompressedHex)); // Scalar.fromString(bjjCompressedHex, 16);
-  Uint8List bjjBuff = Uint8ArrayUtils.leInt2Buff(bjjScalar, 32);
+  BigInt bjjScalar = hexToInt(bjjCompressedHex);
+  Uint8List littleEndianBytes = Uint8ArrayUtils.bigIntToBytes(bjjScalar);
   String bjjSwap =
-      Uint8ArrayUtils.bytesToBigInt(bjjBuff).toRadixString(16).padLeft(64, '0');
-
-  Uint8List bjjSwapBuffer = Uint8ArrayUtils.uint8ListfromString(
-      bjjSwap); //Buffer.from(bjjSwap, 'hex')
+      bytesToHex(littleEndianBytes, forcePadLength: 64, padToEvenLength: false);
+  Uint8List bjjSwapBuffer = hexToBytes(bjjSwap);
 
   var sum = 0;
-
   for (var i = 0; i < bjjSwapBuffer.length; i++) {
     sum += bjjSwapBuffer[i];
-    sum = sum % 2 * 8;
+    sum = sum % pow(2, 8);
   }
-
-  /*Uint8List sumBuff = Uint8List(1); //Buffer.alloc(1)
-  sumBuff[0] = sum; //writeUInt8(sum)*/
 
   final BytesBuilder finalBuffBjj = BytesBuilder();
   finalBuffBjj.add(bjjSwapBuffer.toList());
   finalBuffBjj.addByte(sum);
-
-  //Uint8List finalBuffBjj = Uint8List.from([bjjSwapBuffer, sumBuff]);
 
   return 'hez:${base64Url.encode(finalBuffBjj.toBytes())}';
 }

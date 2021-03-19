@@ -1,3 +1,15 @@
+import 'package:hermez_plugin/utils/contract_parser.dart';
+import 'package:web3dart/credentials.dart';
+import 'package:web3dart/web3dart.dart';
+
+import 'constants.dart';
+import 'environment.dart';
+
+ContractFunction _approve(DeployedContract contract) =>
+    contract.function('approve');
+ContractFunction _allowance(DeployedContract contract) =>
+    contract.function('allowance');
+
 /// Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
 ///
 /// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
@@ -7,37 +19,80 @@
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 ///
 /// @returns {Promise} transaction
-Future<String> approve(BigInt amount, String accountAddress,
-    String contractAddress, String providerUrl, dynamic signerData) async {
-  //final txSignerData =
-  //    signerData || {type: SignerType.JSON_RPC, addressOrIndex: accountAddress};
-  /*Map erc20ABI =
-      json.decode(await new File('abis/ERC20ABI.json').readAsString());
+Future<bool> approve(
+    num amount,
+    String accountAddress,
+    String tokenContractAddress,
+    String tokenContractName,
+    Web3Client web3client,
+    Credentials credentials) async {
+  final contract = await ContractParser.fromAssets(
+      'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
-  dynamic erc20Contract =
-      getContract(contractAddress, erc20ABI, providerUrl, signerData);
-  final allowance = await erc20Contract.allowance(
-      accountAddress, contractAddresses['Hermez']);
+  EthereumAddress ethereumAddress = await credentials.extractAddress();
 
-  if (allowance < amount) {
-    return erc20Contract.approve(contractAddresses['Hermez'], amount);
+  try {
+    final allowanceCall = await web3client
+        .call(contract: contract, function: _allowance(contract), params: [
+      EthereumAddress.fromHex(accountAddress),
+      EthereumAddress.fromHex(contractAddresses['Hermez'])
+    ]);
+    final allowance = allowanceCall.first as BigInt;
+
+    if (allowance.toInt() < amount) {
+      Transaction transaction = Transaction.callContract(
+        contract: contract,
+        function: _approve(contract),
+        parameters: [
+          EthereumAddress.fromHex(contractAddresses['Hermez']),
+          BigInt.from(amount)
+        ],
+      );
+
+      String txHash = await web3client.sendTransaction(credentials, transaction,
+          chainId: getCurrentEnvironment().chainId);
+
+      print(txHash);
+
+      return txHash != null;
+    }
+
+    if (!(allowance.sign == 0)) {
+      String txHash = await web3client.sendTransaction(
+          credentials,
+          Transaction.callContract(
+              contract: contract,
+              function: _approve(contract),
+              parameters: [
+                EthereumAddress.fromHex(contractAddresses['Hermez']),
+                BigInt.zero
+              ]),
+          chainId: getCurrentEnvironment().chainId);
+
+      print(txHash);
+    }
+
+    final transactionParameters = [
+      EthereumAddress.fromHex(contractAddresses['Hermez']),
+      amount
+    ];
+
+    int nonce = await web3client.getTransactionCount(ethereumAddress);
+
+    Transaction transaction = Transaction.callContract(
+        contract: contract,
+        function: _approve(contract),
+        parameters: transactionParameters,
+        nonce: nonce++);
+
+    String txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
+
+    print(txHash);
+
+    return txHash != null;
+  } catch (error, trace) {
+    print(error);
+    print(trace);
   }
-
-  if (!allowance.isZero(amount)) {
-    final tx = await erc20Contract.approve(contractAddresses['Hermez'], '0');
-    await tx.wait(1);
-  }
-
-  return erc20Contract.approve(contractAddresses['Hermez'], amount);*/
-
-  /*final contract = await ContractParser.fromAssets(
-      'ERC20ABI.json', contractAddress, tokenContractName);
-
-  var response = await client.call(
-    contract: contract,
-    function: _approve(contract),
-    params: [delegate, amount],
-  );
-
-  return response.first as bool;*/
 }

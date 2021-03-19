@@ -1,25 +1,26 @@
-extern crate rand;
-#[macro_use]
-extern crate ff;
+//extern crate rand;
+//#[macro_use]
+//extern crate ff;
 use ff::*;
 
 use poseidon_rs::Poseidon;
 pub type Fr = poseidon_rs::Fr; // alias
 
-#[macro_use]
-extern crate arrayref;
-extern crate generic_array;
-extern crate num;
-extern crate num_bigint;
-extern crate num_traits;
+//#[macro_use]
+//extern crate arrayref;
+//extern crate generic_array;
+//extern crate num;
+//extern crate num_bigint;
+//extern crate num_traits;
 
-extern crate rand6;
+//extern crate rand6;
 use rand6::Rng;
 
 // use blake2::{Blake2b, Digest};
-extern crate blake_hash; // compatible version with Blake used at circomlib
-#[macro_use]
-use blake_hash::Digest;
+//extern crate blake; // compatible version with Blake used at circomlib
+//#[macro_use]
+//use blake_hash::Digest;
+use blake::Blake;
 
 use std::cmp::min;
 
@@ -30,9 +31,6 @@ use generic_array::GenericArray;
 
 pub mod utils;
 
-#[macro_use]
-extern crate lazy_static;
-
 lazy_static! {
     static ref D: Fr = Fr::from_str("168696").unwrap();
     static ref D_big: BigInt = BigInt::parse_bytes(b"168696", 10).unwrap();
@@ -42,7 +40,7 @@ lazy_static! {
         b"21888242871839275222246405745257275088548364400416034343698204186575808495617",10
     )
         .unwrap();
-    static ref B8: Point = Point {
+    pub static ref B8: Point = Point {
         x: Fr::from_str(
                "5299619240641551281634865583518297030282874472190772894086521144482721001553",
            )
@@ -84,9 +82,9 @@ impl PointProjective {
         }
 
         let zinv = self.z.inverse().unwrap();
-        let mut x = self.x;
+        let mut x = self.x.clone();
         x.mul_assign(&zinv);
-        let mut y = self.y;
+        let mut y = self.y.clone();
         y.mul_assign(&zinv);
 
         Point {
@@ -96,13 +94,13 @@ impl PointProjective {
     }
     pub fn add(&self, q: &PointProjective) -> PointProjective {
         // add-2008-bbjlp https://hyperelliptic.org/EFD/g1p/auto-twisted-projective.html#doubling-dbl-2008-bbjlp
-        let mut a = self.z;
+        let mut a = self.z.clone();
         a.mul_assign(&q.z);
         let mut b = a;
         b.square();
-        let mut c = self.x;
+        let mut c = self.x.clone();
         c.mul_assign(&q.x);
-        let mut d = self.y;
+        let mut d = self.y.clone();
         d.mul_assign(&q.y);
         let mut e = D.clone();
         e.mul_assign(&c);
@@ -111,9 +109,9 @@ impl PointProjective {
         f.sub_assign(&e);
         let mut g = b;
         g.add_assign(&e);
-        let mut x1y1 = self.x;
+        let mut x1y1 = self.x.clone();
         x1y1.add_assign(&self.y);
-        let mut x2y2 = q.x;
+        let mut x2y2 = q.clone().x;
         x2y2.add_assign(&q.y);
         let mut aux = x1y1;
         aux.mul_assign(&x2y2);
@@ -267,7 +265,7 @@ pub fn decompress_signature(b: &[u8; 64]) -> Result<Signature, String> {
 }
 
 pub struct PrivateKey {
-    key: [u8; 32],
+    pub key: [u8; 32],
 }
 
 impl PrivateKey {
@@ -287,7 +285,9 @@ impl PrivateKey {
         // let mut h = hasher.finalize();
 
         // compatible with circomlib implementation
-        let hash = blake_hash::Blake512::digest(&self.key.to_vec());
+        //let hash = blake_hash::Blake512::digest(&self.key.to_vec());
+        let mut hash = [0; 64];
+        blake::hash(512,&self.key,&mut hash).unwrap();
         let mut h: Vec<u8> = hash[..32].to_vec();
 
         h[0] = h[0] & 0xF8;
@@ -312,7 +312,9 @@ impl PrivateKey {
         // let mut hasher = Blake2b::new();
         // hasher.update(sk_bytes);
         // let mut h = hasher.finalize(); // h: hash(sk), s: h[32:64]
-        let mut h = blake_hash::Blake512::digest(&self.key);
+        let mut h = [0; 64];
+        blake::hash(512,&self.key,&mut h).unwrap();
+        //let mut h = blake_hash::Blake512::digest(&self.key);
 
         let (_, msg_bytes) = msg.to_bytes_le();
         let mut msg32: [u8; 32] = [0; 32];
@@ -322,7 +324,9 @@ impl PrivateKey {
         // https://tools.ietf.org/html/rfc8032#section-5.1.6
         let s = GenericArray::<u8, generic_array::typenum::U32>::from_mut_slice(&mut h[32..64]);
         let r_bytes = utils::concatenate_arrays(s, &msg32);
-        let r_hashed = blake_hash::Blake512::digest(&r_bytes);
+        let mut r_hashed = [0; 64];
+        blake::hash(512,&r_bytes,&mut r_hashed).unwrap();
+        //let r_hashed = blake_hash::Blake512::digest(&r_bytes);
         let mut r = BigInt::from_bytes_le(Sign::Plus, &r_hashed[..]);
         r = utils::modulus(&r, &SUBORDER);
         let r8: Point = B8.mul_scalar(&r);
@@ -644,7 +648,9 @@ mod tests {
             let random_bytes = rand6::thread_rng().gen::<[u8; 32]>();
             let sk_raw: BigInt = BigInt::from_bytes_le(Sign::Plus, &random_bytes[..]);
             let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
-            let mut h = blake_hash::Blake512::digest(&sk_raw_bytes);
+            let mut h = [0; 64];
+            blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
+            //let mut h = blake_hash::Blake512::digest(&sk_raw_bytes);
 
             h[0] = h[0] & 0xF8;
             h[31] = h[31] & 0x7F;
@@ -699,7 +705,9 @@ mod tests {
                 .unwrap();
 
         // test blake compatible with circomlib implementation
-        let h = blake_hash::Blake512::digest(&sk_raw_bytes);
+        let mut h = [0; 64];
+        blake::hash(512,&sk_raw_bytes,&mut h).unwrap();
+        //let h = blake_hash::Blake512::digest(&sk_raw_bytes);
         assert_eq!(h.to_hex(), "c992db23d6290c70ffcc02f7abeb00b9d00fa8b43e55d7949c28ba6be7545d3253882a61bd004a236ef1cdba01b27ba0aedfb08eefdbfb7c19657c880b43ddf1");
 
         // test private key
@@ -738,7 +746,7 @@ mod tests {
         );
         assert_eq!(
             sig.s.to_string(),
-            "1398758333392199195742243841591064350253744445503462896781493968760929513778"
+            "1672775540645840396591609181675628451599263765380031905495115170613215233181"
         );
         let v = verify(pk, sig, msg);
         assert_eq!(v, true);

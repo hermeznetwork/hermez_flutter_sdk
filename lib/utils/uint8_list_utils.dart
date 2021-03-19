@@ -37,6 +37,31 @@ class Uint8ArrayUtils {
     return res;
   }
 
+  static BigInt beBuff2int(Uint8List buff) {
+    BigInt res = BigInt.zero;
+    for (int i = 0; i < buff.length; i++) {
+      final n = BigInt.from(buff[buff.length - i - 1]);
+      res = res + (n << i * 8);
+    }
+    return res;
+  }
+
+  static Uint8List beInt2Buff(BigInt n, int len) {
+    BigInt r = n;
+    int o = len - 1;
+    final buff = Uint8List(len);
+    while ((r > BigInt.zero) && (o >= 0)) {
+      final c = (r & BigInt.from(255)).toInt();
+      buff[o] = c;
+      o--;
+      r = r >> 8;
+    }
+    if (r != BigInt.zero) {
+      throw new ArgumentError("Number does not fit in this length");
+    }
+    return buff;
+  }
+
   static Uint8List leInt2Buff(BigInt n, int len) {
     BigInt r = n;
     int o = 0;
@@ -72,6 +97,7 @@ class Uint8ArrayUtils {
     return read(0, bytes.length);
   }
 
+  /// LITTLE ENDIAN!!
   static Uint8List bigIntToBytes(BigInt number) {
     // Not handling negative numbers. Decide how you want to do that.
     int bytes = (number.bitLength + 7) >> 3;

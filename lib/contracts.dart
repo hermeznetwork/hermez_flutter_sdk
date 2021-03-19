@@ -21,7 +21,7 @@ dynamic getContract(
   if (contractsCache.containsKey(contractAddress)) {
     return contractsCache[contractAddress + signerId];
   }
-  Web3Client provider = getProvider(providerUrl);
+  Web3Client provider = getProvider(providerUrl, providerUrl);
   //final signer = getSigner(provider, signerData);
 //ContractAbi.fromJson(abi, '');
   DeployedContract contract =

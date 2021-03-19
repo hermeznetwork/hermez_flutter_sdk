@@ -17,6 +17,10 @@ String bufToHex(Uint8List buf) {
   return Utf8Decoder().convert(buf);
 }
 
+/*Uint8List hexToBuffer(String hexString) {
+  return utf8.encode(hexString);
+}*/
+
 /// Chunks inputs in five elements and hash with Poseidon all them togheter
 /// @param {Array} arr - inputs hash
 /// @returns {BigInt} - final hash
@@ -64,17 +68,17 @@ BigInt hashBuffer(Uint8List msgBuff) {
 ///
 /// @returns {String}
 String getTokenAmountString(String amountBigInt, int decimals) {
+  return (BigInt.parse(amountBigInt) / BigInt.from(10).pow(decimals))
+      .toStringAsFixed(decimals);
   //return ethers.utils.formatUnits(amountBigInt, decimals);
 }
 
-/**
- * Converts an amount in Float with the appropriate decimals to a BigInt
- * @param {String} amountString - String representing the amount as a Float
- * @param {Number} decimals - Number of decimal points the amount has
- * @returns {BigInt}
- */
-BigInt getTokenAmountBigInt(double amountString, int decimals) {
-  return BigInt.parse(amountString.toStringAsFixed(decimals));
+/// Converts an amount in Float with the appropriate decimals to a BigInt
+/// @param {String} amountString - String representing the amount as a Float
+/// @param {Number} decimals - Number of decimal points the amount has
+/// @returns {BigInt}
+BigInt getTokenAmountBigInt(double amount, int decimals) {
+  return BigInt.from(amount * BigInt.from(10).pow(decimals).toDouble());
 }
 
 Uint8List hexToBuffer(String source) {

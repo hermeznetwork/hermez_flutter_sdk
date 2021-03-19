@@ -1,7 +1,9 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:web3dart/crypto.dart';
 
 import 'libs/circomlib.dart';
 import 'utils/structs.dart' as Structs;
@@ -98,8 +100,9 @@ class PublicKey {
     List<int> pointList = xList.toList();
     pointList.addAll(yList.toList());
     BigInt result = Uint8ArrayUtils.leBuff2int(Uint8List.fromList(pointList));*/
-    return Uint8ArrayUtils.uint8ListfromString(
-        circomLib.packPoint(p[0].toString(), p[1].toString()));
+    return hexToBytes(circomLib.packPoint(p[0].toString(), p[1].toString()));
+    /*return Uint8ArrayUtils.uint8ListfromString(
+        circomLib.packPoint(p[0].toString(), p[1].toString()));*/
   }
 
   bool verify(String messageHash, Signature signature) {
@@ -135,13 +138,15 @@ class PrivateKey {
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   PublicKey public() {
     CircomLib circomLib = CircomLib();
-    Pointer<Uint8> pubKeyPtr =
-        circomLib.prv2pub(Uint8ArrayUtils.uint8ListToString(this.sk));
-    final bufPubKey = Uint8ArrayUtils.fromPointer(pubKeyPtr, 32);
-    final xList = bufPubKey.sublist(0, 16);
-    final yList = bufPubKey.sublist(16, 32);
-    BigInt x = Uint8ArrayUtils.bytesToBigInt(xList);
-    BigInt y = Uint8ArrayUtils.bytesToBigInt(yList);
+    Pointer<Utf8> pubKeyPtr = circomLib.prv2pub(this.sk);
+    final String resultString = Utf8.fromUtf8(pubKeyPtr);
+    final stringList = resultString.split(",");
+    stringList[0] = stringList[0].replaceAll("Fr(", "");
+    stringList[0] = stringList[0].replaceAll(")", "");
+    stringList[1] = stringList[1].replaceAll("Fr(", "");
+    stringList[1] = stringList[1].replaceAll(")", "");
+    BigInt x = hexToInt(stringList[0]);
+    BigInt y = hexToInt(stringList[1]);
     List<BigInt> p = List<BigInt>();
     p.add(x);
     p.add(y);
@@ -150,8 +155,7 @@ class PrivateKey {
 
   String sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    String signature = circomLib.signPoseidon(
-        Uint8ArrayUtils.uint8ListToString(this.sk), messageHash.toString());
+    String signature = circomLib.signPoseidon(this.sk, messageHash.toString());
     return signature;
   }
 }
