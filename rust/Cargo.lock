@@ -31,7 +31,7 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "babyjubjub-rs"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "arrayref",
  "blake",
@@ -507,9 +507,9 @@ dependencies = [
 
 [[package]]
 name = "poseidon-rs"
-version = "0.0.5"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "287835402b458a43c9c5b9f6bbc5ee4d980b874657f8060a3bd96168108a7c8d"
+checksum = "c76e4996e3d9572d8b5cd56f495dda3fb748fd4cd6bdca754270b8b66a9a2dd3"
 dependencies = [
  "ff_ce",
  "rand 0.4.6",
