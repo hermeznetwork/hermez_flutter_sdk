@@ -4,16 +4,25 @@
 @end
 // NOTE: Append the lines below to ios/Classes/<your>Plugin.h
 
-uint8_t (pack_signature(const uint8_t (*signature)[64]))[64];
+char *pack_signature(const char *signature);
 
-uint8_t (unpack_signature(const uint8_t (*compressed_signature)[64]))[64];
+char *unpack_signature(const char *compressed_signature);
 
-uint8_t (pack_point(const uint8_t (*point)[64]))[32];
+char *pack_point(const char *point_x, const char *point_y);
 
-uint8_t (unpack_point(const uint8_t (*point)[32]))[64];
+char *unpack_point(const char *compressed_point);
 
-uint8_t (prv2pub(const char *private_key))[32];
+char *prv2pub(const uint8_t (*private_key)[32]);
 
-uint8_t (sign_poseidon(const char *private_key, const char *message))[64];
+char *hash_poseidon(const char *tx_compressed_data,
+                    const char *to_eth_addr,
+                    const char *to_bjj_ay,
+                    const char *rq_txcompressed_data_v2,
+                    const char *rq_to_eth_addr,
+                    const char *rq_to_bjj_ay);
 
-char verify_poseidon(const char *private_key, const uint8_t (*signature)[64], const char *message);
+char *sign_poseidon(const uint8_t (*private_key)[32], const char *msg);
+
+char *verify_poseidon(const char *private_key,
+                      const char *compressed_signature,
+                      const char *message);

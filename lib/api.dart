@@ -116,7 +116,7 @@ Future<Account> getAccount(String accountIndex) async {
 /// @param {String} accountIndex - Filter by an account index that sent or received the transactions
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered transactions and pagination data
-Future<List<ForgedTransaction>> getTransactions(
+Future<ForgedTransactionsResponse> getTransactions(
     {String address,
     List<int> tokenIds,
     int batchNum,
@@ -145,7 +145,7 @@ Future<List<ForgedTransaction>> getTransactions(
     final jsonResponse = await extractJSON(response);
     final ForgedTransactionsResponse forgedTransactionsResponse =
         ForgedTransactionsResponse.fromJson(json.decode(jsonResponse));
-    return forgedTransactionsResponse.transactions;
+    return forgedTransactionsResponse;
   } else {
     throw ('Error: ${response.body}');
   }
