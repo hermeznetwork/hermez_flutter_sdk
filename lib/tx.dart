@@ -61,8 +61,8 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasMultiplier - Optional gas multiplier
 ///
-/// @returns {Promise} transaction
-Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
+/// @returns {String} transaction hash
+Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     Token token, String babyJubJub, Web3Client web3client, String privateKey,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
@@ -104,7 +104,7 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         parameters: transactionParameters,
         maxGas: gasLimit,
         gasPrice: gasPrice,
-        value: EtherAmount.fromUnitAndValue(EtherUnit.wei, decompressedAmount));
+        value: EtherAmount.fromUnitAndValue(EtherUnit.wei, BigInt.from(decompressedAmount)));
 
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $decompressedAmount');
@@ -114,7 +114,7 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
 
     print(txHash);
 
-    return txHash != null;
+    return txHash;
   }
 
   int nonceBefore = await web3client.getTransactionCount(from);
@@ -151,7 +151,7 @@ Future<bool> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
 
   print(txHash);
 
-  return txHash != null;
+  return txHash;
 }
 
 Future<String> _sendTransaction(String privateKey,

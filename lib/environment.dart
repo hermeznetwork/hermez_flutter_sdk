@@ -18,7 +18,9 @@ class Env {
         'http://192.168.250.101:8545',
         'wss://192.168.250.101:8545',
         "192.168.250.101:8080",
-        "https://etherscan.io");
+        "https://etherscan.io",
+        "http://api.etherscan.io/api",
+        "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
 
     params['rinkeby'] = EnvParams(
         4,
@@ -29,8 +31,10 @@ class Env {
         "api.testnet.hermez.io",
         "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
         "wss://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
-        "http://explorer.testnet.hermez.io",
-        "https://rinkeby.etherscan.io");
+        "https://explorer.testnet.hermez.io",
+        "https://rinkeby.etherscan.io",
+        "http://api-rinkeby.etherscan.io/api",
+        "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
   }
 
   Map<String, EnvParams> params = Map<String, EnvParams>();
@@ -42,8 +46,16 @@ class Env {
 }
 
 class EnvParams {
-  EnvParams(this.chainId, this.contracts, this.baseApiUrl, this.baseWeb3Url,
-      this.baseWeb3RdpUrl, this.batchExplorerUrl, this.etherscanUrl);
+  EnvParams(
+      this.chainId,
+      this.contracts,
+      this.baseApiUrl,
+      this.baseWeb3Url,
+      this.baseWeb3RdpUrl,
+      this.batchExplorerUrl,
+      this.etherscanUrl,
+      this.etherscanApiUrl,
+      this.etherscanApiKey);
   final int chainId;
   final Set<String> contracts;
   final String baseApiUrl;
@@ -51,6 +63,8 @@ class EnvParams {
   final String baseWeb3RdpUrl;
   final String batchExplorerUrl;
   final String etherscanUrl;
+  final String etherscanApiUrl;
+  final String etherscanApiKey;
 }
 
 /// Gets the current supported environments
