@@ -5,6 +5,33 @@ EnvParams params = Env().params['local'];
 
 class Env {
   Env() {
+    params['mainnet'] = EnvParams(
+        1,
+        {
+          "0xA68D85dF56E733A06443306A095646317B5Fa633", // Hermez
+          "0x392361427Ef5e17b69cFDd1294F31ab555c86124", // WithdrawalDelayer
+        },
+        "api.hermez.io",
+        "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "wss://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "https://explorer.hermez.io",
+        "https://etherscan.io",
+        "http://api.etherscan.io/api",
+        "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
+    params['rinkeby'] = EnvParams(
+        4,
+        {
+          "0x679b11E0229959C1D3D27C9d20529E4C5DF7997c", // Hermez
+          "0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724", // WithdrawalDelayer
+        },
+        "api.testnet.hermez.io",
+        "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "wss://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
+        "https://explorer.testnet.hermez.io",
+        "https://rinkeby.etherscan.io",
+        "http://api-rinkeby.etherscan.io/api",
+        "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
+
     params['local'] = EnvParams(
         1337,
         {
@@ -21,27 +48,14 @@ class Env {
         "https://etherscan.io",
         "http://api.etherscan.io/api",
         "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
-
-    params['rinkeby'] = EnvParams(
-        4,
-        {
-          "0x679b11E0229959C1D3D27C9d20529E4C5DF7997c", // Hermez
-          "0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724", // WithdrawalDelayer
-        },
-        "api.testnet.hermez.io",
-        "https://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
-        "wss://rinkeby.infura.io/v3/80596e41f0a148ccbc9a856abd054696",
-        "https://explorer.testnet.hermez.io",
-        "https://rinkeby.etherscan.io",
-        "http://api-rinkeby.etherscan.io/api",
-        "B697CBT5AUE1PUSUGFXZUIFVBFG8G7889D");
   }
 
   Map<String, EnvParams> params = Map<String, EnvParams>();
 
   static final Set<String> supportedEnvironments = {
-    "local",
+    "mainnet",
     "rinkeby",
+    "local",
   };
 }
 

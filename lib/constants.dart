@@ -15,6 +15,8 @@ const GAS_MULTIPLIER = 1;
 
 const DEFAULT_PAGE_SIZE = 20;
 
+const API_VERSION = 'v1';
+
 //const BASE_API_URL = '192.168.1.134:8086';
 /*const BASE_API_URL = '192.168.250.101:8086';
 

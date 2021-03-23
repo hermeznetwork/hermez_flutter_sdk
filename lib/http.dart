@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import 'constants.dart';
 import 'http_exceptions.dart';
 
 Future<String> extractJSON(http.Response response) async {
@@ -14,9 +15,9 @@ Future<http.Response> get(String baseAddress, String endpoint,
   try {
     var uri;
     if (queryParameters != null) {
-      uri = Uri.http(baseAddress, endpoint, queryParameters);
+      uri = Uri.http(baseAddress, '$API_VERSION/$endpoint', queryParameters);
     } else {
-      uri = Uri.http(baseAddress, endpoint);
+      uri = Uri.http(baseAddress, '$API_VERSION/$endpoint');
     }
     final response = await http.get(
       uri,
@@ -36,7 +37,7 @@ Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic> body}) async {
   try {
     var uri;
-    uri = Uri.http(baseAddress, endpoint);
+    uri = Uri.http(baseAddress, '$API_VERSION/$endpoint');
     final response = await http.post(
       uri,
       body: json.encode(body),
