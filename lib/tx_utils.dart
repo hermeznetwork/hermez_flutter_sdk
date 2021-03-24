@@ -89,14 +89,14 @@ Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
 /// @param {Number} currentPosition
 ///
 /// @returns {String}
-String getL1UserTxId(int toForgeL1TxsNum, int currentPosition) {
+String getL1UserTxId(BigInt toForgeL1TxsNum, BigInt currentPosition) {
   final toForgeL1TxsNumBytes = Uint8List(8);
   final toForgeL1TxsNumView = ByteData.view(toForgeL1TxsNumBytes.buffer);
-  toForgeL1TxsNumView.setUint64(0, toForgeL1TxsNum);
+  toForgeL1TxsNumView.setUint64(0, toForgeL1TxsNum.toInt());
 
   final positionBytes = Uint8List(8);
   final positionView = ByteData.view(positionBytes.buffer);
-  positionView.setUint64(0, currentPosition);
+  positionView.setUint64(0, currentPosition.toInt());
 
   final toForgeL1TxsNumHex =
       bytesToHex(toForgeL1TxsNumView.buffer.asUint8List());

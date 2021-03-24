@@ -22,6 +22,7 @@ class ForgedTransaction {
   final String toHezEthereumAddress;
   final Token token;
   final String type;
+  final String hash;
 
   ForgedTransaction(
       {this.l1info,
@@ -41,7 +42,8 @@ class ForgedTransaction {
       this.toBJJ,
       this.toHezEthereumAddress,
       this.token,
-      this.type});
+      this.type,
+      this.hash});
 
   factory ForgedTransaction.fromJson(Map<String, dynamic> json) {
     L1Info l1Info = L1Info.fromJson(json['L1Info']);
