@@ -139,7 +139,7 @@ class PrivateKey {
   PublicKey public() {
     CircomLib circomLib = CircomLib();
     Pointer<Utf8> pubKeyPtr = circomLib.prv2pub(this.sk);
-    final String resultString = Utf8.fromUtf8(pubKeyPtr);
+    final String resultString = pubKeyPtr.toDartString();
     final stringList = resultString.split(",");
     stringList[0] = stringList[0].replaceAll("Fr(", "");
     stringList[0] = stringList[0].replaceAll(")", "");

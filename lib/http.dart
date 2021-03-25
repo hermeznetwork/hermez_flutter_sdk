@@ -37,7 +37,7 @@ Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic> body}) async {
   try {
     var uri;
-    uri = Uri.http(baseAddress, '$API_VERSION/$endpoint');
+    uri = Uri.http(baseAddress, '$API_VERSION$endpoint');
     final response = await http.post(
       uri,
       body: json.encode(body),

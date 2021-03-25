@@ -163,34 +163,34 @@ class CircomLib {
 
   Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
   String packSignature(String signature) {
-    final sig = Utf8.toUtf8(signature);
+    final sig = signature.toNativeUtf8();
     final resultPtr = _packSignature(sig);
-    final result = Utf8.fromUtf8(resultPtr);
+    final result = resultPtr.toDartString();
     return result;
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
   String unpackSignature(String compressedSignature) {
-    final sigPtr = Utf8.toUtf8(compressedSignature);
+    final sigPtr = compressedSignature.toNativeUtf8();
     final resultPtr = _unpackSignature(sigPtr);
-    final result = Utf8.fromUtf8(resultPtr);
+    final result = resultPtr.toDartString();
     return result;
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
   String packPoint(String pointX, String pointY) {
-    final ptrX = Utf8.toUtf8(pointX);
-    final ptrY = Utf8.toUtf8(pointY);
+    final ptrX = pointX.toNativeUtf8();
+    final ptrY = pointY.toNativeUtf8();
     final resultPtr = _packPoint(ptrX, ptrY);
-    final result = Utf8.fromUtf8(resultPtr);
+    final result = resultPtr.toDartString();
     return result;
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>) _unpackPoint;
   List<String> unpackPoint(String compressedPoint) {
-    final pointPtr = Utf8.toUtf8(compressedPoint);
+    final pointPtr = compressedPoint.toNativeUtf8();
     final resultPtr = _unpackPoint(pointPtr);
-    final result = Utf8.fromUtf8(resultPtr);
+    final result = resultPtr.toDartString();
     return result.split(",");
   }
 
@@ -199,14 +199,14 @@ class CircomLib {
       Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>) _hashPoseidon;
   String hashPoseidon(String txCompressedData, String toEthAddr, String toBjjAy,
       String rqTxCompressedDatav2, String rqToEthAddr, String rqToBjjAy) {
-    final ptr1 = Utf8.toUtf8(txCompressedData);
-    final ptr2 = Utf8.toUtf8(toEthAddr);
-    final ptr3 = Utf8.toUtf8(toBjjAy);
-    final ptr4 = Utf8.toUtf8(rqTxCompressedDatav2);
-    final ptr5 = Utf8.toUtf8(rqToEthAddr);
-    final ptr6 = Utf8.toUtf8(rqToBjjAy);
+    final ptr1 = txCompressedData.toNativeUtf8();
+    final ptr2 = toEthAddr.toNativeUtf8();
+    final ptr3 = toBjjAy.toNativeUtf8();
+    final ptr4 = rqTxCompressedDatav2.toNativeUtf8();
+    final ptr5 = rqToEthAddr.toNativeUtf8();
+    final ptr6 = rqToBjjAy.toNativeUtf8();
     final resultPtr = _hashPoseidon(ptr1, ptr2, ptr3, ptr4, ptr5, ptr6);
-    String resultString = Utf8.fromUtf8(resultPtr);
+    String resultString = resultPtr.toDartString();
     resultString = resultString.replaceAll("Fr(", "");
     resultString = resultString.replaceAll(")", "");
     return resultString;
@@ -216,9 +216,9 @@ class CircomLib {
   Pointer<Utf8> Function(Pointer<Uint8>, Pointer<Utf8>) _signPoseidon;
   String signPoseidon(Uint8List privateKey, String msg) {
     final prvKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
-    final msgPtr = Utf8.toUtf8(msg);
+    final msgPtr = msg.toNativeUtf8();
     final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);
-    final String compressedSignature = Utf8.fromUtf8(resultPtr);
+    final String compressedSignature = resultPtr.toDartString();
     return compressedSignature;
   }
 
@@ -227,11 +227,11 @@ class CircomLib {
       _verifyPoseidon;
   bool verifyPoseidon(
       String privateKey, String compressedSignature, String msg) {
-    final pubKeyPtr = Utf8.toUtf8(privateKey);
-    final sigPtr = Utf8.toUtf8(compressedSignature);
-    final msgPtr = Utf8.toUtf8(msg);
+    final pubKeyPtr = privateKey.toNativeUtf8();
+    final sigPtr = compressedSignature.toNativeUtf8();
+    final msgPtr = msg.toNativeUtf8();
     final resultPtr = _verifyPoseidon(pubKeyPtr, sigPtr, msgPtr);
-    final String resultString = Utf8.fromUtf8(resultPtr);
+    final String resultString = resultPtr.toDartString();
     final bool result = resultString.compareTo("1") == 0;
     return result;
   }
@@ -240,7 +240,7 @@ class CircomLib {
   Pointer<Utf8> prv2pub(Uint8List privateKey) {
     final prvKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
     final resultPtr = _prv2Pub(prvKeyPtr);
-    final String resultString = Utf8.fromUtf8(resultPtr);
+    final String resultString = resultPtr.toDartString();
     return resultPtr;
   }
 

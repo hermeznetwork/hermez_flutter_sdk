@@ -13,7 +13,7 @@ class Uint8ArrayUtils {
   }
 
   static Pointer<Uint8> toPointer(Uint8List bytes) {
-    final ptr = allocate<Uint8>(count: bytes.length);
+    final ptr = calloc<Uint8>(bytes.length);
     final byteList = ptr.asTypedList(bytes.length);
     byteList.setAll(0, bytes);
     return ptr.cast();

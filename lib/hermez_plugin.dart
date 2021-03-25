@@ -108,14 +108,14 @@ String nativeGreeting(String name) {
   print("- Mylib bindings found 👍");
   print("  ${nativeExampleLib.toString()}"); // Instance info
 
-  final argName = Utf8.toUtf8(name);
+  final argName = name.toNativeUtf8();
   print("- Calling rust_greeting with argument:  $argName");
 
   // The actual native call
   final resultPointer = rustGreeting(argName);
   print("- Result pointer:  $resultPointer");
 
-  final greetingStr = Utf8.fromUtf8(resultPointer);
+  final greetingStr = resultPointer.toDartString();
   print("- Response string:  $greetingStr");
 
   // Free the string pointer, as we already have

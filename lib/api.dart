@@ -21,7 +21,6 @@ import 'model/tokens_response.dart';
 
 var baseApiUrl = '';
 
-const REGISTER_AUTH_URL = "/account-creation-authorization";
 const ACCOUNTS_URL = "/accounts";
 const EXITS_URL = "/exits";
 const STATE_URL = "/state";

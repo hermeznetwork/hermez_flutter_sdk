@@ -50,7 +50,7 @@ class Signature extends Struct {
   Pointer<Uint8> s;
 
   factory Signature.allocate(Pointer<Point> r_b8, Pointer<Uint8> s) =>
-      allocate<Signature>().ref
+      calloc<Signature>().ref
         ..r_b8 = r_b8
         ..s = s;
 }
@@ -63,7 +63,7 @@ class Point extends Struct {
   Pointer<Uint8> y;
 
   factory Point.allocate(Pointer<Uint8> x, Pointer<Uint8> y) =>
-      allocate<Point>().ref
+      calloc<Point>().ref
         ..x = x
         ..y = y;
 }
