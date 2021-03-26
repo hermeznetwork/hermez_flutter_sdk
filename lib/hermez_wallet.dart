@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
 import 'package:hermez_plugin/utils/eip712.dart';
-import 'package:hermez_plugin/utils/eip7122.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
@@ -136,7 +135,7 @@ class HermezWallet {
       'BJJKey': hexToBytes(bJJ)
     };
 
-    final String primaryType = 'Authorise'; //???
+    final String primaryType = 'Authorise';
 
     final Map<String, List<TypedDataArgument>> types = {
       'Authorise': [
@@ -152,109 +151,12 @@ class HermezWallet {
       ]
     };
 
-    final Map<String, List<Map<String, String>>> types2 = {
-      'Authorise': [
-        {'name': 'Provider', 'type': 'string'},
-        {'name': 'Authorisation', 'type': 'string'},
-        {'name': 'BJJKey', 'type': 'bytes32'},
-      ],
-      'EIP712Domain': [
-        {'name': 'name', 'type': 'string'},
-        {'name': 'version', 'type': 'string'},
-        {'name': 'chainId', 'type': 'uint256'},
-        {'name': 'verifyingContract', 'type': 'address'}
-      ]
-    };
-
-    final signature =
-        await eip712.sign(domain, primaryType, message, types2, signer);
-
     final typedData = TypedData(types, primaryType, domain, message);
 
-    final messageHash = eip7122.encodeDigest(typedData);
-
-    /*final Map<String, List<TypedDataArgument>> types3 = {
-      'EIP712Domain': [
-        TypedDataArgument('name', 'string'),
-        TypedDataArgument('version', 'string'),
-        TypedDataArgument('chainId', 'uint256'),
-        TypedDataArgument('verifyingContract', 'address')
-      ],
-      'Person': [
-        TypedDataArgument('name', 'string'),
-        TypedDataArgument('wallet', 'address')
-      ],
-      'Mail': [
-        TypedDataArgument('from', 'Person'),
-        TypedDataArgument('to', 'Person'),
-        TypedDataArgument('contents', 'string'),
-      ]
-    };
-
-    final primaryType3 = "Mail";
-
-    final Map<String, dynamic> domain3 = {
-      'name': 'Ether Mail',
-      'version': '1',
-      'chainId': BigInt.parse('1'),
-      'verifyingContract':
-          EthereumAddress.fromHex('0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC')
-    };
-
-    final Map<String, dynamic> message3 = {
-      'from': {
-        'name': 'Cow',
-        'wallet': EthereumAddress.fromHex(
-            '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826'),
-      },
-      'to': {
-        'name': 'Bob',
-        'wallet': EthereumAddress.fromHex(
-            '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'),
-      },
-      'contents': 'Hello, Bob!'
-    };
-
-    final typedData2 = TypedData(types3, primaryType3, domain3, message3);
-    final messageHash2 = eip7122.encodeDigest(typedData2);*/
-
-    //signer.signToSignature(payload)
-
-    //signer._signTypedData(domain, types, value)????
-
-    //final signer2 = EthPrivateKey.fromHex(bytesToHex(keccakUtf8('cow')));
-    //final address = await signer2.extractAddress();
-    //print(address.hex);
-    final signature2 = await signer.sign(
-      messageHash, /*chainId: int.parse(chainId)*/
-    );
-    /*final signature2 = /*bytesToHex(*/ await signer2
-        .signToSignature(messageHash2);*/
-    //include0x: true);
-    /*BigInt r = hexToInt('0x' + signature.substring(2).substring(0, 64));
-    BigInt s = hexToInt('0x' + signMsg.substring(2).substring(64, 128));
-    String vString = '0x' + signMsg.substring(2).substring(128, 130);
-    int v = hexToDartInt('0x' + signMsg.substring(2).substring(128, 130));
-
-    final signature2 = MsgSignature(r, s, v);*/
-    /*print(bytesToHex(intToBytes(BigInt.from(signature.v))));
-    print(bytesToHex(intToBytes(signature.r)));
-    print(bytesToHex(intToBytes(signature.s)));
-    final signatureHex = "";*/
-
-    print(bytesToHex(messageHash));
+    final messageHash = eip712.encodeDigest(typedData);
+    final signature = await signer.sign(messageHash);
     final signatureHex = bytesToHex(signature, include0x: true);
-    final signatureHex2 = bytesToHex(signature2, include0x: true);
-    print(signatureHex);
-    print(signatureHex2);
     return signatureHex;
-
-    /// NOT NEEDED: Generate the signature from params as there's a bug in ethers
-    /// that generates the base signature wrong
-    //final signatureParams = await signer
-    //    .signToSignature(messageHash); //sign(messageHash, privateKeyBuf);
-    //return signatureHex.substring(0, signatureHex.length - 2) +
-    //    signatureParams.v.toRadixString(16);
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider

@@ -15,9 +15,9 @@ Future<http.Response> get(String baseAddress, String endpoint,
   try {
     var uri;
     if (queryParameters != null) {
-      uri = Uri.http(baseAddress, '$API_VERSION/$endpoint', queryParameters);
+      uri = Uri.https(baseAddress, '$API_VERSION$endpoint', queryParameters);
     } else {
-      uri = Uri.http(baseAddress, '$API_VERSION/$endpoint');
+      uri = Uri.https(baseAddress, '$API_VERSION$endpoint');
     }
     final response = await http.get(
       uri,
@@ -37,7 +37,7 @@ Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic> body}) async {
   try {
     var uri;
-    uri = Uri.http(baseAddress, '$API_VERSION$endpoint');
+    uri = Uri.https(baseAddress, '$API_VERSION$endpoint');
     final response = await http.post(
       uri,
       body: json.encode(body),
