@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:hermez_plugin/api.dart';
+import 'package:hermez_plugin/http_exceptions.dart';
 import 'package:hermez_plugin/model/pool_transaction.dart';
 import 'package:hermez_plugin/model/transaction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,20 +43,17 @@ Future<List<PoolTransaction>> getPoolTransactions(
   List<PoolTransaction> successfulTransactions = List();
   for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
-    final poolTransaction = await getPoolTransaction(transaction.id);
-    if (poolTransaction.info != null || poolTransaction.state == 'fged') {
-      removePoolTransaction(bJJ, poolTransaction.id);
-    } else {
-      successfulTransactions.add(poolTransaction);
+    try {
+      final poolTransaction = await getPoolTransaction(transaction.id);
+      if (poolTransaction.info != null || poolTransaction.state == 'fged') {
+        removePoolTransaction(bJJ, poolTransaction.id);
+      } else {
+        successfulTransactions.add(poolTransaction);
+      }
+    } on ItemNotFoundException {
+      removePoolTransaction(bJJ, transaction.id);
     }
   }
-  /*  catchError((error) => {
-      print(error)
-      //if (error.response.status == 'Not found') {
-      //removePoolTransaction(bJJ, transaction.id);
-      //return null;
-      //}
-    });*/
 
   return successfulTransactions;
 }
