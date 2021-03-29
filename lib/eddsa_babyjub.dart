@@ -138,7 +138,7 @@ class PrivateKey {
   /// @returns {PublicKey} PublicKey derived from PrivateKey
   PublicKey public() {
     CircomLib circomLib = CircomLib();
-    Pointer<Utf8> pubKeyPtr = circomLib.prv2pub(this.sk);
+    Pointer<Utf8> pubKeyPtr = circomLib.prv2pub(bytesToHex(this.sk));
     final String resultString = pubKeyPtr.toDartString();
     final stringList = resultString.split(",");
     stringList[0] = stringList[0].replaceAll("Fr(", "");
@@ -155,7 +155,8 @@ class PrivateKey {
 
   String sign(BigInt messageHash) {
     CircomLib circomLib = CircomLib();
-    String signature = circomLib.signPoseidon(this.sk, messageHash.toString());
+    String signature =
+        circomLib.signPoseidon(bytesToHex(this.sk), messageHash.toString());
     return signature;
   }
 }

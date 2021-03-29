@@ -56,6 +56,11 @@ flutter:
         pluginClass: HermezPlugin
       ios:
         pluginClass: HermezPlugin
+      # macos:
+        # pluginClass: HermezPlugin
+      # web:
+        # pluginClass: HermezPlugin
+        # fileName: hello_web.dart
 
   # To add assets to your plugin package, add an assets section, like this:
       assets:

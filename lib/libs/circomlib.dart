@@ -1,10 +1,8 @@
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:hermez_plugin/utils/structs.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Load the library
@@ -130,7 +128,7 @@ class CircomLib {
         .asFunction();
 
     _prv2Pub = lib
-        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Uint8>)>>(
+        .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Utf8>)>>(
             "prv2pub")
         .asFunction();
 
@@ -150,7 +148,7 @@ class CircomLib {
         .lookup<
             NativeFunction<
                 Pointer<Utf8> Function(
-                    Pointer<Uint8>, Pointer<Utf8>)>>("sign_poseidon")
+                    Pointer<Utf8>, Pointer<Utf8>)>>("sign_poseidon")
         .asFunction();
 
     _verifyPoseidon = lib
@@ -213,9 +211,9 @@ class CircomLib {
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Utf8> Function(Pointer<Uint8>, Pointer<Utf8>) _signPoseidon;
-  String signPoseidon(Uint8List privateKey, String msg) {
-    final prvKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
+  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
+  String signPoseidon(String privateKey, String msg) {
+    final prvKeyPtr = privateKey.toNativeUtf8();
     final msgPtr = msg.toNativeUtf8();
     final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);
     final String compressedSignature = resultPtr.toDartString();
@@ -226,8 +224,8 @@ class CircomLib {
   Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>)
       _verifyPoseidon;
   bool verifyPoseidon(
-      String privateKey, String compressedSignature, String msg) {
-    final pubKeyPtr = privateKey.toNativeUtf8();
+      String publicKey, String compressedSignature, String msg) {
+    final pubKeyPtr = publicKey.toNativeUtf8();
     final sigPtr = compressedSignature.toNativeUtf8();
     final msgPtr = msg.toNativeUtf8();
     final resultPtr = _verifyPoseidon(pubKeyPtr, sigPtr, msgPtr);
@@ -236,9 +234,9 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Utf8> Function(Pointer<Uint8>) _prv2Pub;
-  Pointer<Utf8> prv2pub(Uint8List privateKey) {
-    final prvKeyPtr = Uint8ArrayUtils.toPointer(privateKey);
+  Pointer<Utf8> Function(Pointer<Utf8>) _prv2Pub;
+  Pointer<Utf8> prv2pub(String privateKey) {
+    final prvKeyPtr = privateKey.toNativeUtf8();
     final resultPtr = _prv2Pub(prvKeyPtr);
     final String resultString = resultPtr.toDartString();
     return resultPtr;

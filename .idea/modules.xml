@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/hermez-mobile-library.iml" filepath="$PROJECT_DIR$/.idea/hermez-mobile-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/hermez_mobile_library.iml" filepath="$PROJECT_DIR$/.idea/hermez_mobile_library.iml" />
     </modules>
   </component>
 </project>

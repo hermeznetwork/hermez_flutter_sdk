@@ -203,10 +203,16 @@ pub extern fn unpack_point(compressed_point: *const c_char) ->  *mut c_char {
 }
 
 #[no_mangle]
-pub extern fn prv2pub(private_key: &[u8; 32]) -> *mut c_char {
-    let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
-    let private_key = PrivateKey::import(private_key_bytes.to_vec()).unwrap();
-    let public_key = private_key.public();
+pub extern fn prv2pub(private_key: *const c_char) -> *mut c_char {
+    /*let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
+    let private_key = PrivateKey::import(private_key_bytes.to_vec()).unwrap();*/
+    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    //let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    let pk_bytes_raw = private_key_str.from_hex().unwrap();
+    let mut pk_bytes: [u8; 32] = [0; 32];
+    pk_bytes.copy_from_slice(&pk_bytes_raw);
+    let pk = PrivateKey { key: pk_bytes };
+    let public_key = pk.public();
     let mut result_string: String = "".to_owned();
     result_string.push_str(&public_key.x.to_string());
     result_string.push_str(",");
@@ -236,9 +242,13 @@ pub extern fn hash_poseidon(tx_compressed_data: *const c_char, to_eth_addr: *con
 }
 
 #[no_mangle]
-pub extern fn sign_poseidon(private_key: &[u8; 32], msg: *const c_char) -> *mut c_char {
-    let private_key_bytes: [u8; 32] = *array_ref!(private_key[..32], 0, 32);
-    let pk = PrivateKey::import(private_key_bytes.to_vec()).unwrap();
+pub extern fn sign_poseidon(private_key: *const c_char, msg: *const c_char) -> *mut c_char {
+    let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
+    //let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    let pk_bytes_raw = private_key_str.from_hex().unwrap();
+    let mut pk_bytes: [u8; 32] = [0; 32];
+    pk_bytes.copy_from_slice(&pk_bytes_raw);
+    let pk = PrivateKey { key: pk_bytes };
     let message_str = unsafe { CStr::from_ptr(msg) }.to_str().unwrap();
     let message_bigint = BigInt::from_str(message_str).unwrap();
     let sig = pk.sign(message_bigint.clone()).unwrap();
@@ -250,7 +260,7 @@ pub extern fn sign_poseidon(private_key: &[u8; 32], msg: *const c_char) -> *mut 
 #[no_mangle]
 pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: *const c_char, message: *const c_char) ->  *mut c_char {
     let private_key_str = unsafe { CStr::from_ptr(private_key) }.to_str().unwrap();
-    let pk_bigint = BigInt::from_str(private_key_str).unwrap();
+    // let pk_bigint = BigInt::from_str(private_key_str).unwrap();
     let pk_bytes_raw = private_key_str.from_hex().unwrap();
     let mut pk_bytes: [u8; 32] = [0; 32];
     pk_bytes.copy_from_slice(&pk_bytes_raw);
