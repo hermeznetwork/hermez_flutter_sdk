@@ -18,6 +18,7 @@ public class SwiftHermezPlugin: NSObject, FlutterPlugin {
 
   public func dummyMethodToEnforceBundling() {
     prv2pub("");
+    packSignature("");
       // rust_greeting("");
       // let oneTwo = UnsafeMutablePointer<((UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8))>.allocate(capacity: 64)
       // oneTwo.initialize(repeating: 1, count: 2)
