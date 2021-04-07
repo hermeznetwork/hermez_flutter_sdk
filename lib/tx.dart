@@ -109,8 +109,13 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $decompressedAmount');
 
-    String txHash = await web3client.sendTransaction(credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
+    String txHash;
+    try {
+      txHash = await web3client.sendTransaction(credentials, transaction,
+          chainId: getCurrentEnvironment().chainId);
+    } catch(e) {
+
+    }
 
     print(txHash);
 
@@ -146,8 +151,13 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   print(
       'deposit ERC20 --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $amount');
 
-  String txHash = await web3client.sendTransaction(credentials, transaction,
-      chainId: getCurrentEnvironment().chainId);
+  String txHash;
+  try {
+    txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
+  } catch (e) {
+
+  }
 
   print(txHash);
 
@@ -394,29 +404,51 @@ Future<String> _sendTransaction(String privateKey,
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasMultiplier - Optional gas multiplier
-void forceExit(
-    BigInt amount, String accountIndex, dynamic token, Web3Client web3client,
+Future<bool> forceExit(
+HermezCompressedAmount amount, String accountIndex, dynamic token, Web3Client web3client, String privateKey,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  dynamic overrides = Uint8List.fromList(
-      [gasLimit, await getGasPrice(gasMultiplier, web3client)]);
+  final credentials = await web3client.credentialsFromPrivateKey(privateKey);
+  final from = await credentials.extractAddress();
+
+  final gasPrice = EtherAmount.fromUnitAndValue(
+      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));
+
+  int nonce = await web3client.getTransactionCount(from);
 
   final transactionParameters = [
     BigInt.zero,
-    getAccountIndex(accountIndex),
+    BigInt.from(getAccountIndex(accountIndex)),
     BigInt.zero,
-    amount,
-    token.id,
-    1,
-    '0x'
+    BigInt.from(amount.value),
+    BigInt.from(token.id),
+    BigInt.one,
+    hexToBytes('0x')
   ];
 
-  final addL1TransactionCall = await web3client.call(
+  print(transactionParameters);
+
+  Transaction transaction = Transaction.callContract(
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
-      params: [...transactionParameters, overrides]);
+      parameters: transactionParameters,
+      maxGas: gasLimit,
+      gasPrice: gasPrice,
+      nonce: nonce);
+  String txHash;
+  try {
+    txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
+  } catch (e) {
+
+  }
+
+  print(txHash);
+
+  return txHash != null;
 }
 
 /// Finalise the withdraw. This a L1 transaction.
@@ -476,8 +508,13 @@ Future<bool> withdraw(
       gasPrice: gasPrice,
       nonce: nonce);
 
-  String txHash = await web3client.sendTransaction(credentials, transaction,
-      chainId: getCurrentEnvironment().chainId);
+  String txHash;
+  try {
+    txHash = await web3client.sendTransaction(credentials, transaction,
+        chainId: getCurrentEnvironment().chainId);
+  } catch (e) {
+
+  }
 
   print(txHash);
 

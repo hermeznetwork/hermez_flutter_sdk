@@ -50,7 +50,7 @@ class HermezWallet {
         Uint8ArrayUtils.leBuff2int(publicKey.compress());
     this.publicKeyCompressed = compressedPublicKey.toString();
     this.publicKeyCompressedHex =
-        compressedPublicKey.toRadixString(16).padLeft(32, '0');
+        compressedPublicKey.toRadixString(16).padLeft(64, '0');
     this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
