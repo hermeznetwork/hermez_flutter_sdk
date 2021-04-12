@@ -23,7 +23,7 @@ class Token {
 
   factory Token.fromJson(Map<String, dynamic> json) {
     return Token(
-        USD: json['USD'].toDouble(),
+        USD: json['USD'] != null ? json['USD'].toDouble() : 1.0,
         decimals: json['decimals'],
         ethereumAddress: json['ethereumAddress'],
         ethereumBlockNum: json['ethereumBlockNum'],
