@@ -1,11 +1,8 @@
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:bip39/bip39.dart' as bip39;
 import 'package:hermez_plugin/addresses.dart';
 import 'package:hermez_plugin/utils/eip712.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
-import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -13,7 +10,6 @@ import 'package:web3dart/web3dart.dart';
 import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
 import "tx_utils.dart" show buildTransactionHashMessage;
-import 'utils/hd_key.dart';
 
 /// @class
 /// Manage Babyjubjub keys
@@ -60,7 +56,7 @@ class HermezWallet {
   /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
   static dynamic createWalletFromMnemonic(String mnemonic) async {
     //final Web3Client provider = getProvider();
-    String seed = bip39.mnemonicToSeedHex(mnemonic);
+    /*String seed = bip39.mnemonicToSeedHex(mnemonic);
     KeyData master = HDKey.getMasterKeyFromSeed(seed);
 
     print(HEX.encode(master
@@ -69,7 +65,8 @@ class HermezWallet {
         .chainCode)); // ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b
     // "m/44'/60'/0'/0/0"
     // m / purpose' / coin_type' / account' / change / address_index
-    KeyData data = HDKey.derivePath("m/0'/2147483647'", seed);
+    //KeyData data = HDKey.derivePath("m/0'/2147483647'", seed);
+    KeyData data = HDKey.derivePath("m/44'/60'/0'/0", seed);
     var pb = HDKey.getPublicKey(data.key);
     print(HEX.encode(data
         .key)); // ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4
@@ -83,7 +80,7 @@ class HermezWallet {
     final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
     final hermezWallet =
         new HermezWallet(Uint8List.fromList(data.key), hermezEthereumAddress);
-    return {hermezWallet, hermezEthereumAddress};
+    return {hermezWallet, hermezEthereumAddress};*/
   }
 
 /*/// Signs message with private key

@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/hermez-mobile-library.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hermez_plugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/hermez_mobile_library.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/hermez_wallet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_wallet.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/hd_key.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/hd_key.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +26,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="android.sdk.path" value="$USER_HOME$/Library/Android/sdk" />
     <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="SDK Location" />
     <property name="project.structure.proportion" value="0.17" />
@@ -62,9 +62,42 @@
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="2273" y="311" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110152727" />
+    <state width="1696" height="265" key="GridCell.Tab.0.bottom" timestamp="1617957146171">
+      <screen x="1440" y="25" width="2560" height="1012" />
+    </state>
+    <state width="1696" height="265" key="GridCell.Tab.0.bottom/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
+    <state width="1696" height="265" key="GridCell.Tab.0.center" timestamp="1617957146170">
+      <screen x="1440" y="25" width="2560" height="1012" />
+    </state>
+    <state width="1696" height="265" key="GridCell.Tab.0.center/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146170" />
+    <state width="1696" height="265" key="GridCell.Tab.0.left" timestamp="1617957146169">
+      <screen x="1440" y="25" width="2560" height="1012" />
+    </state>
+    <state width="1696" height="265" key="GridCell.Tab.0.left/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146169" />
+    <state width="1696" height="265" key="GridCell.Tab.0.right" timestamp="1617957146171">
+      <screen x="1440" y="25" width="2560" height="1012" />
+    </state>
+    <state width="1696" height="265" key="GridCell.Tab.0.right/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
     <state x="2036" y="196" key="SettingsEditor" timestamp="1617110313184">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="2036" y="196" key="SettingsEditor/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110313184" />
+    <state x="2227" y="310" width="615" height="511" key="find.popup" timestamp="1617974169845">
+      <screen x="1440" y="25" width="2560" height="1055" />
+    </state>
+    <state x="443" y="261" width="585" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@0.25.1440.875" timestamp="1617964630415" />
+    <state x="2227" y="298" width="615" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617965167170" />
+    <state x="2227" y="310" width="615" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617974169845" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
+          <url>file://$PROJECT_DIR$/lib/utils/hd_key.dart</url>
+          <line>44</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
