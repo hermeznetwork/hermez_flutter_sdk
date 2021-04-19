@@ -17,12 +17,16 @@ public class SwiftHermezPlugin: NSObject, FlutterPlugin {
 
 
   public func dummyMethodToEnforceBundling() {
+    pack_signature("");
+    unpack_signature("");
+    pack_point("", "");
+    unpack_point("");
     prv2pub("");
-      // rust_greeting("");
-      // let oneTwo = UnsafeMutablePointer<((UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8))>.allocate(capacity: 64)
-      // oneTwo.initialize(repeating: 1, count: 2)
-      // new_method(oneTwo);
-      // ...
-      // This code will force the bundler to use these functions, but will never be called
-    }
+    hash_poseidon("", "", "", "", "", "");
+    sign_poseidon("", "");
+    verify_poseidon("", "", "");
+    let str = "string"
+    let unsafePointer = UnsafeMutablePointer<Int8>(mutating: (str as NSString).utf8String)
+    cstring_free(unsafePointer);
+  }
 }

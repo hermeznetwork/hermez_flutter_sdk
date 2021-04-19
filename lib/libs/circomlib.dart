@@ -2,109 +2,18 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
-import 'package:hermez_plugin/utils/structs.dart';
 
-///////////////////////////////////////////////////////////////////////////////
-// Load the library
-///////////////////////////////////////////////////////////////////////////////
-
-final DynamicLibrary nativeExampleLib = Platform.isAndroid
-    ? DynamicLibrary.open("libbabyjubjub.so")
-    : DynamicLibrary.process();
-
-typedef PackSignatureFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Signature>);
-
-// babyJub.unpackPoint
-// Result<Signature,String>
-
-// eddsa.packSignature -> pack_signature
-/*typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Structs.Signature>);
-typedef PackSignatureFuncNative = Pointer<Uint8> Function(
-    Pointer<Structs.Signature>);
-final PackSignatureFunc packSignature = nativeExampleLib
-    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
-    .asFunction();*/
-/*typedef PackSignatureFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef PackSignatureFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final PackSignatureFunc packSignature = nativeExampleLib
-    .lookup<NativeFunction<PackSignatureFuncNative>>("pack_signature")
-    .asFunction();
-
-// eddsa.unpackSignature -> unpack_signature
-typedef UnpackSignatureFunc = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>);
-typedef UnpackSignatureFuncNative = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>);
-final UnpackSignatureFunc unpackSignature = nativeExampleLib
-    .lookup<NativeFunction<UnpackSignatureFuncNative>>("unpack_signature")
-    .asFunction();
-
-// eddsa.packPoint -> pack_point
-/*typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Structs.Point>);
-typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Structs.Point>);
-final PackPointFunc packPoint = nativeExampleLib
-    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
-    .asFunction();*/
-typedef PackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef PackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final PackPointFunc packPoint = nativeExampleLib
-    .lookup<NativeFunction<PackPointFuncNative>>("pack_point")
-    .asFunction();
-
-// eddsa.unpackPoint -> unpack_point
-typedef UnpackPointFunc = Pointer<Uint8> Function(Pointer<Uint8>);
-typedef UnpackPointFuncNative = Pointer<Uint8> Function(Pointer<Uint8>);
-final UnpackPointFunc unpackPoint = nativeExampleLib
-    .lookup<NativeFunction<UnpackPointFuncNative>>("unpack_point")
-    .asFunction();
-
-// eddsa.prv2pub -> prv2pub
-typedef Prv2pubFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
-typedef Prv2pubFuncNative = Pointer<Structs.Point> Function(Pointer<Uint8>);
-final Prv2pubFunc prv2pub = nativeExampleLib
-    .lookup<NativeFunction<Prv2pubFuncNative>>("prv2pub")
-    .asFunction();
-
-// circomlib.poseidon -> hashPoseidon
-typedef hashPoseidonFunc = Pointer<Structs.Point> Function(Pointer<Uint8>);
-typedef hashPoseidonFuncNative = Pointer<Structs.Point> Function(
-    Pointer<Uint8>);
-final hashPoseidonFunc hashPoseidon = nativeExampleLib
-    .lookup<NativeFunction<hashPoseidonFuncNative>>("hashPoseidon")
-    .asFunction();
-
-// circomlib.poseidon -> signPoseidon
-/*typedef signPoseidonFunc = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef signPoseidonNative = Pointer<Structs.Signature> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final signPoseidonFunc signPoseidon = nativeExampleLib
-    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
-    .asFunction();*/
-typedef signPoseidonFunc = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef signPoseidonNative = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final signPoseidonFunc signPoseidon = nativeExampleLib
-    .lookup<NativeFunction<signPoseidonNative>>("signPoseidon")
-    .asFunction();
-
-// circomlib.poseidon -> poseidon
-typedef verifyPoseidonFunc = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-typedef verifyPoseidonNative = Pointer<Uint8> Function(
-    Pointer<Uint8>, Pointer<Utf8>);
-final verifyPoseidonFunc verifyPoseidon = nativeExampleLib
-    .lookup<NativeFunction<verifyPoseidonNative>>("verifyPoseidon")
-    .asFunction();*/
+typedef CStringFree = void Function(Pointer<Utf8>);
+typedef CStringFreeFFI = Void Function(Pointer<Utf8>);
 
 class CircomLib {
   final DynamicLibrary lib = Platform.isAndroid
       ? DynamicLibrary.open("libbabyjubjub.so")
       : DynamicLibrary.process();
-  //final DynamicLibrary lib;
-  CircomLib(/*{@required this.lib}*/) {
+
+  CStringFree cstringFree;
+
+  CircomLib() {
     _packSignature = lib
         .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Utf8>)>>(
             "pack_signature")
@@ -157,30 +66,58 @@ class CircomLib {
                 Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<Utf8>)>>("verify_poseidon")
         .asFunction();
+
+    cstringFree =
+        lib.lookup<NativeFunction<CStringFreeFFI>>("cstring_free").asFunction();
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
   String packSignature(String signature) {
+    if (lib == null) return "ERROR: The library is not initialized";
+
     final sig = signature.toNativeUtf8();
+    print("- Calling packSignature with argument: $sig");
+    // The actual native call
     final resultPtr = _packSignature(sig);
+    print("- Result pointer:  $resultPtr");
+
     final result = resultPtr.toDartString();
+    print("- Response string:  $result");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return result;
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
   String unpackSignature(String compressedSignature) {
+    if (lib == null) return "ERROR: The library is not initialized";
+
     final sigPtr = compressedSignature.toNativeUtf8();
     final resultPtr = _unpackSignature(sigPtr);
     final result = resultPtr.toDartString();
+    print("- Response string:  $result");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return result;
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
   String packPoint(String pointX, String pointY) {
+    if (lib == null) return "ERROR: The library is not initialized";
+
     final ptrX = pointX.toNativeUtf8();
     final ptrY = pointY.toNativeUtf8();
     final resultPtr = _packPoint(ptrX, ptrY);
     final result = resultPtr.toDartString();
+    print("- Response string:  $result");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return result;
   }
 
@@ -189,6 +126,11 @@ class CircomLib {
     final pointPtr = compressedPoint.toNativeUtf8();
     final resultPtr = _unpackPoint(pointPtr);
     final result = resultPtr.toDartString();
+    print("- Response string:  $result");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return result.split(",");
   }
 
@@ -197,6 +139,7 @@ class CircomLib {
       Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>) _hashPoseidon;
   String hashPoseidon(String txCompressedData, String toEthAddr, String toBjjAy,
       String rqTxCompressedDatav2, String rqToEthAddr, String rqToBjjAy) {
+    if (lib == null) return "ERROR: The library is not initialized";
     final ptr1 = txCompressedData.toNativeUtf8();
     final ptr2 = toEthAddr.toNativeUtf8();
     final ptr3 = toBjjAy.toNativeUtf8();
@@ -207,16 +150,27 @@ class CircomLib {
     String resultString = resultPtr.toDartString();
     resultString = resultString.replaceAll("Fr(", "");
     resultString = resultString.replaceAll(")", "");
+    print("- Response string:  $resultString");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return resultString;
   }
 
   // privKey.signPoseidon -> signPoseidon
   Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
   String signPoseidon(String privateKey, String msg) {
+    if (lib == null) return "ERROR: The library is not initialized";
     final prvKeyPtr = privateKey.toNativeUtf8();
     final msgPtr = msg.toNativeUtf8();
     final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);
     final String compressedSignature = resultPtr.toDartString();
+    print("- Response string:  $compressedSignature");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
     return compressedSignature;
   }
 
@@ -235,25 +189,15 @@ class CircomLib {
   }
 
   Pointer<Utf8> Function(Pointer<Utf8>) _prv2Pub;
-  Pointer<Utf8> prv2pub(String privateKey) {
+  String prv2pub(String privateKey) {
     final prvKeyPtr = privateKey.toNativeUtf8();
     final resultPtr = _prv2Pub(prvKeyPtr);
     final String resultString = resultPtr.toDartString();
-    return resultPtr;
+    print("- Response string:  $resultString");
+    // Free the string pointer, as we already have
+    // an owned String to return
+    print("- Freeing the native char*");
+    cstringFree(resultPtr);
+    return resultString;
   }
-
-  /*
-  * function packSignature(sig) {
-    const R8p = babyJub.packPoint(sig.R8);
-    const Sp = utils.leInt2Buff(sig.S, 32);
-    return Buffer.concat([R8p, Sp]);
-}
-
-function unpackSignature(sigBuff) {
-    return {
-        R8: babyJub.unpackPoint(sigBuff.slice(0,32)),
-        S: utils.leBuff2int(sigBuff.slice(32,64))
-    };
-}
-  * */
 }

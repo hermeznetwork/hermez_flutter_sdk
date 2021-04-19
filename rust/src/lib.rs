@@ -287,16 +287,10 @@ pub extern fn verify_poseidon(private_key: *const c_char, compressed_signature: 
     }
 }
 
-
-
-
-/*#[no_mangle]
-pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
-    let c_str = unsafe { CStr::from_ptr(to) };
-    let recipient = match c_str.to_str() {
-        Err(_) => "there",
-        Ok(string) => string,
+#[no_mangle]
+pub extern fn cstring_free(str: *mut c_char) {
+    unsafe {
+        if str.is_null() { return }
+        CString::from_raw(str)
     };
-
-    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()
-}*/
+}
