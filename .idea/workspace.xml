@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/HermezPlugin.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/HermezPlugin.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/hermez_plugin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_plugin.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/libs/circomlib.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/libs/circomlib.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rust/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/rust/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/hermez_plugin.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/hermez_plugin.podspec" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

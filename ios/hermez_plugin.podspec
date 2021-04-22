@@ -13,14 +13,14 @@ Hermez library flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = 'Hermez'
   s.source           = { :path => '.' }
-  s.public_header_files = 'Classes**/*.h'
   s.source_files = 'Classes/**/*'
+  s.public_header_files = 'Classes/**/*.h'
   s.static_framework = true
   s.vendored_libraries = "**/*.a"
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 
-  # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+  # Flutter.framework does not contain a i386 slice.
+  s.pod_target_xcconfig = { 'STRIP_STYLE' => 'non-global', 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
 end
