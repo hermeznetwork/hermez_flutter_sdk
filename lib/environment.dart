@@ -18,7 +18,8 @@ class Env {
         "wss://rinkeby.infura.io/v3/" + INFURA_API_KEY,
         "https://explorer.hermez.io",
         "https://etherscan.io",
-        "http://api.etherscan.io/api/" + ETHERSCAN_API_KEY);
+        "http://api.etherscan.io/api",
+        ETHERSCAN_API_KEY);
     params['rinkeby'] = EnvParams(
       4,
       {
@@ -30,7 +31,8 @@ class Env {
       "wss://rinkeby.infura.io/v3/" + INFURA_API_KEY,
       "https://explorer.testnet.hermez.io",
       "https://rinkeby.etherscan.io",
-      "http://api-rinkeby.etherscan.io/api/" + ETHERSCAN_API_KEY,
+      "http://api-rinkeby.etherscan.io/api",
+      ETHERSCAN_API_KEY,
     );
 
     params['goerli'] = EnvParams(
@@ -44,7 +46,8 @@ class Env {
       "wss://goerli.infura.io/v3/" + INFURA_API_KEY,
       "https://explorer.internaltestnet.hermez.io",
       "https://goerli.etherscan.io",
-      "http://api-goerli.etherscan.io/api" + ETHERSCAN_API_KEY,
+      "http://api-goerli.etherscan.io/api",
+      ETHERSCAN_API_KEY,
     );
 
     params['local'] = EnvParams(
@@ -61,7 +64,8 @@ class Env {
       'wss://192.168.250.101:8545',
       "192.168.250.101:8080",
       "https://etherscan.io",
-      "http://api-goerli.etherscan.io/api" + ETHERSCAN_API_KEY,
+      "http://api-goerli.etherscan.io/api",
+      ETHERSCAN_API_KEY,
     );
   }
 
@@ -84,7 +88,8 @@ class EnvParams {
       this.baseWeb3RdpUrl,
       this.batchExplorerUrl,
       this.etherscanUrl,
-      this.etherscanApiUrl);
+      this.etherscanApiUrl,
+      this.etherscanApiKey);
   final int chainId;
   final Set<String> contracts;
   final String baseApiUrl;
@@ -93,6 +98,7 @@ class EnvParams {
   final String batchExplorerUrl;
   final String etherscanUrl;
   final String etherscanApiUrl;
+  final String etherscanApiKey;
 }
 
 /// Gets the current supported environments
