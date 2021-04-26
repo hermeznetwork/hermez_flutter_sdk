@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/hermez_plugin.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/hermez_plugin.podspec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/environment.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
