@@ -10,8 +10,8 @@ class Env {
     params['mainnet'] = EnvParams(
         1,
         {
-          "0xA68D85dF56E733A06443306A095646317B5Fa633", // Hermez
-          "0x392361427Ef5e17b69cFDd1294F31ab555c86124", // WithdrawalDelayer
+          'Hermez': "0xA68D85dF56E733A06443306A095646317B5Fa633", // Hermez
+          'WithdrawalDelayer' :"0x392361427Ef5e17b69cFDd1294F31ab555c86124", // WithdrawalDelayer
         },
         "api.hermez.io",
         "https://rinkeby.infura.io/v3/" + INFURA_API_KEY,
@@ -23,8 +23,8 @@ class Env {
     params['rinkeby'] = EnvParams(
       4,
       {
-        "0x679b11E0229959C1D3D27C9d20529E4C5DF7997c", // Hermez
-        "0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724", // WithdrawalDelayer
+        'Hermez': "0x679b11E0229959C1D3D27C9d20529E4C5DF7997c", // Hermez
+        'WithdrawalDelayer' :"0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724", // WithdrawalDelayer
       },
       "api.testnet.hermez.io",
       "https://rinkeby.infura.io/v3/" + INFURA_API_KEY,
@@ -38,8 +38,8 @@ class Env {
     params['goerli'] = EnvParams(
       5,
       {
-        "0xf08a226B67a8A9f99cCfCF51c50867bc18a54F53", // Hermez
-        "0xC6570883Cc7e95d12Bc2BE6821570cB6433e3ece" // WithdrawalDelayer
+        'Hermez': "0xf08a226B67a8A9f99cCfCF51c50867bc18a54F53", // Hermez
+        'WithdrawalDelayer' : "0xC6570883Cc7e95d12Bc2BE6821570cB6433e3ece" // WithdrawalDelayer
       },
       "api.internaltestnet.hermez.io",
       "https://goerli.infura.io/v3/" + INFURA_API_KEY,
@@ -53,8 +53,8 @@ class Env {
     params['local'] = EnvParams(
       1337,
       {
-        "0x10465b16615ae36F350268eb951d7B0187141D3B", // Hermez
-        "0x8EEaea23686c319133a7cC110b840d1591d9AeE0" // WithdrawalDelayer
+        'Hermez':"0x10465b16615ae36F350268eb951d7B0187141D3B", // Hermez
+        'WithdrawalDelayer' :"0x8EEaea23686c319133a7cC110b840d1591d9AeE0" // WithdrawalDelayer
       },
       //"192.168.1.134:8086",
       //'192.168.1.134:8545',
@@ -91,7 +91,7 @@ class EnvParams {
       this.etherscanApiUrl,
       this.etherscanApiKey);
   final int chainId;
-  final Set<String> contracts;
+  final Map<String, String> contracts;
   final String baseApiUrl;
   final String baseWeb3Url;
   final String baseWeb3RdpUrl;
@@ -119,8 +119,8 @@ void setEnvironment(String env) {
   }
 
   params = Env().params[env];
-  constants.contractAddresses['Hermez'] = params.contracts.first;
-  constants.contractAddresses['WithdrawalDelayer'] = params.contracts.last;
+  constants.contractAddresses['Hermez'] = params.contracts['Hermez'];
+  constants.contractAddresses['WithdrawalDelayer'] = params.contracts['WithdrawalDelayer'];
   coordinatorApi.setBaseApiUrl(params.baseApiUrl);
 }
 
