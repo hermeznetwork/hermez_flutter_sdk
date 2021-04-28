@@ -6,6 +6,7 @@ import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
 const String hermezPrefix = 'hez:';
+final ethereumAddressPattern = new RegExp('^0x[a-fA-F0-9]{40}\$');
 final hezEthereumAddressPattern = new RegExp('^hez:0x[a-fA-F0-9]{40}\$'); //
 final bjjAddressPattern = new RegExp('^hez:[A-Za-z0-9_-]{44}\$');
 final accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}\$');
@@ -31,6 +32,18 @@ String getEthereumAddress(String hezEthereumAddress) {
   } else {
     return hezEthereumAddress;
   }
+}
+
+/// Checks if given string matches regex of a Ethereum address
+///
+/// @param {String} test
+///
+/// @returns {bool}
+bool isEthereumAddress(String test) {
+  if (test != null && ethereumAddressPattern.hasMatch(test)) {
+    return true;
+  }
+  return false;
 }
 
 /// Checks if given string matches regex of a Hermez address
