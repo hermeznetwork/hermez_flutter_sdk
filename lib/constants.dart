@@ -9,6 +9,13 @@ const EIP_712_PROVIDER = 'Hermez Network';
 
 const ETHER_TOKEN_ID = 0;
 
+const GAS_LIMIT_HIGH = 170000;
+const GAS_LIMIT_LOW = 150000;
+const GAS_STANDARD_ERC20_TX = 30000;
+const GAS_LIMIT_OFFSET = 50000;
+// @deprecated
+//const GAS_LIMIT = GAS_LIMIT_HIGH;
+
 const GAS_LIMIT = 5000000;
 
 const GAS_MULTIPLIER = 1;

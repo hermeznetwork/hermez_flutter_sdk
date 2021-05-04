@@ -16,13 +16,13 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.12.0+1
-  web3dart: ^1.2.3
+  http: ^0.12.0 # Update to 0.13.0
+  web3dart: ^1.2.3 # Update to 2.0.0 - problem with bitcoin_flutter
   web_socket_channel: ^1.1.0
   provider: ^5.0.0
-  bip39: ^1.0.3
+  bip39: ^1.0.3 # update to 1.0.6
   # tweetnacl: ^0.3.2
-  hex: ^0.1.2
+  hex: ^0.1.2 # Update to 0.2.0 - current version needed for bitcoin_flutter
   ffi: ^1.0.0
   shared_preferences: ^2.0.5
   # path_provider_windows: ^0.1.0

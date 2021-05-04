@@ -17,6 +17,7 @@ import 'constants.dart'
         BASE_WEB3_RDP_URL,
         BASE_WEB3_URL,
         GAS_LIMIT,
+        GAS_LIMIT_HIGH,
         GAS_MULTIPLIER,
         contractAddresses;
 import 'hermez_compressed_amount.dart';
@@ -64,7 +65,7 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @returns {String} transaction hash
 Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     Token token, String babyJubJub, Web3Client web3client, String privateKey,
-    {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
+    {gasLimit = GAS_LIMIT_HIGH, gasMultiplier = GAS_MULTIPLIER}) async {
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
   final accounts = await getAccounts(hezEthereumAddress, [token.id]);
@@ -79,8 +80,9 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   final credentials = await web3client.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
-  final gasPrice = EtherAmount.fromUnitAndValue(
-      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));
+  final gasPrice = await web3client.getGasPrice();
+  /*final gasPrice = EtherAmount.fromUnitAndValue(
+      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));*/
 
   final transactionParameters = [
     account != null ? BigInt.zero : hexToInt(babyJubJub),
@@ -103,8 +105,9 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         from: from,
         parameters: transactionParameters,
         maxGas: gasLimit,
-        gasPrice: gasPrice,
-        value: EtherAmount.fromUnitAndValue(EtherUnit.wei, BigInt.from(decompressedAmount)));
+        /*gasPrice: gasPrice,*/
+        value: EtherAmount.fromUnitAndValue(
+            EtherUnit.wei, BigInt.from(decompressedAmount)));
 
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $decompressedAmount');
@@ -113,8 +116,8 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     try {
       txHash = await web3client.sendTransaction(credentials, transaction,
           chainId: getCurrentEnvironment().chainId);
-    } catch(e) {
-
+    } catch (e) {
+      print(e.toString());
     }
 
     print(txHash);
@@ -155,14 +158,118 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   try {
     txHash = await web3client.sendTransaction(credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {
-
-  }
+  } catch (e) {}
 
   print(txHash);
 
   return txHash;
 }
+
+Future<Uint8List> signDeposit(
+    HermezCompressedAmount amount,
+    String hezEthereumAddress,
+    Token token,
+    String babyJubJub,
+    Web3Client web3client,
+    String privateKey) async {
+  final ethereumAddress = getEthereumAddress(hezEthereumAddress);
+
+  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
+
+  final Account account = accounts != null && accounts.accounts.isNotEmpty
+      ? accounts.accounts[0]
+      : null;
+
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json', contractAddresses['Hermez'], "Hermez");
+
+  final credentials = await web3client.credentialsFromPrivateKey(privateKey);
+  final from = await credentials.extractAddress();
+
+  final transactionParameters = [
+    account != null ? BigInt.zero : hexToInt(babyJubJub),
+    account != null
+        ? BigInt.from(getAccountIndex(account.accountIndex))
+        : BigInt.zero,
+    BigInt.from(amount.value),
+    BigInt.zero,
+    BigInt.from(token.id),
+    BigInt.zero,
+    hexToBytes('0x')
+  ];
+
+  final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
+
+  if (token.id == 0) {
+    Transaction transaction = Transaction.callContract(
+        contract: hermezContract,
+        function: _addL1Transaction(hermezContract),
+        from: from,
+        parameters: transactionParameters,
+        value: EtherAmount.fromUnitAndValue(
+            EtherUnit.wei, BigInt.from(decompressedAmount)));
+
+    print('estimate deposit ETH --> data: ${bytesToHex(transaction.data, include0x: true, padToEvenLength: true)}');
+
+    return transaction.data;
+  }
+
+  /*int nonceBefore = await web3client.getTransactionCount(from);
+
+  bool approved = await approve(decompressedAmount, ethereumAddress,
+      token.ethereumAddress, token.name, web3client, credentials);
+
+  int nonceAfter = await web3client.getTransactionCount(from);
+
+  int correctNonce = nonceAfter;
+
+  if (nonceBefore == nonceAfter) {
+    correctNonce = nonceAfter + 1;
+  }*/
+
+  // Keep in mind that web3.eth.getTransactionCount(walletAddress)
+  // will only give you the last CONFIRMED nonce.
+  // So it won't take the unmined ones into account.
+
+  Transaction transaction = Transaction.callContract(
+    contract: hermezContract,
+    function: _addL1Transaction(hermezContract),
+    from: from,
+    parameters: transactionParameters,
+    /*nonce: correctNonce*/
+  );
+
+  print('sendTransaction');
+  print('estimate deposit ERC20 --> data: ${bytesToHex(transaction.data, include0x: true, padToEvenLength: true)}');
+
+  return transaction.data;
+}
+
+// TODO: abstract this
+
+/*Future readContract(Web3Client web3client, DeployedContract contract,
+    ContractFunction functionName, List functionArgs) async {
+  var queryResult = await web3client.call(
+      contract: contract, function: functionName, params: functionArgs);
+  return queryResult;
+}
+
+Future writeContract(
+  Web3Client web3client,
+  Credentials credentials,
+  DeployedContract contract,
+  ContractFunction functionName,
+  List functionArgs,
+) async {
+  await web3client.sendTransaction(
+    credentials,
+    Transaction.callContract(
+      contract: contract,
+      function: functionName,
+      parameters: functionArgs,
+    ),
+  );
+}*/
 
 Future<String> _sendTransaction(String privateKey,
     EthereumAddress receiverAddress, EtherAmount amount) async {}
@@ -404,10 +511,9 @@ Future<String> _sendTransaction(String privateKey,
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasMultiplier - Optional gas multiplier
-Future<bool> forceExit(
-HermezCompressedAmount amount, String accountIndex, dynamic token, Web3Client web3client, String privateKey,
+Future<bool> forceExit(HermezCompressedAmount amount, String accountIndex,
+    dynamic token, Web3Client web3client, String privateKey,
     {gasLimit = GAS_LIMIT, gasMultiplier = GAS_MULTIPLIER}) async {
-
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
@@ -442,9 +548,7 @@ HermezCompressedAmount amount, String accountIndex, dynamic token, Web3Client we
   try {
     txHash = await web3client.sendTransaction(credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {
-
-  }
+  } catch (e) {}
 
   print(txHash);
 
@@ -512,9 +616,7 @@ Future<bool> withdraw(
   try {
     txHash = await web3client.sendTransaction(credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {
-
-  }
+  } catch (e) {}
 
   print(txHash);
 

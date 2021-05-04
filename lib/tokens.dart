@@ -74,7 +74,7 @@ Future<bool> approve(
 
     final transactionParameters = [
       EthereumAddress.fromHex(contractAddresses['Hermez']),
-      amount
+      BigInt.from(amount)
     ];
 
     int nonce = await web3client.getTransactionCount(ethereumAddress);
