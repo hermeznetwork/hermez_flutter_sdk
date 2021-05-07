@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tokens.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tokens.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/tx.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -94,10 +95,10 @@
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="2036" y="196" key="SettingsEditor/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110313184" />
-    <state x="443" y="250" width="585" height="490" key="find.popup" timestamp="1620231760159">
+    <state x="443" y="250" width="585" height="490" key="find.popup" timestamp="1620384747042">
       <screen x="0" y="25" width="1440" height="832" />
     </state>
-    <state x="443" y="250" width="585" height="490" key="find.popup/0.25.1440.832@0.25.1440.832" timestamp="1620231760159" />
+    <state x="443" y="250" width="585" height="490" key="find.popup/0.25.1440.832@0.25.1440.832" timestamp="1620384747042" />
     <state x="443" y="261" width="585" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@0.25.1440.875" timestamp="1617964630415" />
     <state x="2227" y="298" width="615" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617965167170" />
     <state x="2227" y="310" width="615" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617974169845" />
@@ -115,9 +116,14 @@
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
+          <url>file://$PROJECT_DIR$/lib/tokens.dart</url>
+          <line>97</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>185</line>
-          <option name="timeStamp" value="3" />
+          <line>275</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
