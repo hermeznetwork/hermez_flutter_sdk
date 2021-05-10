@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/environment.dart';
@@ -18,8 +19,11 @@ import 'constants.dart'
         BASE_WEB3_RDP_URL,
         BASE_WEB3_URL,
         GAS_LIMIT,
+        GAS_LIMIT_ADDL1TX_DEFAULT,
+        GAS_LIMIT_DEPOSIT_OFFSET,
         GAS_LIMIT_HIGH,
         GAS_LIMIT_LOW,
+        GAS_LIMIT_OFFSET,
         GAS_MULTIPLIER,
         GAS_STANDARD_ERC20_TX,
         contractAddresses;
@@ -68,8 +72,8 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @returns {String} transaction hash
 Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     Token token, String babyJubJub, Web3Client web3client, String privateKey,
-    {List<BigInt> approveGasLimit,
-    List<BigInt> depositGasLimit,
+    {BigInt approveGasLimit,
+    BigInt depositGasLimit,
     gasPrice = GAS_MULTIPLIER}) async {
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
@@ -107,14 +111,14 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         function: _addL1Transaction(hermezContract),
         from: from,
         parameters: transactionParameters,
-        maxGas: depositGasLimit[0].toInt(),
+        maxGas: depositGasLimit.toInt(),
         gasPrice: ethGasPrice,
         value: EtherAmount.fromUnitAndValue(
             EtherUnit.wei, BigInt.from(decompressedAmount)));
 
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
-        ' amountInWei: $decompressedAmount, depositGasLimit: ${depositGasLimit[0].toInt()}, gasPrice: ${ethGasPrice.getInWei}');
+        ' amountInWei: $decompressedAmount, depositGasLimit: ${depositGasLimit.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
     String txHash;
     try {
@@ -151,13 +155,13 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
-      maxGas: depositGasLimit[0].toInt(),
+      maxGas: depositGasLimit.toInt(),
       gasPrice: ethGasPrice,
       nonce: correctNonce);
 
-  print('sendTransaction');
   print(
-      'deposit ERC20 --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address}, amountInWei: $amount');
+      'deposit ERC20--> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
+      ' amountInWei: $amount, depositGasLimit: ${depositGasLimit.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
   String txHash;
   try {
@@ -170,16 +174,15 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   return txHash;
 }
 
-Future<HashMap<String, List<BigInt>>> depositGasLimit(
+Future<LinkedHashMap<String, BigInt>> depositGasLimit(
     HermezCompressedAmount amount,
     String hezEthereumAddress,
     Token token,
     String babyJubJub,
     Web3Client web3client) async {
-  HashMap<String, List<BigInt>> result;
-  List<BigInt> approveGasLimitList = [];
-  List<BigInt> depositGasLimitList = [];
-  BigInt gasLimit = BigInt.zero;
+  LinkedHashMap<String, BigInt> result = new LinkedHashMap<String, BigInt>();
+  BigInt approveMaxGas = BigInt.zero;
+  BigInt depositMaxGas = BigInt.zero;
   EthereumAddress from =
       EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
   EthereumAddress to = EthereumAddress.fromHex(contractAddresses['Hermez']);
@@ -212,53 +215,60 @@ Future<HashMap<String, List<BigInt>>> depositGasLimit(
   final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
 
   if (token.id == 0) {
+    value = EtherAmount.fromUnitAndValue(
+        EtherUnit.wei, BigInt.from(decompressedAmount));
     Transaction transaction = Transaction.callContract(
         contract: hermezContract,
         function: _addL1Transaction(hermezContract),
         from: from,
         parameters: transactionParameters,
-        value: EtherAmount.fromUnitAndValue(
-            EtherUnit.wei, BigInt.from(decompressedAmount)));
+        value: value);
 
     data = transaction.data;
 
     try {
-      gasLimit = await web3client.estimateGas(
+      depositMaxGas = await web3client.estimateGas(
           sender: from, to: to, value: value, data: data);
+      depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
     } catch (e) {
-      gasLimit = BigInt.from(GAS_LIMIT_LOW);
+      depositMaxGas = BigInt.from(GAS_LIMIT_LOW);
     }
 
-    depositGasLimitList.add(gasLimit);
+    depositMaxGas =
+        BigInt.from((depositMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
 
-    result['depositGasLimit'] = depositGasLimitList;
+    result['depositGasLimit'] = depositMaxGas;
 
-    print('estimate deposit ETH --> Max Gas: $gasLimit');
+    print('estimate deposit ETH --> Max Gas: $depositMaxGas');
 
     return result;
   }
 
-  approveGasLimitList = await approveGasLimit(BigInt.from(decompressedAmount),
+  approveMaxGas = await approveGasLimit(BigInt.from(decompressedAmount),
       ethereumAddress, token.ethereumAddress, token.name, web3client);
 
-  result['approveGasLimit'] = approveGasLimitList;
+  approveMaxGas =
+      BigInt.from((approveMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
+
+  result['approveGasLimit'] = approveMaxGas;
 
   Transaction transaction = Transaction.callContract(
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       from: from,
-      parameters: transactionParameters);
-  //value: value);
+      parameters: transactionParameters,
+      value: value);
 
   data = transaction.data;
 
   try {
-    gasLimit = await web3client.estimateGas(
+    depositMaxGas = await web3client.estimateGas(
         sender: from, to: to, value: value, data: data);
+    depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
   } catch (e) {
-    gasLimit = BigInt.from(GAS_LIMIT_HIGH);
+    depositMaxGas = BigInt.from(GAS_LIMIT_HIGH);
     String fromAddress = contractAddresses['Hermez']; // Random ethereum address
-    gasLimit += await transferGasLimit(
+    depositMaxGas += await transferGasLimit(
         BigInt.from(decompressedAmount),
         fromAddress,
         ethereumAddress,
@@ -267,11 +277,12 @@ Future<HashMap<String, List<BigInt>>> depositGasLimit(
         web3client);
   }
 
-  depositGasLimitList.add(gasLimit);
+  depositMaxGas =
+      BigInt.from((depositMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
 
-  result['depositGasLimit'] = depositGasLimitList;
+  result['depositGasLimit'] = depositMaxGas;
 
-  print('estimate deposit ERC20 --> Max Gas: $gasLimit');
+  print('estimate deposit ERC20 --> Max Gas: $depositMaxGas');
 
   return result;
 }

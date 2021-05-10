@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/utils/contract_parser.dart';
@@ -23,13 +24,12 @@ ContractFunction _transfer(DeployedContract contract) =>
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 ///
 /// @returns {Promise} transaction
-Future<List<BigInt>> approveGasLimit(
+Future<BigInt> approveGasLimit(
     BigInt amount,
     String accountAddress,
     String tokenContractAddress,
     String tokenContractName,
     Web3Client web3client) async {
-  List<BigInt> result = [];
   BigInt gasLimit = BigInt.zero;
   EthereumAddress from = EthereumAddress.fromHex(accountAddress);
   EthereumAddress to = EthereumAddress.fromHex(tokenContractAddress);
@@ -60,46 +60,17 @@ Future<List<BigInt>> approveGasLimit(
       data = transaction.data;
       gasLimit = await web3client.estimateGas(
           sender: from, to: to, value: value, data: data);
-      result.add(gasLimit);
-      return result;
+      gasLimit += BigInt.from(GAS_LIMIT_APPROVE_OFFSET);
+      return gasLimit;
+    } else {
+      return gasLimit;
     }
-
-    if (!(allowance.sign == 0)) {
-      final transactionParameters = [
-        hermezAddress,
-        BigInt.zero,
-      ];
-      Transaction transaction = Transaction.callContract(
-        contract: contract,
-        function: _approve(contract),
-        parameters: transactionParameters,
-      );
-      data = transaction.data;
-      gasLimit = await web3client.estimateGas(
-          sender: from, to: to, value: value, data: data);
-      result.add(gasLimit);
-    }
-
-    final transactionParameters = [
-      hermezAddress,
-      amount,
-    ];
-    Transaction transaction = Transaction.callContract(
-      contract: contract,
-      function: _approve(contract),
-      parameters: transactionParameters,
-    );
-    data = transaction.data;
-    gasLimit = await web3client.estimateGas(
-        sender: from, to: to, value: value, data: data);
-    result.add(gasLimit);
-    return result;
   } catch (error, trace) {
     print(error);
     print(trace);
-    // TODO: default approve gas limit
-    result.add(gasLimit);
-    return result;
+    gasLimit = BigInt.from(GAS_LIMIT_APPROVE_DEFAULT);
+    gasLimit += BigInt.from(GAS_LIMIT_APPROVE_OFFSET);
+    return gasLimit;
   }
 }
 
@@ -119,12 +90,18 @@ Future<bool> approve(
     String tokenContractName,
     Web3Client web3client,
     Credentials credentials,
-    {List<BigInt> gasLimit,
-    gasPrice = GAS_MULTIPLIER}) async {
+    {BigInt gasLimit,
+    int gasPrice}) async {
+  EtherAmount ethGasPrice;
   if (gasLimit == null) {
-    gasLimit = [BigInt.from(GAS_LIMIT_HIGH)];
+    gasLimit = BigInt.from(GAS_LIMIT_HIGH);
   }
-  int gasLimitPosition = 0;
+  if (gasPrice == null) {
+    ethGasPrice = await web3client.getGasPrice();
+  } else {
+    ethGasPrice = EtherAmount.fromUnitAndValue(EtherUnit.wei, gasPrice);
+  }
+
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
@@ -148,8 +125,8 @@ Future<bool> approve(
         contract: contract,
         function: _approve(contract),
         parameters: transactionParameters,
-        maxGas: gasLimit[gasLimitPosition].toInt(),
-        gasPrice: gasPrice,
+        maxGas: gasLimit.toInt(),
+        gasPrice: ethGasPrice,
       );
 
       String txHash = await web3client.sendTransaction(credentials, transaction,
@@ -158,51 +135,9 @@ Future<bool> approve(
       print(txHash);
 
       return txHash != null;
+    } else {
+      return true;
     }
-
-    if (!(allowance.sign == 0)) {
-      final transactionParameters = [
-        EthereumAddress.fromHex(contractAddresses['Hermez']),
-        BigInt.zero
-      ];
-      Transaction transaction = Transaction.callContract(
-          contract: contract,
-          function: _approve(contract),
-          parameters: transactionParameters,
-          maxGas: gasLimit[gasLimitPosition].toInt(),
-          gasPrice: gasPrice);
-
-      String txHash = await web3client.sendTransaction(credentials, transaction,
-          chainId: getCurrentEnvironment().chainId);
-
-      print(txHash);
-
-      if (txHash != null) {
-        gasLimitPosition += 1;
-      }
-    }
-
-    final transactionParameters = [
-      EthereumAddress.fromHex(contractAddresses['Hermez']),
-      amount
-    ];
-
-    int nonce = await web3client.getTransactionCount(ethereumAddress);
-
-    Transaction transaction = Transaction.callContract(
-        contract: contract,
-        function: _approve(contract),
-        parameters: transactionParameters,
-        maxGas: gasLimit[gasLimitPosition].toInt(),
-        gasPrice: gasPrice,
-        nonce: nonce++);
-
-    String txHash = await web3client.sendTransaction(credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
-
-    print(txHash);
-
-    return txHash != null;
   } catch (error, trace) {
     print(error);
     print(trace);
@@ -249,6 +184,8 @@ Future<BigInt> transferGasLimit(
   } catch (e) {
     gasLimit = BigInt.from(GAS_STANDARD_ERC20_TX);
   }
+
+  gasLimit = BigInt.from((gasLimit.toInt() / pow(10, 3)).floor() * pow(10, 3));
 
   print('estimate transfer ERC20 --> Max Gas: $gasLimit');
   return gasLimit;
