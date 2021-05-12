@@ -24,6 +24,8 @@ import 'constants.dart'
         GAS_LIMIT_HIGH,
         GAS_LIMIT_LOW,
         GAS_LIMIT_OFFSET,
+        GAS_LIMIT_WITHDRAW_DEFAULT,
+        GAS_LIMIT_WITHDRAW_SIBLING,
         GAS_MULTIPLIER,
         GAS_STANDARD_ERC20_TX,
         contractAddresses;
@@ -111,7 +113,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         function: _addL1Transaction(hermezContract),
         from: from,
         parameters: transactionParameters,
-        maxGas: depositGasLimit.toInt(),
+        maxGas: depositGasLimit.toInt() - 1000,
         gasPrice: ethGasPrice,
         value: EtherAmount.fromUnitAndValue(
             EtherUnit.wei, BigInt.from(decompressedAmount)));
@@ -135,7 +137,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
 
   int nonceBefore = await web3client.getTransactionCount(from);
 
-  await approve(BigInt.from(decompressedAmount), ethereumAddress,
+  await approve(BigInt.from(decompressedAmount), from.hex,
       token.ethereumAddress, token.name, web3client, credentials,
       gasLimit: approveGasLimit, gasPrice: gasPrice);
 
@@ -155,7 +157,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
-      maxGas: depositGasLimit.toInt(),
+      maxGas: depositGasLimit.toInt() - 1000,
       gasPrice: ethGasPrice,
       nonce: correctNonce);
 
@@ -331,8 +333,7 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
   final credentials = await web3client.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
-  /*final gasPrice = EtherAmount.fromUnitAndValue(
-      EtherUnit.wei, await getGasPrice(gasMultiplier, web3client));*/
+  EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
 
   int nonce = await web3client.getTransactionCount(from);
 
@@ -353,7 +354,7 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
       maxGas: gasLimit,
-      gasPrice: gasPrice,
+      gasPrice: ethGasPrice,
       nonce: nonce);
   String txHash;
   try {
@@ -364,6 +365,63 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
   print(txHash);
 
   return txHash;
+}
+
+/// Estimates a force Exit Max Gas. This is the L1 transaction equivalent of Exit.
+///
+/// @param {BigInt} amount - The amount to be withdrawn
+/// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
+/// @param {Object} token - The token information object as returned from the API
+/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
+/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
+/// @param {Number} gasLimit - Optional gas limit
+/// @param {Number} gasMultiplier - Optional gas multiplier
+Future<BigInt> forceExitGasLimit(
+    String hezEthereumAddress,
+    HermezCompressedAmount amount,
+    String accountIndex,
+    Token token,
+    Web3Client web3client) async {
+  BigInt forceExitMaxGas = BigInt.zero;
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+  EthereumAddress to = EthereumAddress.fromHex(contractAddresses['Hermez']);
+  EtherAmount value = EtherAmount.zero();
+  Uint8List data;
+
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json', contractAddresses['Hermez'], "Hermez");
+
+  final transactionParameters = [
+    BigInt.zero,
+    BigInt.from(getAccountIndex(accountIndex)),
+    BigInt.zero,
+    BigInt.from(amount.value),
+    BigInt.from(token.id),
+    BigInt.one,
+    hexToBytes('0x')
+  ];
+
+  Transaction transaction = Transaction.callContract(
+      contract: hermezContract,
+      function: _addL1Transaction(hermezContract),
+      parameters: transactionParameters);
+
+  data = transaction.data;
+
+  try {
+    forceExitMaxGas = await web3client.estimateGas(
+        sender: from, to: to, value: value, data: data);
+    forceExitMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
+    forceExitMaxGas = BigInt.from(
+        (forceExitMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
+  } catch (e) {
+    forceExitMaxGas = BigInt.from(GAS_LIMIT_LOW);
+    forceExitMaxGas = BigInt.from(
+        (forceExitMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
+  }
+
+  return forceExitMaxGas;
 }
 
 /// Finalise the withdraw. This a L1 transaction.
@@ -435,21 +493,25 @@ Future<String> withdraw(
   return txHash;
 }
 
-Future<Uint8List> signWithdraw(
+Future<BigInt> withdrawGasLimit(
     BigInt amount,
+    String hezEthereumAddress,
     String accountIndex,
     Token token,
     String babyJubJub,
     BigInt batchNumber,
     List<BigInt> merkleSiblings,
     Web3Client web3client,
-    String privateKey,
     {bool isInstant = true}) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
-  final credentials = await web3client.credentialsFromPrivateKey(privateKey);
-  final from = await credentials.extractAddress();
+  BigInt withdrawMaxGas = BigInt.zero;
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+  EthereumAddress to = EthereumAddress.fromHex(contractAddresses['Hermez']);
+  EtherAmount value = EtherAmount.zero();
+  Uint8List data;
 
   final transactionParameters = [
     BigInt.from(token.id),
@@ -468,7 +530,26 @@ Future<Uint8List> signWithdraw(
       function: _withdrawMerkleProof(hermezContract),
       parameters: transactionParameters);
 
-  return transaction.data;
+  data = transaction.data;
+
+  try {
+    withdrawMaxGas = await web3client.estimateGas(
+        sender: from, to: to, value: value, data: data);
+  } catch (e) {
+    // DEFAULT WITHDRAW: 230K + Transfer + (siblings.length * 31K)
+    withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
+    if (token.id != 0) {
+      withdrawMaxGas += await transferGasLimit(amount, to.hex, from.hex,
+          token.ethereumAddress, token.name, web3client);
+    }
+    withdrawMaxGas +=
+        BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
+  }
+
+  withdrawMaxGas =
+      BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
+
+  return withdrawMaxGas;
 }
 
 /// Makes the final withdrawal from the WithdrawalDelayer smart contract after enough time has passed.
@@ -478,7 +559,7 @@ Future<Uint8List> signWithdraw(
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasPrice - Optional gas price
-Future<bool> delayedWithdraw(
+Future<String> delayedWithdraw(
     Token token, Web3Client web3client, String privateKey,
     {gasLimit = GAS_LIMIT, gasPrice = GAS_MULTIPLIER}) async {
   final withdrawalDelayerContract = await ContractParser.fromAssets(
@@ -509,19 +590,23 @@ Future<bool> delayedWithdraw(
 
   print(txHash);
 
-  return txHash != null;
+  return txHash;
 }
 
-Future<Uint8List> signDelayedWithdraw(
-    Token token, Web3Client web3client, String privateKey,
-    {gasLimit = GAS_LIMIT, gasPrice = GAS_MULTIPLIER}) async {
+Future<BigInt> delayedWithdrawGasLimit(
+    String hezEthereumAddress, Token token, Web3Client web3client) async {
+  BigInt withdrawMaxGas = BigInt.zero;
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+  EthereumAddress to =
+      EthereumAddress.fromHex(contractAddresses['WithdrawalDelayer']);
+  EtherAmount value = EtherAmount.zero();
+  Uint8List data;
+
   final withdrawalDelayerContract = await ContractParser.fromAssets(
       'WithdrawalDelayerABI.json',
       contractAddresses['WithdrawalDelayer'],
       "WithdrawalDelayer");
-
-  final credentials = await web3client.credentialsFromPrivateKey(privateKey);
-  final from = await credentials.extractAddress();
 
   final transactionParameters = [
     from,
@@ -533,7 +618,25 @@ Future<Uint8List> signDelayedWithdraw(
       function: _withdrawal(withdrawalDelayerContract),
       parameters: transactionParameters);
 
-  return transaction.data;
+  data = transaction.data;
+
+  try {
+    withdrawMaxGas = await web3client.estimateGas(
+        sender: from, to: to, value: value, data: data);
+  } catch (e) {
+    // DEFAULT DELAYED WITHDRAW: ???? 230K + Transfer + (siblings.length * 31K)
+    withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
+    if (token.id != 0) {
+      withdrawMaxGas += await transferGasLimit(value.getInWei, to.hex, from.hex,
+          token.ethereumAddress, token.name, web3client);
+    }
+    //withdrawMaxGas += BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
+  }
+
+  withdrawMaxGas =
+      BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
+
+  return withdrawMaxGas;
 }
 
 /// Sends a L2 transaction to the Coordinator

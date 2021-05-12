@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
@@ -78,7 +79,8 @@ String getTokenAmountString(String amountBigInt, int decimals) {
 /// @param {Number} decimals - Number of decimal points the amount has
 /// @returns {BigInt}
 BigInt getTokenAmountBigInt(double amount, int decimals) {
-  return BigInt.from(amount * BigInt.from(10).pow(decimals).toDouble());
+  num tokenAmount = (amount * pow(10, decimals)).toInt();
+  return BigInt.from(tokenAmount);
 }
 
 Uint8List hexToBuffer(String source) {
