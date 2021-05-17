@@ -360,7 +360,9 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
   try {
     txHash = await web3client.sendTransaction(credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {}
+  } catch (e) {
+    print(e.toString());
+  }
 
   print(txHash);
 
@@ -449,16 +451,14 @@ Future<String> withdraw(
     String privateKey,
     {bool isInstant = true,
     gasLimit = GAS_LIMIT_HIGH,
-    gasPrice = GAS_MULTIPLIER}) async {
+    gasPrice = GAS_MULTIPLIER,
+    int nonce = 1}) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', contractAddresses['Hermez'], "Hermez");
 
   final credentials = await web3client.credentialsFromPrivateKey(privateKey);
-  final from = await credentials.extractAddress();
 
   EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
-
-  int nonce = await web3client.getTransactionCount(from);
 
   final transactionParameters = [
     BigInt.from(token.id),
