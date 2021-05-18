@@ -66,6 +66,41 @@ String getBaseApiUrl() {
   return baseApiUrl;
 }
 
+/// Makes sure a list of next forgers includes the base API URL
+/// @param {Array} nextForgerUrls - Array of forger URLs that may or may not include the base API URL
+/// @returns nextForgerUrls - Array of next forgers that definitely includes the base API URL
+Set<String> getForgerUrls(Set<String> nextForgerUrls) {
+  return nextForgerUrls.contains(baseApiUrl)
+      ? nextForgerUrls
+      : [...nextForgerUrls, baseApiUrl].toSet();
+}
+
+/// Checks a list of responses from one same POST request to different coordinators
+/// If all responses are errors, throw the error
+/// If at least 1 was successful, return it
+/// @param {Array} responsesArray - An array of responses, including errors
+/// @returns response
+/// @throws Axios Error
+http.Response filterResponses(Set<http.Response> responsesArray) {
+  Set<http.Response> invalidResponses = Set.from(responsesArray);
+  invalidResponses.removeWhere((res) => res.statusCode == 200);
+  if (invalidResponses.length == responsesArray.length) {
+    return responsesArray.first;
+  } else {
+    return responsesArray.firstWhere((res) => res.statusCode == 200);
+  }
+}
+
+/// Fetches the URLs of the next forgers from the /state API
+/// @returns {Array} An array of URLs of the next forgers
+Future<Set<String>> getNextForgerUrls() async {
+  StateResponse coordinatorState = await getState();
+  return coordinatorState.network.nextForgers
+      .map((nextForger) =>
+          nextForger.coordinator.URL.replaceFirst("https://", ""))
+      .toSet();
+}
+
 /// GET request to the /accounts endpoint. Returns a list of token accounts associated to a Hermez address
 /// @param {string} address - The account's address. It can be a Hermez Ethereum address or a Hermez BabyJubJub address
 /// @param {int[]} tokenIds - Array of token IDs as registered in the network
@@ -187,7 +222,15 @@ Future<PoolTransaction> getPoolTransaction(String transactionId) async {
 /// @returns {string} Transaction id
 Future<http.Response> postPoolTransaction(
     Map<String, dynamic> transaction) async {
-  return post(baseApiUrl, TRANSACTIONS_POOL_URL, body: transaction);
+  Set<String> nextForgerUrls = await getNextForgerUrls();
+  Set<String> forgerUrls = getForgerUrls(nextForgerUrls);
+  Set<http.Response> responsesArray = Set();
+  for (String apiUrl in forgerUrls) {
+    http.Response response =
+        await post(apiUrl, TRANSACTIONS_POOL_URL, body: transaction);
+    responsesArray.add(response);
+  }
+  return filterResponses(responsesArray);
 }
 
 /// GET request to the /exits endpoint. Returns a list of exits based on certain filters

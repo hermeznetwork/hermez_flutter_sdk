@@ -14,6 +14,7 @@ Future<http.Response> get(String baseAddress, String endpoint,
     {Map<String, String> queryParameters}) async {
   try {
     var uri;
+    baseAddress = baseAddress.replaceFirst("https://", "");
     if (queryParameters != null) {
       uri = Uri.https(baseAddress, '$API_VERSION$endpoint', queryParameters);
     } else {
@@ -35,10 +36,12 @@ Future<http.Response> get(String baseAddress, String endpoint,
 
 Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic> body}) async {
+  var response;
   try {
     var uri;
+    baseAddress = baseAddress.replaceFirst("https://", "");
     uri = Uri.https(baseAddress, '$API_VERSION$endpoint');
-    final response = await http.post(
+    response = await http.post(
       uri,
       body: json.encode(body),
       headers: {
@@ -52,6 +55,7 @@ Future<http.Response> post(String baseAddress, String endpoint,
     throw NetworkException();
   } catch (e) {
     print(e);
+    return response;
   }
 }
 
@@ -99,6 +103,8 @@ http.Response returnResponseOrThrowException(http.Response response) {
       responseBody = response.body;
     }
     throw BadRequestException(responseBody);
+  } else if (response.statusCode == 409) {
+    throw ConflictErrorException(response.body);
   } else if (response.statusCode > 400) {
     throw UnknownApiException(response.statusCode);
   } else {

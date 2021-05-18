@@ -16,6 +16,12 @@ class InternalServerErrorException implements Exception {
   InternalServerErrorException(this.message);
 }
 
+class ConflictErrorException implements Exception {
+  String message;
+
+  ConflictErrorException(this.message);
+}
+
 class BadRequestException implements Exception {
   String message;
 
