@@ -34,7 +34,7 @@ Future<BigInt> approveGasLimit(
   EthereumAddress from = EthereumAddress.fromHex(accountAddress);
   EthereumAddress to = EthereumAddress.fromHex(tokenContractAddress);
   EthereumAddress hermezAddress =
-      EthereumAddress.fromHex(contractAddresses['Hermez']);
+      EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']);
   EtherAmount value = EtherAmount.zero();
   Uint8List data;
 
@@ -111,13 +111,13 @@ Future<bool> approve(
     final allowanceCall = await web3client
         .call(contract: contract, function: _allowance(contract), params: [
       EthereumAddress.fromHex(accountAddress),
-      EthereumAddress.fromHex(contractAddresses['Hermez'])
+      EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
     ]);
     final allowance = allowanceCall.first as BigInt;
 
     if (allowance < amount) {
       final transactionParameters = [
-        EthereumAddress.fromHex(contractAddresses['Hermez']),
+        EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']),
         amount
       ];
 

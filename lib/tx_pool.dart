@@ -61,7 +61,7 @@ Future<List<PoolTransaction>> getPoolTransactions(
       } else {
         successfulTransactions.add(poolTransaction);
       }
-    } on ItemNotFoundException {
+    } catch (e) {// on ItemNotFoundException {
       if (historyTransaction != null) {
         removePoolTransaction(bJJ, transaction.id);
       }

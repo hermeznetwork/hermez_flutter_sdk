@@ -9,6 +9,7 @@ import 'package:web3dart/web3dart.dart';
 
 import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
+import 'environment.dart';
 import "tx_utils.dart" show buildTransactionHashMessage;
 
 /// @class
@@ -123,7 +124,8 @@ class HermezWallet {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
       'chainId': BigInt.parse(chainId),
-      'verifyingContract': EthereumAddress.fromHex(contractAddresses['Hermez'])
+      'verifyingContract':
+          EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
     };
 
     final Map<String, dynamic> message = {

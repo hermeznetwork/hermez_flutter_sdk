@@ -44,7 +44,7 @@ const BASE_WEB3_RDP_URL = 'wss://192.168.250.101:8545';*/
 
 const ETHERSCAN_URL = 'https://etherscan.io';*/
 
-const ContractNames = {
+/*const ContractNames = {
   "Hermez": 'Hermez',
   "WithdrawalDelayer": 'WithdrawalDelayer'
 };
@@ -53,7 +53,7 @@ final Map<String, String> contractAddresses = {
   ContractNames['Hermez']: '0x10465b16615ae36F350268eb951d7B0187141D3B',
   ContractNames['WithdrawalDelayer']:
       '0x8EEaea23686c319133a7cC110b840d1591d9AeE0'
-};
+};*/
 
 const STORAGE_VERSION_KEY = 'hermezStorageVersion';
 const STORAGE_VERSION = 1;
