@@ -197,7 +197,7 @@ Future<ForgedTransaction> getHistoryTransaction(String transactionId) async {
         ForgedTransaction.fromJson(json.decode(jsonResponse));
     return forgedTransaction;
   } else {
-    throw ('Error: $response.statusCode');
+    return null;
   }
 }
 

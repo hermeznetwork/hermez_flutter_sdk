@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api.dart' show getPoolTransaction;
 import 'constants.dart' show TRANSACTION_POOL_KEY;
 import 'environment.dart';
+import 'model/forged_transaction.dart';
 
 Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
@@ -43,15 +44,27 @@ Future<List<PoolTransaction>> getPoolTransactions(
   List<PoolTransaction> successfulTransactions = List();
   for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
+    ForgedTransaction historyTransaction;
+    try {
+      historyTransaction = await getHistoryTransaction(transaction.id);
+    } catch (e) {
+      print(e.toString());
+    }
     try {
       final poolTransaction = await getPoolTransaction(transaction.id);
-      if (poolTransaction.info != null || poolTransaction.state == 'fged') {
-        removePoolTransaction(bJJ, poolTransaction.id);
+      if (historyTransaction != null) {
+        if (poolTransaction.info != null || poolTransaction.state == 'fged') {
+          removePoolTransaction(bJJ, poolTransaction.id);
+        } else {
+          successfulTransactions.add(poolTransaction);
+        }
       } else {
         successfulTransactions.add(poolTransaction);
       }
     } on ItemNotFoundException {
-      removePoolTransaction(bJJ, transaction.id);
+      if (historyTransaction != null) {
+        removePoolTransaction(bJJ, transaction.id);
+      }
     }
   }
 

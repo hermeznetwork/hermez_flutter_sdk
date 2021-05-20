@@ -532,10 +532,12 @@ Future<BigInt> withdrawGasLimit(
 
   data = transaction.data;
 
-  try {
+  // TODO: FIX ESTIMATE GAS
+
+  /*try {
     withdrawMaxGas = await web3client.estimateGas(
         sender: from, to: to, value: value, data: data);
-  } catch (e) {
+  } catch (e) {*/
     // DEFAULT WITHDRAW: 230K + Transfer + (siblings.length * 31K)
     withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
     if (token.id != 0) {
@@ -544,7 +546,9 @@ Future<BigInt> withdrawGasLimit(
     }
     withdrawMaxGas +=
         BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
-  }
+
+    withdrawMaxGas += BigInt.from(GAS_LIMIT_OFFSET);
+  //}
 
   withdrawMaxGas =
       BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));

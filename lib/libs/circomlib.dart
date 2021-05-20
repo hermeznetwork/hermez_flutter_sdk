@@ -76,16 +76,16 @@ class CircomLib {
     if (lib == null) return "ERROR: The library is not initialized";
 
     final sig = signature.toNativeUtf8();
-    print("- Calling packSignature with argument: $sig");
+    //print("- Calling packSignature with argument: $sig");
     // The actual native call
     final resultPtr = _packSignature(sig);
-    print("- Result pointer:  $resultPtr");
+    //print("- Result pointer:  $resultPtr");
 
     final result = resultPtr.toDartString();
-    print("- Response string:  $result");
+    //print("- Response string:  $result");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return result;
   }
@@ -97,10 +97,10 @@ class CircomLib {
     final sigPtr = compressedSignature.toNativeUtf8();
     final resultPtr = _unpackSignature(sigPtr);
     final result = resultPtr.toDartString();
-    print("- Response string:  $result");
+    //print("- Response string:  $result");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return result;
   }
@@ -113,10 +113,10 @@ class CircomLib {
     final ptrY = pointY.toNativeUtf8();
     final resultPtr = _packPoint(ptrX, ptrY);
     final result = resultPtr.toDartString();
-    print("- Response string:  $result");
+    //debugPrint("- Response string:  $result");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return result;
   }
@@ -126,10 +126,10 @@ class CircomLib {
     final pointPtr = compressedPoint.toNativeUtf8();
     final resultPtr = _unpackPoint(pointPtr);
     final result = resultPtr.toDartString();
-    print("- Response string:  $result");
+    //print("- Response string:  $result");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return result.split(",");
   }
@@ -150,10 +150,10 @@ class CircomLib {
     String resultString = resultPtr.toDartString();
     resultString = resultString.replaceAll("Fr(", "");
     resultString = resultString.replaceAll(")", "");
-    print("- Response string:  $resultString");
+    //print("- Response string:  $resultString");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return resultString;
   }
@@ -166,10 +166,10 @@ class CircomLib {
     final msgPtr = msg.toNativeUtf8();
     final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);
     final String compressedSignature = resultPtr.toDartString();
-    print("- Response string:  $compressedSignature");
+    //print("- Response string:  $compressedSignature");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return compressedSignature;
   }
@@ -193,10 +193,10 @@ class CircomLib {
     final prvKeyPtr = privateKey.toNativeUtf8();
     final resultPtr = _prv2Pub(prvKeyPtr);
     final String resultString = resultPtr.toDartString();
-    print("- Response string:  $resultString");
+    //print("- Response string:  $resultString");
     // Free the string pointer, as we already have
     // an owned String to return
-    print("- Freeing the native char*");
+    //print("- Freeing the native char*");
     cstringFree(resultPtr);
     return resultString;
   }
