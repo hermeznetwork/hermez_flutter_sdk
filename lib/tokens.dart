@@ -160,35 +160,49 @@ Future<BigInt> transferGasLimit(
     String tokenContractAddress,
     String tokenContractName,
     Web3Client web3client) async {
+
   BigInt gasLimit = BigInt.zero;
-  EthereumAddress from = EthereumAddress.fromHex(fromAddress);
-  EthereumAddress to = EthereumAddress.fromHex(toAddress);
-  EtherAmount value = EtherAmount.zero();
-  Uint8List data;
-
-  final contract = await ContractParser.fromAssets(
-      'ERC20ABI.json', tokenContractAddress.toString(), tokenContractName);
-
-  Transaction transaction = Transaction.callContract(
-    contract: contract,
-    function: _transfer(contract),
-    parameters: [to, amount],
-    from: from,
-  );
-
-  data = transaction.data;
-
-  try {
-    gasLimit = await web3client.estimateGas(
-        sender: from, to: to, value: value, data: data);
-  } catch (e) {
+  if (fromAddress == null || fromAddress.isEmpty || toAddress == null || toAddress.isEmpty || amount.sign == 0) {
     gasLimit = BigInt.from(GAS_STANDARD_ERC20_TX);
+    gasLimit = BigInt.from((gasLimit.toInt() / pow(10, 3)).floor() * pow(10, 3));
+    print('estimate transfer default ERC20 --> Max Gas: $gasLimit');
+    return gasLimit;
+  } else {
+    try {
+      EthereumAddress from = EthereumAddress.fromHex(fromAddress);
+      EthereumAddress to = EthereumAddress.fromHex(toAddress);
+      EtherAmount value = EtherAmount.zero();
+      Uint8List data;
+
+      final contract = await ContractParser.fromAssets(
+          'ERC20ABI.json', tokenContractAddress.toString(), tokenContractName);
+
+      Transaction transaction = Transaction.callContract(
+        contract: contract,
+        function: _transfer(contract),
+        parameters: [to, amount],
+        from: from,
+      );
+
+      data = transaction.data;
+
+
+      gasLimit = await web3client.estimateGas(
+          sender: from, to: to, value: value, data: data);
+      print('estimate transfer ERC20 --> Max Gas: $gasLimit');
+    } catch (e) {
+      print(e.toString());
+      gasLimit = BigInt.from(GAS_STANDARD_ERC20_TX);
+      print('estimate transfer default ERC20 --> Max Gas: $gasLimit');
+    }
+
+    gasLimit += BigInt.from(GAS_STANDARD_ERC20_TX_OFFSET);
+
+    gasLimit =
+        BigInt.from((gasLimit.toInt() / pow(10, 3)).floor() * pow(10, 3));
+
+    return gasLimit;
   }
-
-  gasLimit = BigInt.from((gasLimit.toInt() / pow(10, 3)).floor() * pow(10, 3));
-
-  print('estimate transfer ERC20 --> Max Gas: $gasLimit');
-  return gasLimit;
 }
 
 /// Sends an transfer transaction to an ERC 20 contract for a certain amount of tokens
