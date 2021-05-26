@@ -23,7 +23,7 @@ class L1Info {
         depositAmount: json['depositAmount'],
         depositAmountSuccess: json['depositAmountSuccess'],
         ethereumBlockNum: json['ethereumBlockNum'],
-        historicDepositAmountUSD: json['historicDepositAmountUSD'],
+        historicDepositAmountUSD: double.tryParse(json['historicDepositAmountUSD'].toString()) ?? 0.0,
         toForgeL1TransactionsNum: json['toForgeL1TransactionsNum'],
         userOrigin: json['userOrigin'],
       );

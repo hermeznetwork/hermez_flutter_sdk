@@ -105,7 +105,7 @@ Future<bool> approve(
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
-  EthereumAddress ethereumAddress = await credentials.extractAddress();
+  EthereumAddress from = await credentials.extractAddress();
 
   try {
     final allowanceCall = await web3client
@@ -121,12 +121,16 @@ Future<bool> approve(
         amount
       ];
 
+      int nonce = await web3client.getTransactionCount(from,
+          atBlock: BlockNum.pending());
+
       Transaction transaction = Transaction.callContract(
         contract: contract,
         function: _approve(contract),
         parameters: transactionParameters,
         maxGas: gasLimit.toInt(),
         gasPrice: ethGasPrice,
+        nonce: nonce,
       );
 
       String txHash = await web3client.sendTransaction(credentials, transaction,

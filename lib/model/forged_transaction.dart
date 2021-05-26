@@ -58,7 +58,7 @@ class ForgedTransaction {
       fromAccountIndex: json['fromAccountIndex'],
       fromBJJ: json['fromBJJ'],
       fromHezEthereumAddress: json['fromHezEthereumAddress'],
-      historicUSD: json['historicUSD'],
+      historicUSD: double.tryParse(json['historicUSD'].toString()) ?? 0.0,
       id: json['id'],
       itemId: json['itemId'],
       position: json['position'],

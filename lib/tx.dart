@@ -107,6 +107,9 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
 
   if (token.id == 0) {
+    int nonce =
+        await web3client.getTransactionCount(from, atBlock: BlockNum.pending());
+
     Transaction transaction = Transaction.callContract(
         contract: hermezContract,
         function: _addL1Transaction(hermezContract),
@@ -115,7 +118,8 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         maxGas: depositGasLimit.toInt() - 1000,
         gasPrice: ethGasPrice,
         value: EtherAmount.fromUnitAndValue(
-            EtherUnit.wei, BigInt.from(decompressedAmount)));
+            EtherUnit.wei, BigInt.from(decompressedAmount)),
+        nonce: nonce);
 
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
@@ -134,13 +138,15 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     return txHash;
   }
 
-  int nonceBefore = await web3client.getTransactionCount(from);
+  int nonceBefore =
+      await web3client.getTransactionCount(from, atBlock: BlockNum.pending());
 
   await approve(BigInt.from(decompressedAmount), from.hex,
       token.ethereumAddress, token.name, web3client, credentials,
       gasLimit: approveGasLimit, gasPrice: gasPrice);
 
-  int nonceAfter = await web3client.getTransactionCount(from);
+  int nonceAfter =
+      await web3client.getTransactionCount(from, atBlock: BlockNum.pending());
 
   int correctNonce = nonceAfter;
 

@@ -9,7 +9,7 @@ class L2Info {
     if (json != null) {
       return L2Info(
         fee: json['fee'],
-        historicFeeUSD: json['historicFeeUSD'],
+        historicFeeUSD: double.tryParse(json['historicFeeUSD'].toString()) ?? 0.0,
         nonce: json['nonce'],
       );
     } else {
