@@ -1,7 +1,7 @@
 class Token {
   final double USD;
   final int decimals;
-  final String ethereumAddress;
+  String ethereumAddress;
   final int ethereumBlockNum;
   final String fiatUpdate;
   final int id;

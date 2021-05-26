@@ -180,8 +180,8 @@ int getFeeIndex(num fee, num amount) {
 }
 
 /// Compute fee in token value with an amount and a fee index
-/// @param {Number} amount - The amount of the transaction as a Scalar
 /// @param {Number} feeIndex - Fee selected among 0 - 255
+/// @param {Number} amount - The amount of the transaction as a Scalar
 /// @returns {BigInt} Resulting fee in token value
 BigInt getFeeValue(num feeIndex, num amount) {
   if (feeIndex < 192) {

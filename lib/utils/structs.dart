@@ -62,10 +62,15 @@ class Point extends Struct {
   //@ffi.Pointer()
   Pointer<Uint8> y;
 
-  factory Point.allocate(Pointer<Uint8> x, Pointer<Uint8> y) =>
-      calloc<Point>().ref
-        ..x = x
-        ..y = y;
+  Pointer<Point> address;
+
+  factory Point.allocate(Pointer<Uint8> x, Pointer<Uint8> y) {
+    final pointer = calloc<Point>();
+    return pointer.ref
+      ..address = pointer
+      ..x = x
+      ..y = y;
+  }
 }
 
 // Example of a complex struct (contains strings and other structs)

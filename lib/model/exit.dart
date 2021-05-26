@@ -46,6 +46,24 @@ class Exit {
         hezEthereumAddress: json['hezEthereumAddress']);
   }
 
+  factory Exit.fromL1Transaction(dynamic transaction) {
+    Token token = Token.fromJson(transaction['token']);
+    //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
+    return Exit(
+      //batchNum: json['batchNum'],
+      accountIndex: transaction['accountIndex'],
+      //itemId: transaction.id,
+      //merkleProof: merkleProof,
+      balance: transaction['amount'].toString(),
+      //instantWithdraw: json['instantWithdraw'],
+      //delayedWithdrawRequest: json['delayedWithdrawRequest'],
+      //delayedWithdraw: json['delayedWithdraw'],
+      token: token,
+      //bjj: json['bjj'],
+      //hezEthereumAddress: json['hezEthereumAddress']
+    );
+  }
+
   factory Exit.fromTransaction(PoolTransaction transaction) {
     //Token token = Token.fromJson(json['token']);
     //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);

@@ -74,12 +74,12 @@ String getTokenAmountString(String amountBigInt, int decimals) {
   //return ethers.utils.formatUnits(amountBigInt, decimals);
 }
 
-/// Converts an amount in Float with the appropriate decimals to a BigInt
-/// @param {String} amountString - String representing the amount as a Float
-/// @param {Number} decimals - Number of decimal points the amount has
+/// Converts an amount in double with the appropriate decimals to a BigInt
+/// @param {double} amount - representing the amount as a double
+/// @param {int} decimals - Number of decimal points the amount has
 /// @returns {BigInt}
 BigInt getTokenAmountBigInt(double amount, int decimals) {
-  num tokenAmount = (amount * pow(10, decimals)).toInt();
+  double tokenAmount = amount * pow(10, decimals);
   return BigInt.from(tokenAmount);
 }
 

@@ -336,7 +336,8 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
 
   EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
 
-  int nonce = await web3client.getTransactionCount(from);
+  int nonce =
+      await web3client.getTransactionCount(from, atBlock: BlockNum.pending());
 
   final transactionParameters = [
     BigInt.zero,
@@ -443,7 +444,7 @@ Future<BigInt> forceExitGasLimit(
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Bumber} gasMultiplier - Optional gas multiplier
 Future<String> withdraw(
-    BigInt amount,
+    double amount,
     String accountIndex,
     Token token,
     String babyJubJub,
@@ -453,20 +454,20 @@ Future<String> withdraw(
     String privateKey,
     {bool isInstant = true,
     gasLimit = GAS_LIMIT_HIGH,
-    gasPrice = GAS_MULTIPLIER}
-    /*,int nonce = 1}*/) async {
+    gasPrice = GAS_MULTIPLIER}) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
 
   final credentials = await web3client.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
-  int nonce = await web3client.getTransactionCount(from);
+  int nonce =
+      await web3client.getTransactionCount(from, atBlock: BlockNum.pending());
 
   EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
 
   final transactionParameters = [
     BigInt.from(token.id),
-    amount,
+    BigInt.from(amount),
     hexToInt(babyJubJub),
     batchNumber,
     merkleSiblings,
@@ -498,7 +499,7 @@ Future<String> withdraw(
 }
 
 Future<BigInt> withdrawGasLimit(
-    BigInt amount,
+    double amount,
     String hezEthereumAddress,
     String accountIndex,
     Token token,
@@ -520,7 +521,7 @@ Future<BigInt> withdrawGasLimit(
 
   final transactionParameters = [
     BigInt.from(token.id),
-    amount,
+    BigInt.from(amount),
     hexToInt(babyJubJub),
     batchNumber,
     merkleSiblings,
@@ -546,8 +547,8 @@ Future<BigInt> withdrawGasLimit(
   // DEFAULT WITHDRAW: 230K + Transfer + (siblings.length * 31K)
   withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
   if (token.id != 0) {
-    withdrawMaxGas += await transferGasLimit(amount, to.hex, from.hex,
-        token.ethereumAddress, token.name, web3client);
+    withdrawMaxGas += await transferGasLimit(BigInt.from(amount), to.hex,
+        from.hex, token.ethereumAddress, token.name, web3client);
   }
   withdrawMaxGas +=
       BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);

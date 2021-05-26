@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:hermez_plugin/api.dart';
-import 'package:hermez_plugin/http_exceptions.dart';
 import 'package:hermez_plugin/model/pool_transaction.dart';
 import 'package:hermez_plugin/model/transaction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,6 +44,7 @@ Future<List<PoolTransaction>> getPoolTransactions(
   for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
     ForgedTransaction historyTransaction;
+    // TODO: History tx is needed???
     try {
       historyTransaction = await getHistoryTransaction(transaction.id);
     } catch (e) {
@@ -53,6 +53,7 @@ Future<List<PoolTransaction>> getPoolTransactions(
     try {
       final poolTransaction = await getPoolTransaction(transaction.id);
       if (historyTransaction != null) {
+        // TODO: pool txs are unforged, is it needed??
         if (poolTransaction.info != null || poolTransaction.state == 'fged') {
           removePoolTransaction(bJJ, poolTransaction.id);
         } else {
@@ -61,7 +62,8 @@ Future<List<PoolTransaction>> getPoolTransactions(
       } else {
         successfulTransactions.add(poolTransaction);
       }
-    } catch (e) {// on ItemNotFoundException {
+    } catch (e) {
+      // on ItemNotFoundException {
       if (historyTransaction != null) {
         removePoolTransaction(bJJ, transaction.id);
       }

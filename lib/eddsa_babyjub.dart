@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
@@ -38,7 +37,8 @@ class Signature {
     final yPtr = Uint8ArrayUtils.toPointer(yList);
     final sPtr = Uint8ArrayUtils.toPointer(rSList);
     final Structs.Point point = Structs.Point.allocate(xPtr, yPtr);
-    final pointPtr = point.addressOf;
+
+    final pointPtr = point.address;
     final Structs.Signature sig = Structs.Signature.allocate(pointPtr, sPtr);
     if (sig.r_b8 == null) {
       throw new ArgumentError('unpackSignature failed');
@@ -51,6 +51,7 @@ class Signature {
 
     BigInt s =
         Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(sig.s, 32));
+    //calloc.free(pointPtr);
     return new Signature(r8, s);
   }
 }
