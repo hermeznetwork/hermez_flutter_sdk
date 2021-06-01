@@ -23,6 +23,10 @@
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/macos/Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/macos/Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/macos/Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/macos/Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/example/build" />
       <excludeFolder url="file://$MODULE_DIR$/rust/target" />
     </content>
     <orderEntry type="inheritedJdk" />

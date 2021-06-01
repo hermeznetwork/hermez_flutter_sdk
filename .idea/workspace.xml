@@ -5,18 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/hermez_plugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hermez_plugin.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/exit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/exit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/token.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/token.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/model/tokens_response.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tokens_response.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/tokens.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tokens.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/tx.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/tx_pool.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx_pool.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/utils/structs.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/structs.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_plugin/HermezPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_plugin/HermezPlugin.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,21 +107,25 @@
     <state width="1364" height="388" key="GridCell.Tab.0.right/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.right/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
     <state width="1364" height="213" key="GridCell.Tab.0.right/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621440486513" />
-    <state x="2036" y="196" key="SettingsEditor" timestamp="1617110313184">
+    <state x="2036" y="196" key="SettingsEditor" timestamp="1622208641055">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
-    <state x="2036" y="196" key="SettingsEditor/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110313184" />
+    <state x="2036" y="196" key="SettingsEditor/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622208641055" />
     <state x="100" y="125" width="1206" height="632" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1621870512544">
       <screen x="0" y="25" width="1440" height="832" />
     </state>
     <state x="100" y="125" width="1206" height="632" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.25.1440.832@0.25.1440.832" timestamp="1621870512544" />
-    <state x="443" y="250" width="659" height="490" key="find.popup" timestamp="1621840680719">
-      <screen x="0" y="25" width="1440" height="832" />
+    <state x="2227" y="310" width="824" height="511" key="find.popup" timestamp="1622209488336">
+      <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="443" y="250" width="659" height="490" key="find.popup/0.25.1440.832@0.25.1440.832" timestamp="1621840680719" />
     <state x="443" y="261" width="585" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@0.25.1440.875" timestamp="1617964630415" />
     <state x="2227" y="298" width="615" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1620726245502" />
-    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621431334232" />
+    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622209488336" />
+    <state x="2345" y="167" key="new project wizard" timestamp="1622209737195">
+      <screen x="1440" y="25" width="2560" height="1055" />
+    </state>
+    <state x="2345" y="167" key="new project wizard/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622209737195" />
     <state x="159" y="181" width="670" height="676" key="search.everywhere.popup" timestamp="1618680983684">
       <screen x="0" y="25" width="1440" height="832" />
     </state>
@@ -148,27 +146,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>298</line>
+          <line>304</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>537</line>
+          <line>543</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>541</line>
+          <line>547</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>553</line>
+          <line>559</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>338</line>
+          <line>344</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
       </breakpoints>
