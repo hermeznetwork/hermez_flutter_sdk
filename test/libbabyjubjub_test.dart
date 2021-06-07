@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hermez_plugin/libs/circomlib.dart';
+import 'package:hermez_sdk/libs/circomlib.dart';
 
 void main() async {
   final circomlib = CircomLib(/*lib: await SetupUtil.getDylibAsync()*/);

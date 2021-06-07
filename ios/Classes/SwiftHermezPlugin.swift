@@ -3,7 +3,7 @@ import UIKit
 
 public class SwiftHermezPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-     //let channel = FlutterMethodChannel(name: "hermez_plugin", binaryMessenger: registrar.messenger())
+     //let channel = FlutterMethodChannel(name: "hermez_sdk", binaryMessenger: registrar.messenger())
      //let instance = SwiftHermezPlugin()
      // registrar.addMethodCallDelegate(instance, channel: channel)
     // We are not using Flutter channels here

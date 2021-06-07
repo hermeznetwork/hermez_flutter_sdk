@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/addresses.dart';
-import 'package:hermez_plugin/utils/eip712.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:hermez_sdk/addresses.dart';
+import 'package:hermez_sdk/utils/eip712.dart';
+import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 

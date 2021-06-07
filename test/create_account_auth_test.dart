@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hermez_plugin/api.dart';
-import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/tx.dart';
-import 'package:hermez_plugin/utils.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:hermez_sdk/api.dart';
+import 'package:hermez_sdk/hermez_wallet.dart';
+import 'package:hermez_sdk/tx.dart';
+import 'package:hermez_sdk/utils.dart';
+import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'setup_util.dart';

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'libs/circomlib.dart';

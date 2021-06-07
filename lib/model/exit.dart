@@ -1,4 +1,4 @@
-import 'package:hermez_plugin/model/pool_transaction.dart';
+import 'package:hermez_sdk/model/pool_transaction.dart';
 
 import 'merkle_proof.dart';
 import 'token.dart';

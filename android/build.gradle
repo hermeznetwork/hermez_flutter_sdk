@@ -1,4 +1,4 @@
-group 'io.hermez.hermez_plugin'
+group 'io.hermez.hermez_sdk'
 version '1.0-SNAPSHOT'
 
 buildscript {

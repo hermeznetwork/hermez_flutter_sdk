@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:hermez_plugin/api.dart' as api;
-import 'package:hermez_plugin/utils.dart';
+import 'package:hermez_sdk/api.dart' as api;
+import 'package:hermez_sdk/utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'

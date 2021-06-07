@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/utils/contract_parser.dart';
+import 'package:hermez_sdk/utils/contract_parser.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 

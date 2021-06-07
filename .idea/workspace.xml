@@ -5,23 +5,47 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/hermez_sdk.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_sdk/HermezPlugin.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hermez_sdk.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ios/hermez_sdk.podspec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/hermez_plugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hermez_sdk.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/hermez_plugin.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/hermez_plugin.podspec" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_plugin/HermezPlugin.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hermez_plugin.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/HermezPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/HermezPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftHermezPlugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/hermez_plugin.podspec" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/addresses.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/addresses.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/api.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/contracts.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/contracts.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/environment.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/eddsa_babyjub.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/hermez_plugin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_plugin.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/hermez_sdk.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_sdk.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/hermez_wallet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_wallet.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/account.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/account.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/accounts_response.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/accounts_response.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/exit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/exit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/forged_transaction.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/forged_transaction.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/pool_transaction.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/pool_transaction.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/model/tokens_response.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/model/tokens_response.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/tokens.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tokens.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/tx.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tx_pool.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx_pool.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tx_utils.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx_utils.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/create_account_auth_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/create_account_auth_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/creates_accounts_deposits_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/creates_accounts_deposits_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/exit_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/exit_test.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/force_exit_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/force_exit_test.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/hermez_plugin_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/hermez_plugin_test.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/libbabyjubjub_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/libbabyjubjub_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/setup_util.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/setup_util.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/transfer_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/transfer_test.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/withdrawal_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/withdrawal_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -33,18 +57,22 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1qTielr9ZscZ20179Z0HnmaQ3R5" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="android.sdk.path" value="$USER_HOME$/Library/Android/sdk" />
     <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="io.flutter.reload.alreadyRun" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="SDK Location" />
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.0" />
@@ -86,6 +114,9 @@
       </list>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
   <component name="WindowStateProjectService">
     <state x="431" y="294" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1618473647275">
       <screen x="0" y="25" width="1440" height="832" />
@@ -100,30 +131,30 @@
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="2037" y="384" width="1135" height="571" key="FileDocumentManager.FileCacheConflict/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621430820287" />
-    <state width="1539" height="160" key="GridCell.Tab.0.bottom" timestamp="1622820938678">
+    <state width="1676" height="206" key="GridCell.Tab.0.bottom" timestamp="1623073722360">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.bottom/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.bottom/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
-    <state width="1539" height="160" key="GridCell.Tab.0.bottom/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938678" />
-    <state width="1539" height="160" key="GridCell.Tab.0.center" timestamp="1622820938677">
+    <state width="1676" height="206" key="GridCell.Tab.0.bottom/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623073722360" />
+    <state width="1676" height="206" key="GridCell.Tab.0.center" timestamp="1623073722359">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.center/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.center/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146170" />
-    <state width="1539" height="160" key="GridCell.Tab.0.center/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938677" />
-    <state width="1539" height="160" key="GridCell.Tab.0.left" timestamp="1622820938676">
+    <state width="1676" height="206" key="GridCell.Tab.0.center/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623073722359" />
+    <state width="1676" height="206" key="GridCell.Tab.0.left" timestamp="1623073722359">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.left/0.25.1440.832@0.25.1440.832" timestamp="1621872208401" />
     <state width="1696" height="265" key="GridCell.Tab.0.left/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146169" />
-    <state width="1539" height="160" key="GridCell.Tab.0.left/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938676" />
-    <state width="1539" height="160" key="GridCell.Tab.0.right" timestamp="1622820938677">
+    <state width="1676" height="206" key="GridCell.Tab.0.left/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623073722359" />
+    <state width="1676" height="206" key="GridCell.Tab.0.right" timestamp="1623073722360">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.right/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.right/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
-    <state width="1539" height="160" key="GridCell.Tab.0.right/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938677" />
+    <state width="1676" height="206" key="GridCell.Tab.0.right/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623073722360" />
     <state x="2036" y="196" key="SettingsEditor" timestamp="1622208641055">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
@@ -132,13 +163,13 @@
       <screen x="0" y="25" width="1440" height="832" />
     </state>
     <state x="100" y="125" width="1206" height="632" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.25.1440.832@0.25.1440.832" timestamp="1621870512544" />
-    <state x="2227" y="310" width="824" height="511" key="find.popup" timestamp="1622821030361">
+    <state x="2227" y="310" width="824" height="511" key="find.popup" timestamp="1623073670378">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="443" y="250" width="659" height="490" key="find.popup/0.25.1440.832@0.25.1440.832" timestamp="1621840680719" />
     <state x="443" y="261" width="585" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@0.25.1440.875" timestamp="1617964630415" />
     <state x="2227" y="298" width="615" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1620726245502" />
-    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622821030361" />
+    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623073670378" />
     <state x="2345" y="167" key="new project wizard" timestamp="1622209737195">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>

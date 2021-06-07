@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/environment.dart';
-import 'package:hermez_plugin/hermez_sdk.dart';
-import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/model/token.dart';
-import 'package:hermez_plugin/tokens.dart';
-import 'package:hermez_plugin/utils/contract_parser.dart';
+import 'package:hermez_sdk/environment.dart';
+import 'package:hermez_sdk/hermez_sdk.dart';
+import 'package:hermez_sdk/hermez_wallet.dart';
+import 'package:hermez_sdk/model/token.dart';
+import 'package:hermez_sdk/tokens.dart';
+import 'package:hermez_sdk/utils/contract_parser.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';

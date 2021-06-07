@@ -1,4 +1,4 @@
-import 'package:hermez_plugin/model/token.dart';
+import 'package:hermez_sdk/model/token.dart';
 
 class PoolTransaction {
   final String amount;

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:hermez_plugin/http.dart' show extractJSON, get, post;
-import 'package:hermez_plugin/model/coordinator.dart';
-import 'package:hermez_plugin/model/coordinators_response.dart';
+import 'package:hermez_sdk/http.dart' show extractJSON, get, post;
+import 'package:hermez_sdk/model/coordinator.dart';
+import 'package:hermez_sdk/model/coordinators_response.dart';
 import 'package:http/http.dart' as http;
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;

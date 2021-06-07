@@ -10,9 +10,19 @@ To use this plugin, add `hermez_sdk` as a [dependency](https://flutter.io/using-
 
 ```yaml
 dependencies:
-  hermez_sdk:
+  hermez_sdk: ^x.y.z
 ```
 This will get you the latest version.
+
+If you want to test a specific branch of the repository, pull `hermez_sdk` like this
+
+```yaml
+dependencies:
+  hermez_sdk:
+      git:
+        url: ssh://git@github.com/hermeznetwork/hermez-mobile-library.git
+        ref: branchPathName
+```
 
 ## Setup
 
@@ -57,6 +67,51 @@ HermezSDK.init(
 ```
 
 ### Supported Tokens
+
+Before being able to operate on the Hermez Network, we must ensure that the token we want to operate with is listed. For that we make a call to the Hermez Coordinator API that will list all available tokens. All tokens in Hermez Network must be ERC20.
+
+We can see there are 2 tokens registered. ETH will always be configured at index 0. The second token is HEZ. For the rest of the examples we will work with ETH. In the future, more tokens will be included in Hermez.
+
+```dart
+import 'package:hermez_sdk/api.dart' as coordinatorApi;
+
+...
+
+Future<TokensResponse> getHermezSupportedTokens() async {
+  TokensResponse tokensResponse = await coordinatorApi.getTokens();
+  return tokensResponse;
+}
+```
+
+```json
+{
+  tokens: [
+    {
+      itemId: 1,
+      id: 0,
+      ethereumBlockNum: 0,
+      ethereumAddress: '0x0000000000000000000000000000000000000000',
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+      USD: 1787,
+      fiatUpdate: '2021-02-28T18:55:17.372008Z'
+    },
+    {
+      itemId: 2,
+      id: 1,
+      ethereumBlockNum: 8153596,
+      ethereumAddress: '0x2521bc90b4f5fb9a8d61278197e5ff5cdbc4fbf2',
+      name: 'Hermez Network Token',
+      symbol: 'HEZ',
+      decimals: 18,
+      USD: 5.365,
+      fiatUpdate: '2021-02-28T18:55:17.386805Z'
+    }
+  ],
+  pendingItems: 0
+}
+```
 
 ### Create Wallet
 

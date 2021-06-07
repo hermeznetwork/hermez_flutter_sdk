@@ -1,4 +1,4 @@
-import 'package:hermez_plugin/model/token.dart';
+import 'package:hermez_sdk/model/token.dart';
 
 import 'l1info.dart';
 import 'l2info.dart';

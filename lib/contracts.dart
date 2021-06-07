@@ -1,4 +1,4 @@
-import 'package:hermez_plugin/hermez_sdk.dart';
+import 'package:hermez_sdk/hermez_sdk.dart';
 import 'package:web3dart/web3dart.dart';
 
 Map<String, dynamic> contractsCache = new Map<String, dynamic>();

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:hermez_plugin/api.dart';
-import 'package:hermez_plugin/model/pool_transaction.dart';
-import 'package:hermez_plugin/model/transaction.dart';
+import 'package:hermez_sdk/api.dart';
+import 'package:hermez_sdk/model/pool_transaction.dart';
+import 'package:hermez_sdk/model/transaction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart' show getPoolTransaction;

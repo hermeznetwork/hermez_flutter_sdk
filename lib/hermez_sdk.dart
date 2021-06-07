@@ -1,4 +1,5 @@
-import 'package:hermez_plugin/environment.dart';
+import 'package:hermez_sdk/environment.dart';
+import 'package:hermez_sdk/model/token.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
@@ -40,4 +41,6 @@ class HermezSDK {
   static EnvParams get currentEnvironment {
     return _environment;
   }
+
+  static List<Token> get supportedTokens {}
 }

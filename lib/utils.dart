@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
+import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 
 /*final hash = eddsaBabyJub
     .hashPoseidon(Uint8ArrayUtils.toPointer(Uint8List.fromList([6, 8, 57])));*/

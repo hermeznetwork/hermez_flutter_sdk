@@ -1,5 +1,5 @@
-name: hermez_plugin
-description: Flutter Plugin for Hermez SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
+name: hermez_sdk
+description: Flutter Plugin for Hermez Mobile SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
 version: 1.0.0+1
 author: Hermez team
 homepage: https://hermez.io
@@ -52,7 +52,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.hermez.hermez_plugin
+        package: io.hermez.hermez_sdk
         pluginClass: HermezPlugin
       ios:
         pluginClass: HermezPlugin
