@@ -118,7 +118,8 @@ Future<TokensResponse> getHermezSupportedTokens() async {
 
 We can create a new Hermez wallet by providing the Ethereum private key of an Ethereum account. This wallet will store the Ethereum and Baby JubJub keys for the Hermez account. The Ethereum address is used to authorize L1 transactions, and the Baby JubJub key is used to authorize L2 transactions. We will create two wallets.
 
-[!NOTE] You will need to supply two private keys to test and initialize both accounts. The keys provided here are invalid and are shown as an example.
+> [!NOTE]
+> You will need to supply two private keys to test and initialize both accounts. The keys provided here are invalid and are shown as an example.
 
 ```dart
 import 'package:hermez_sdk/hermez_wallet.dart';
@@ -170,6 +171,8 @@ void moveTokensFromEthereumToHermez() async {
 ```
 
 ### Token Balance
+
+A token balance can be obtained by querying the API and passing the hermezEthereumAddress of the Hermez account.
 
 ### Move tokens from Hermez to Ethereum Network
 
