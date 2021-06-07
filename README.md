@@ -174,6 +174,125 @@ void moveTokensFromEthereumToHermez() async {
 
 A token balance can be obtained by querying the API and passing the hermezEthereumAddress of the Hermez account.
 
+```dart
+void getTokenBalance() async {
+
+    // load  accounts and ethereum token
+    
+    ...
+
+    // get sender account information
+    final infoAccountSender = (await coordinatorApi
+            .getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+        .accounts[0];
+
+    // get receiver account information
+    final infoAccountReceiver = (await coordinatorApi
+            .getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
+        .accounts[0];
+}
+```
+
+```json
+[
+  {
+    "accountIndex": "hez:ETH:4253",
+    "balance": "1099600000000000000",
+    "bjj": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+    "hezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+    "itemId": 4342,
+    "nonce": 1,
+    "token": {
+      "USD": 1789,
+      "decimals": 18,
+      "ethereumAddress": "0x0000000000000000000000000000000000000000",
+      "ethereumBlockNum": 0,
+      "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+      "id": 0,
+      "itemId": 1,
+      "name": "Ether",
+      "symbol": "ETH"
+    }
+  },
+  {
+    "accountIndex": "hez:ETH:4254",
+    "balance": "1097100000000000000",
+    "bjj": "hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U",
+    "hezEthereumAddress": "hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4",
+    "itemId": 4343,
+    "nonce": 6,
+    "token": {
+      "USD": 1789,
+      "decimals": 18,
+      "ethereumAddress": "0x0000000000000000000000000000000000000000",
+      "ethereumBlockNum": 0,
+      "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+      "id": 0,
+      "itemId": 1,
+      "name": "Ether",
+      "symbol": "ETH"
+    }
+  }
+]
+```
+
+We can see that the field accountIndex is formed by the token symbol it holds and an index. A Hermez account can only hold one type of token. Account indexes start at 256. Indexes 0-255 are reserved for internal use. Note that the balances do not match with the ammount deposited of 1 ETH because accounts already existed in Hermez Network before the deposit, so we performed a deposit on top instead.
+
+Alternatively, an account query can be filtered using the assigned accountIndex
+
+```dart
+ 
+    ...
+
+    final account1ByIdx = coordinatorApi.getAccount(infoAccountSender.accountIndex);
+
+    final account2ByIdx = coordinatorApi.getAccount(infoAccountReceiver.accountIndex);
+
+```
+
+```json
+[
+  {
+    "accountIndex": "hez:ETH:4253",
+    "balance": "1099600000000000000",
+    "bjj": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+    "hezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+    "itemId": 4342,
+    "nonce": 1,
+    "token": {
+      "USD": 1789,
+      "decimals": 18,
+      "ethereumAddress": "0x0000000000000000000000000000000000000000",
+      "ethereumBlockNum": 0,
+      "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+      "id": 0,
+      "itemId": 1,
+      "name": "Ether",
+      "symbol": "ETH"
+    }
+  },
+  {
+    "accountIndex": "hez:ETH:4254",
+    "balance": "1097100000000000000",
+    "bjj": "hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U",
+    "hezEthereumAddress": "hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4",
+    "itemId": 4343,
+    "nonce": 6,
+    "token": {
+      "USD": 1789,
+      "decimals": 18,
+      "ethereumAddress": "0x0000000000000000000000000000000000000000",
+      "ethereumBlockNum": 0,
+      "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+      "id": 0,
+      "itemId": 1,
+      "name": "Ether",
+      "symbol": "ETH"
+    }
+  }
+]
+```
+
 ### Move tokens from Hermez to Ethereum Network
 
 #### Exit
