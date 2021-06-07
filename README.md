@@ -74,6 +74,7 @@ We can see there are 2 tokens registered. ETH will always be configured at index
 
 ```dart
 import 'package:hermez_sdk/api.dart' as coordinatorApi;
+import 'package:hermez_sdk/model/tokens_response.dart';
 
 ...
 
@@ -140,6 +141,33 @@ void createHermezWallets() async {
 ```
 
 ### Move tokens from Ethereum to Hermez Network
+
+Creating a Hermez account and depositing tokens is done simultaneously as an L1 transaction. In this example we are going to deposit 1 ETH tokens into the newly created Hermez accounts.
+
+```dart
+import 'package:hermez_sdk/tx.dart' as tx;
+import 'package:hermez_sdk/utils.dart';
+import 'package:hermez_sdk/hermez_compressed_amount.dart';
+
+...
+
+void moveTokensFromEthereumToHermez() async {
+ 
+    // load  account and ethereum token
+
+    ...
+
+    // set amount to transfer
+    final amount = 1.0;
+    final amountDeposit = getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedDepositAmount =
+        HermezCompressedAmount.compressAmount(amountDeposit.toDouble());
+
+    // perform deposit account 1
+    String txHash = await tx.deposit(compressedDepositAmount, hermezEthereumAddress, tokenERC20,
+        hermezWallet.publicKeyCompressedHex, EXAMPLES_PRIVATE_KEY1);
+}
+```
 
 ### Token Balance
 
