@@ -85,31 +85,31 @@ Future<TokensResponse> getHermezSupportedTokens() async {
 
 ```json
 {
-  tokens: [
+  "tokens": [
     {
-      itemId: 1,
-      id: 0,
-      ethereumBlockNum: 0,
-      ethereumAddress: '0x0000000000000000000000000000000000000000',
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-      USD: 1787,
-      fiatUpdate: '2021-02-28T18:55:17.372008Z'
+      "itemId": 1,
+      "id": 0,
+      "ethereumBlockNum": 0,
+      "ethereumAddress": "0x0000000000000000000000000000000000000000",
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18,
+      "USD": 1787,
+      "fiatUpdate": "2021-02-28T18:55:17.372008Z"
     },
     {
-      itemId: 2,
-      id: 1,
-      ethereumBlockNum: 8153596,
-      ethereumAddress: '0x2521bc90b4f5fb9a8d61278197e5ff5cdbc4fbf2',
-      name: 'Hermez Network Token',
-      symbol: 'HEZ',
-      decimals: 18,
-      USD: 5.365,
-      fiatUpdate: '2021-02-28T18:55:17.386805Z'
+      "itemId": 2,
+      "id": 1,
+      "ethereumBlockNum": 8153596,
+      "ethereumAddress": "0x2521bc90b4f5fb9a8d61278197e5ff5cdbc4fbf2",
+      "name": "Hermez Network Token",
+      "symbol": "HEZ",
+      "decimals": 18,
+      "USD": 5.365,
+      "fiatUpdate": "2021-02-28T18:55:17.386805Z"
     }
   ],
-  pendingItems: 0
+  "pendingItems": 0
 }
 ```
 
