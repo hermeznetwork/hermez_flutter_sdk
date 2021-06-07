@@ -1,8 +1,8 @@
 name: hermez_plugin
-description: Hermez library plugin.
-version: 0.1.0+1
+description: Flutter Plugin for Hermez SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
+version: 1.0.0+1
 author: Hermez team
-homepage: hermez.io
+homepage: https://hermez.io
 
 environment:
   sdk: ">=2.7.0 <3.0.0"

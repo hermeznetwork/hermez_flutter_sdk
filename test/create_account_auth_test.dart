@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/tx.dart';
 import 'package:hermez_plugin/utils.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
@@ -58,9 +57,8 @@ void main() {
     /*final signature = await hermezWallet2.signCreateAccountAuthorization(
         getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);*/
     final response = await postCreateAccountAuthorization(
-        hermezWallet2.hermezEthereumAddress,
-        hermezWallet2.publicKeyBase64,"");
-        //signature);
+        hermezWallet2.hermezEthereumAddress, hermezWallet2.publicKeyBase64, "");
+    //signature);
     print('create account authorization response:${response.statusCode}');
 
     // get sender account information

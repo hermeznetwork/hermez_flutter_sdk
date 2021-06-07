@@ -7,6 +7,7 @@ import 'package:web3dart/web3dart.dart';
 
 import 'constants.dart';
 import 'environment.dart';
+import 'hermez_sdk.dart';
 
 ContractFunction _approve(DeployedContract contract) =>
     contract.function('approve');
@@ -24,12 +25,8 @@ ContractFunction _transfer(DeployedContract contract) =>
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 ///
 /// @returns {Promise} transaction
-Future<BigInt> approveGasLimit(
-    BigInt amount,
-    String accountAddress,
-    String tokenContractAddress,
-    String tokenContractName,
-    Web3Client web3client) async {
+Future<BigInt> approveGasLimit(BigInt amount, String accountAddress,
+    String tokenContractAddress, String tokenContractName) async {
   BigInt gasLimit = BigInt.zero;
   EthereumAddress from = EthereumAddress.fromHex(accountAddress);
   EthereumAddress to = EthereumAddress.fromHex(tokenContractAddress);
@@ -42,7 +39,7 @@ Future<BigInt> approveGasLimit(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
   try {
-    final allowanceCall = await web3client.call(
+    final allowanceCall = await HermezSDK.currentWeb3Client.call(
         contract: contract,
         function: _allowance(contract),
         params: [from, hermezAddress]);
@@ -58,8 +55,8 @@ Future<BigInt> approveGasLimit(
         ],
       );
       data = transaction.data;
-      gasLimit = await web3client.estimateGas(
-          sender: from, to: to, value: value, data: data);
+      gasLimit = await HermezSDK.currentWeb3Client
+          .estimateGas(sender: from, to: to, value: value, data: data);
       gasLimit += BigInt.from(GAS_LIMIT_APPROVE_OFFSET);
       return gasLimit;
     } else {
@@ -88,7 +85,6 @@ Future<bool> approve(
     String accountAddress,
     String tokenContractAddress,
     String tokenContractName,
-    Web3Client web3client,
     Credentials credentials,
     {BigInt gasLimit,
     int gasPrice}) async {
@@ -97,7 +93,7 @@ Future<bool> approve(
     gasLimit = BigInt.from(GAS_LIMIT_HIGH);
   }
   if (gasPrice == null) {
-    ethGasPrice = await web3client.getGasPrice();
+    ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
   } else {
     ethGasPrice = EtherAmount.fromUnitAndValue(EtherUnit.wei, gasPrice);
   }
@@ -108,7 +104,7 @@ Future<bool> approve(
   EthereumAddress from = await credentials.extractAddress();
 
   try {
-    final allowanceCall = await web3client
+    final allowanceCall = await HermezSDK.currentWeb3Client
         .call(contract: contract, function: _allowance(contract), params: [
       EthereumAddress.fromHex(accountAddress),
       EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
@@ -121,8 +117,8 @@ Future<bool> approve(
         amount
       ];
 
-      int nonce = await web3client.getTransactionCount(from,
-          atBlock: BlockNum.pending());
+      int nonce = await HermezSDK.currentWeb3Client
+          .getTransactionCount(from, atBlock: BlockNum.pending());
 
       Transaction transaction = Transaction.callContract(
         contract: contract,
@@ -133,7 +129,8 @@ Future<bool> approve(
         nonce: nonce,
       );
 
-      String txHash = await web3client.sendTransaction(credentials, transaction,
+      String txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+          credentials, transaction,
           chainId: getCurrentEnvironment().chainId);
 
       print(txHash);
@@ -162,8 +159,7 @@ Future<BigInt> transferGasLimit(
     String fromAddress,
     String toAddress,
     String tokenContractAddress,
-    String tokenContractName,
-    Web3Client web3client) async {
+    String tokenContractName) async {
   BigInt gasLimit = BigInt.zero;
   if (fromAddress == null ||
       fromAddress.isEmpty ||
@@ -228,7 +224,6 @@ Future<bool> transfer(
     String toAddress,
     String tokenContractAddress,
     String tokenContractName,
-    Web3Client web3client,
     Credentials credentials,
     {gasLimit = GAS_LIMIT_HIGH,
     gasPrice = GAS_MULTIPLIER}
@@ -261,7 +256,8 @@ Future<bool> transfer(
       parameters: [to, amount],
       from: from,
     );
-    String txHash = await web3client.sendTransaction(credentials, transaction,
+    String txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+        credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
     print(txHash);
     return txHash != null;

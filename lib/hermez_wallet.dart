@@ -5,7 +5,6 @@ import 'package:hermez_plugin/utils/eip712.dart';
 import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
 
 import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;

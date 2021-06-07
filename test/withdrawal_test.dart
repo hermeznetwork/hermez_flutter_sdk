@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_plugin/api.dart';
 import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/providers.dart';
 import 'package:hermez_plugin/tx.dart';
 
 import 'setup_util.dart';
@@ -28,7 +27,8 @@ void main() {
         (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
 
     final exitInfoN =
-        (await getExits(infoAccount.hezEthereumAddress, true)).exits;
+        (await getExits(infoAccount.hezEthereumAddress, true, tokenERC20.id))
+            .exits;
     if (exitInfoN.length > 0) {
       final exitInfo = exitInfoN[exitInfoN.length - 1];
       // set to perform instant withdraw
@@ -36,14 +36,13 @@ void main() {
 
       // perform withdraw
       withdraw(
-          BigInt.parse(exitInfo.balance),
+          double.parse(exitInfo.balance),
           exitInfo.accountIndex,
           exitInfo.token,
-          null,
-          /*hermezWallet.publicKeyCompressedHex,*/
+          hermezWallet.publicKeyCompressedHex,
           BigInt.from(exitInfo.batchNum),
           exitInfo.merkleProof.siblings,
-          getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL),
+          privKey1,
           isInstant: isInstant);
     }
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');

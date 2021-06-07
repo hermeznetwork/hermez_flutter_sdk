@@ -5,12 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="63d56d05-f710-4261-8dee-6b3e041ab658" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/hermez_plugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hermez_plugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/hermez_sdk.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_plugin/HermezPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/io/hermez/hermez_plugin/HermezPlugin.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/hermez_plugin.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/hermez_plugin.podspec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/contracts.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/contracts.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/environment.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/hermez_wallet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hermez_wallet.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tokens.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tokens.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/tx.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tx.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/create_account_auth_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/create_account_auth_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/force_exit_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/force_exit_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/hermez_plugin_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/hermez_plugin_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/libbabyjubjub_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/libbabyjubjub_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/setup_util.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/setup_util.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/withdrawal_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/withdrawal_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,12 +44,17 @@
     <property name="android.sdk.path" value="$USER_HOME$/Library/Android/sdk" />
     <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="io.flutter.reload.alreadyRun" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib" />
     <property name="project.structure.last.edited" value="SDK Location" />
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="settings.editor.selected.configurable" value="dart.settings" />
     <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/lib" />
+    </key>
   </component>
   <component name="RunManager" selected="Flutter.example/lib/main.dart">
     <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
@@ -75,38 +92,38 @@
     </state>
     <state x="431" y="294" key="#com.intellij.fileTypes.FileTypeChooser/0.25.1440.832@0.25.1440.832" timestamp="1618473647275" />
     <state x="2206" y="366" key="#com.intellij.fileTypes.FileTypeChooser/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110178553" />
-    <state x="2273" y="311" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1617110152727">
+    <state x="2273" y="311" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1623061047816">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
-    <state x="2273" y="311" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1617110152727" />
+    <state x="2273" y="311" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1623061047816" />
     <state x="2037" y="384" width="1135" height="571" key="FileDocumentManager.FileCacheConflict" timestamp="1621430820287">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="2037" y="384" width="1135" height="571" key="FileDocumentManager.FileCacheConflict/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621430820287" />
-    <state width="1364" height="388" key="GridCell.Tab.0.bottom" timestamp="1621872208402">
-      <screen x="0" y="25" width="1440" height="832" />
+    <state width="1539" height="160" key="GridCell.Tab.0.bottom" timestamp="1622820938678">
+      <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.bottom/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.bottom/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
-    <state width="1364" height="213" key="GridCell.Tab.0.bottom/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621440486514" />
-    <state width="1364" height="388" key="GridCell.Tab.0.center" timestamp="1621872208402">
-      <screen x="0" y="25" width="1440" height="832" />
+    <state width="1539" height="160" key="GridCell.Tab.0.bottom/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938678" />
+    <state width="1539" height="160" key="GridCell.Tab.0.center" timestamp="1622820938677">
+      <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.center/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.center/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146170" />
-    <state width="1364" height="213" key="GridCell.Tab.0.center/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621440486513" />
-    <state width="1364" height="388" key="GridCell.Tab.0.left" timestamp="1621872208401">
-      <screen x="0" y="25" width="1440" height="832" />
+    <state width="1539" height="160" key="GridCell.Tab.0.center/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938677" />
+    <state width="1539" height="160" key="GridCell.Tab.0.left" timestamp="1622820938676">
+      <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.left/0.25.1440.832@0.25.1440.832" timestamp="1621872208401" />
     <state width="1696" height="265" key="GridCell.Tab.0.left/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146169" />
-    <state width="1364" height="213" key="GridCell.Tab.0.left/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621440486512" />
-    <state width="1364" height="388" key="GridCell.Tab.0.right" timestamp="1621872208402">
-      <screen x="0" y="25" width="1440" height="832" />
+    <state width="1539" height="160" key="GridCell.Tab.0.left/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938676" />
+    <state width="1539" height="160" key="GridCell.Tab.0.right" timestamp="1622820938677">
+      <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state width="1364" height="388" key="GridCell.Tab.0.right/0.25.1440.832@0.25.1440.832" timestamp="1621872208402" />
     <state width="1696" height="265" key="GridCell.Tab.0.right/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1617957146171" />
-    <state width="1364" height="213" key="GridCell.Tab.0.right/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1621440486513" />
+    <state width="1539" height="160" key="GridCell.Tab.0.right/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622820938677" />
     <state x="2036" y="196" key="SettingsEditor" timestamp="1622208641055">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
@@ -115,13 +132,13 @@
       <screen x="0" y="25" width="1440" height="832" />
     </state>
     <state x="100" y="125" width="1206" height="632" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.25.1440.832@0.25.1440.832" timestamp="1621870512544" />
-    <state x="2227" y="310" width="824" height="511" key="find.popup" timestamp="1622209488336">
+    <state x="2227" y="310" width="824" height="511" key="find.popup" timestamp="1622821030361">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
     <state x="443" y="250" width="659" height="490" key="find.popup/0.25.1440.832@0.25.1440.832" timestamp="1621840680719" />
     <state x="443" y="261" width="585" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@0.25.1440.875" timestamp="1617964630415" />
     <state x="2227" y="298" width="615" height="490" key="find.popup/1440.25.2560.1012/0.25.1440.875@1440.25.2560.1012" timestamp="1620726245502" />
-    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622209488336" />
+    <state x="2227" y="310" width="824" height="511" key="find.popup/1440.25.2560.1055/0.25.1440.832@1440.25.2560.1055" timestamp="1622821030361" />
     <state x="2345" y="167" key="new project wizard" timestamp="1622209737195">
       <screen x="1440" y="25" width="2560" height="1055" />
     </state>
@@ -141,33 +158,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/lib/tokens.dart</url>
-          <line>68</line>
+          <line>65</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>304</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>543</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>547</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>559</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/tx.dart</url>
-          <line>344</line>
-          <option name="timeStamp" value="12" />
+          <url>file://$PROJECT_DIR$/lib/hermez_sdk.dart</url>
+          <line>34</line>
+          <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

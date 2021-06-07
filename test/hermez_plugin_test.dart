@@ -38,7 +38,7 @@ void main() {
     expect(nativeDecompressSignature(param), '');
   });*/
 
-  test('nativeGreeting', () async {
+  /*test('nativeGreeting', () async {
     expect(nativeGreeting("John Smith"), 'Hello John Smith');
-  });
+  });*/
 }
