@@ -1,82 +1,143 @@
-class TxPool {
-  /// If there's no instance in LocalStorage for the Transaction Pool, create it
-  /// This needs to be run when the Hermez client loads
-  void initializeTransactionPool() {
-    /*if (!storage.getItem(TRANSACTION_POOL_KEY)) {
-      const emptyTransactionPool = {}
-      storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(emptyTransactionPool))
-    }*/
+import 'dart:convert';
+
+import 'package:hermez_sdk/api.dart';
+import 'package:hermez_sdk/model/pool_transaction.dart';
+import 'package:hermez_sdk/model/transaction.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'api.dart' show getPoolTransaction;
+import 'constants.dart' show TRANSACTION_POOL_KEY;
+import 'environment.dart';
+import 'model/forged_transaction.dart';
+
+Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+/// Fetches the transaction details for each transaction in the pool for the specified account index and bjj
+///
+/// @param {String} accountIndex - The account index
+/// @param {String} bjj - The account's BabyJubJub
+///
+/// @returns {List<Transaction>}
+Future<List<PoolTransaction>> getPoolTransactions(
+    String accountIndex, String bJJ) async {
+  final chainId = getCurrentEnvironment().chainId.toString();
+
+  final SharedPreferences prefs = await _prefs;
+  if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
+    final emptyTransactionPool = {};
+    prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
+  }
+  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
+
+  final chainIdTransactionPool =
+      transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};
+  final accountTransactionPool = chainIdTransactionPool.containsKey(bJJ)
+      ? chainIdTransactionPool[bJJ]
+      : [];
+
+  // filter txs from accountIndex
+  accountTransactionPool.removeWhere((transaction) =>
+      accountIndex != null &&
+      Transaction.fromJson(json.decode(transaction)).fromAccountIndex !=
+          accountIndex);
+  List<PoolTransaction> successfulTransactions = List();
+  for (String transactionString in accountTransactionPool) {
+    final transaction = Transaction.fromJson(json.decode(transactionString));
+    ForgedTransaction historyTransaction;
+    // TODO: History tx is needed???
+    try {
+      historyTransaction = await getHistoryTransaction(transaction.id);
+    } catch (e) {
+      print(e.toString());
+    }
+    try {
+      final poolTransaction = await getPoolTransaction(transaction.id);
+      if (historyTransaction != null) {
+        // TODO: pool txs are unforged, is it needed??
+        if (poolTransaction.info != null || poolTransaction.state == 'fged') {
+          removePoolTransaction(bJJ, poolTransaction.id);
+        } else {
+          successfulTransactions.add(poolTransaction);
+        }
+      } else {
+        successfulTransactions.add(poolTransaction);
+      }
+    } catch (e) {
+      // on ItemNotFoundException {
+      if (historyTransaction != null) {
+        removePoolTransaction(bJJ, transaction.id);
+      }
+    }
   }
 
-  /// Fetches the transaction details for each transaction in the pool for the specified account index and bjj
-  ///
-  /// @param {String} accountIndex - The account index
-  /// @param {String} bjj - The account's BabyJubJub
-  ///
-  /// @returns {Array}
-  List<dynamic> getPoolTransactions(accountIndex, bJJ) {
-    /*const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-    const accountTransactionPool = transactionPool[bJJ]
+  return successfulTransactions;
+}
 
-    if (typeof accountTransactionPool === 'undefined') {
-      return Promise.resolve([])
-    }
+/// Adds a transaction to the transaction pool
+///
+/// @param {string} transaction - The transaction to add to the pool
+/// @param {string} bJJ - The account with which the transaction was made
+/// @returns {void}
+void addPoolTransaction(String transaction, String bJJ) async {
+  final chainId = getCurrentEnvironment().chainId.toString();
 
-    const accountTransactionsPromises = accountTransactionPool
-        .filter(transaction => transaction.fromAccountIndex === accountIndex)
-        .map(({ id: transactionId }) => {
-        return getPoolTransaction(transactionId)
-        .then((transaction) => {
-        return transaction
-    })
-        .catch(err => {
-    if (err.response.status === HttpStatusCode.NOT_FOUND) {
-    removePoolTransaction(bJJ, transactionId)
-    }
-    })
-    }
-    )
-
-    return Promise.all(accountTransactionsPromises)
-        .then((transactions) => {
-    const successfulTransactions = transactions.filter(transaction => typeof transaction !== 'undefined')
-    return successfulTransactions
-    })*/
+  final SharedPreferences prefs = await _prefs;
+  if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
+    final emptyTransactionPool = {};
+    prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
   }
+  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
 
-  /// Adds a transaction to the transaction pool
-  ///
-  /// @param {string} transaction - The transaction to add to the pool
-  /// @param {string} bJJ - The account with which the transaction was made
-  /// @returns {void}
-  void addPoolTransaction(String transaction, String bJJ) {
-    /*const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-    const accountTransactionPool = transactionPool[bJJ]
-    const newAccountTransactionPool = accountTransactionPool === undefined
-    ? [transaction]
-        : [...accountTransactionPool, transaction]
-    const newTransactionPool = {
-    ...transactionPool,
-    [bJJ]: newAccountTransactionPool
-    }
+  final chainIdTransactionPool =
+      transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};
+  final accountTransactionPool = chainIdTransactionPool.containsKey(bJJ)
+      ? chainIdTransactionPool[bJJ]
+      : [];
 
-    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))*/
+  final newAccountTransactionPool = List.from(accountTransactionPool);
+  newAccountTransactionPool.add(transaction);
+
+  final newChainIdTransactionPool = {}..addAll(chainIdTransactionPool);
+  newChainIdTransactionPool.update(bJJ, (value) => newAccountTransactionPool,
+      ifAbsent: () => newAccountTransactionPool);
+
+  final newTransactionPool = {}..addAll(transactionPool);
+  newTransactionPool.update(chainId, (value) => newChainIdTransactionPool,
+      ifAbsent: () => newChainIdTransactionPool);
+
+  prefs.setString(TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
+}
+
+/// Removes a transaction from the transaction pool
+/// @param {string} bJJ - The account with which the transaction was originally made
+/// @param {string} transactionId - The transaction identifier to remove from the pool
+/// @returns {void}
+void removePoolTransaction(String bJJ, String transactionId) async {
+  final chainId = getCurrentEnvironment().chainId.toString();
+
+  final SharedPreferences prefs = await _prefs;
+  if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
+    final emptyTransactionPool = {};
+    prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
   }
+  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
 
-  /// Removes a transaction from the transaction pool
-  /// @param {string} bJJ - The account with which the transaction was originally made
-  /// @param {string} transactionId - The transaction identifier to remove from the pool
-  /// @returns {void}
-  void removePoolTransaction(String bJJ, String transactionId) {
-    /*const transactionPool = JSON.parse(storage.getItem(TRANSACTION_POOL_KEY))
-    const accountTransactionPool = transactionPool[bJJ]
-    const newAccountTransactionPool = accountTransactionPool
-        .filter((transaction) => transaction.id !== transactionId)
-    const newTransactionPool = {
-      ...transactionPool,
-      [bJJ]: newAccountTransactionPool
-    }
+  final chainIdTransactionPool =
+      transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};
+  final accountTransactionPool = chainIdTransactionPool.containsKey(bJJ)
+      ? chainIdTransactionPool[bJJ]
+      : [];
 
-    storage.setItem(TRANSACTION_POOL_KEY, JSON.stringify(newTransactionPool))*/
-  }
+  accountTransactionPool.removeWhere((transaction) =>
+      Transaction.fromJson(json.decode(transaction)).id == transactionId);
+
+  final newChainIdTransactionPool = {}..addAll(chainIdTransactionPool);
+  newChainIdTransactionPool.update(bJJ, (value) => accountTransactionPool,
+      ifAbsent: () => accountTransactionPool);
+
+  final newTransactionPool = {}..addAll(transactionPool);
+  newTransactionPool.update(chainId, (value) => newChainIdTransactionPool,
+      ifAbsent: () => newChainIdTransactionPool);
+
+  prefs.setString(TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
 }

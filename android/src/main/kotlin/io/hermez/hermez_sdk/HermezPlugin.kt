@@ -1,13 +1,11 @@
-package io.hermez.hermez_plugin
+package io.hermez.hermez_sdk
 
 import androidx.annotation.NonNull
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** HermezPlugin */
 class HermezPlugin: FlutterPlugin, MethodCallHandler {
@@ -18,7 +16,7 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "hermez_plugin")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "hermez_sdk")
     channel.setMethodCallHandler(this)
   }
 

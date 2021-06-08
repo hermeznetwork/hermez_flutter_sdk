@@ -1,22 +1,32 @@
-name: hermez_plugin
-description: Hermez library plugin.
-version: 0.0.1
-author:
-homepage:
+name: hermez_sdk
+description: Flutter Plugin for Hermez Mobile SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
+version: 1.0.0+1
+author: Hermez team
+homepage: https://hermez.io
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
   flutter: ">=1.20.0 <2.0.0"
 
+analyzer:
+  enable-experiment:
+    - non-nullable
+
 dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.12.0+1
-  web3dart: ^1.2.3
-  bip39: ^1.0.3
-  tweetnacl: ^0.3.1
-  hex: ^0.1.2
+  http: ^0.12.0 # Update to 0.13.0
+  web3dart: ^1.2.3 # Update to 2.0.0 - problem with bitcoin_flutter
+  web_socket_channel: ^1.1.0
+  provider: ^5.0.0
+  bip39: ^1.0.3 # update to 1.0.6
+  # tweetnacl: ^0.3.2
+  hex: ^0.1.2 # Update to 0.2.0 - current version needed for bitcoin_flutter
+  ffi: ^1.0.0 # Update to ^1.0.0  ^0.1.3
+  shared_preferences: ^2.0.5 # ^0.5.12+4 # Update to ^2.0.5
+  # path_provider_windows: ^0.1.0
+
   # sha3: ^0.1.1
   # flutter_liquidcore: ^1.1.1
 
@@ -24,6 +34,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  #ffigen:
+    # output: 'generated_bindings.dart'
+      # headers:
+      # entry-points:
+    # - 'example.h'
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -37,15 +52,21 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.hermez.hermez_plugin
+        package: io.hermez.hermez_sdk
         pluginClass: HermezPlugin
       ios:
         pluginClass: HermezPlugin
+      # macos:
+        # pluginClass: HermezPlugin
+      # web:
+        # pluginClass: HermezPlugin
+        # fileName: hello_web.dart
 
   # To add assets to your plugin package, add an assets section, like this:
       assets:
-        - abis/ERC20ABI.json
-        - abis/HermezABI.json
+        - ERC20ABI.json
+        - HermezABI.json
+        - WithdrawalDelayerABI.json
   #
   # For details regarding assets in packages, see
   # https://flutter.dev/assets-and-images/#from-packages

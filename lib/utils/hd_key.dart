@@ -5,9 +5,10 @@ import 'package:hex/hex.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/sha512.dart';
 import 'package:pointycastle/macs/hmac.dart';
-import 'package:tweetnacl/tweetnacl.dart' as ED25519;
 
-import '../constants.dart' show MASTER_SECRET;
+// import 'package:tweetnacl/tweetnacl.dart' as ED25519;
+
+import '../constants.dart' show HERMEZ_ACCOUNT_ACCESS_MESSAGE;
 
 class KeyData {
   List<int> key;
@@ -18,7 +19,7 @@ class KeyData {
 const int HARDENED_OFFSET = 0x80000000;
 
 class _HDKey {
-  static final _curveBytes = utf8.encode(MASTER_SECRET);
+  static final _curveBytes = utf8.encode(HERMEZ_ACCOUNT_ACCESS_MESSAGE);
   static final _pathRegex = RegExp(r"^(m\/)?(\d+'?\/)*\d+'?$");
 
   const _HDKey();
@@ -45,7 +46,7 @@ class _HDKey {
     return this._getKeys(seedBytes, _HDKey._curveBytes);
   }
 
-  Uint8List getPublicKey(Uint8List privateKey, [bool withZeroByte = true]) {
+  /*Uint8List getPublicKey(Uint8List privateKey, [bool withZeroByte = true]) {
     final signature = ED25519.Signature.keyPair_fromSeed(privateKey);
     if (withZeroByte == true) {
       Uint8List dataBytes = Uint8List(33);
@@ -55,7 +56,7 @@ class _HDKey {
     } else {
       return signature.publicKey;
     }
-  }
+  }*/
 
   KeyData derivePath(String path, String seed) {
     if (!_HDKey._pathRegex.hasMatch(path))
