@@ -572,6 +572,249 @@ As we saw with the Exit transaction, every transaction includes a ´nonce´. Thi
 
 ### Transaction Status
 
+Transactions received by the Coordinator will be stored in its transaction pool while they haven't been processed. To check a transaction in the transaction pool we make a query to the Coordinator node.
+
+```dart
+final txTransferPool = await coordinatorApi.getPoolTransaction(transferResponse['id']);
+```
+
+```json
+{
+  "amount": "100000000000000",
+  "fee": 202,
+  "fromAccountIndex": "hez:ETH:4253",
+  "fromBJJ": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+  "fromHezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+  "id": "0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2",
+  "info": null,
+  "nonce": 3,
+  "requestAmount": null,
+  "requestFee": null,
+  "requestFromAccountIndex": null,
+  "requestNonce": null,
+  "requestToAccountIndex": null,
+  "requestToBJJ": null,
+  "requestToHezEthereumAddress": null,
+  "requestTokenId": null,
+  "signature": "c9e1a61ce2c3c728c6ec970ae646b444a7ab9d30aa6015eb10fb729078c1302978fe9fb0419b4d944d4f11d83582043a48546dff7dda22de7c1e1da004cd5401",
+  "state": "pend",
+  "timestamp": "2021-03-16T13:20:33.336469Z",
+  "toAccountIndex": "hez:ETH:4254",
+  "toBjj": "hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U",
+  "toHezEthereumAddress": "hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4",
+  "token": {
+    "USD": 1786,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  },
+  "type": "Transfer"
+}
+```
+
+We can also check directly with the Coordinator in the database of forged transactions.
+
+```dart
+final transferConf = await coordinatorApi.getHistoryTransaction(transferResponse['id']);
+```
+
+```json
+{
+  "L1Info": null,
+  "L1orL2": "L2",
+  "L2Info": { "fee": 202, "historicFeeUSD": 182.8352, "nonce": 3 },
+  "amount": "100000000000000",
+  "batchNum": 4724,
+  "fromAccountIndex": "hez:ETH:4253",
+  "fromBJJ": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+  "fromHezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+  "historicUSD": 0.17855,
+  "id": "0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2",
+  "itemId": 14590,
+  "position": 1,
+  "timestamp": "2021-03-16T13:24:48Z",
+  "toAccountIndex": "hez:ETH:4254",
+  "toBJJ": "hez:HESLP_6Kp_nn5ANmSGiOnhhYvF3wF5Davf7xGi6lwh3U",
+  "toHezEthereumAddress": "hez:0x12FfCe7D5d6d09564768d0FFC0774218458162d4",
+  "token": {
+    "USD": 1787.2,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  },
+  "type": "Transfer"
+}
+```
+
+At this point, the balances in both accounts will be updated with the result of the transfer
+
+```dart
+    // get sender account information
+    final infoAccountSender = (await coordinatorApi
+            .getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+        .accounts[0];
+
+    // get receiver account information
+    final infoAccountReceiver = (await coordinatorApi
+            .getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
+        .accounts[0];
+```
+
+```json
+[{
+  "accountIndex": "hez:ETH:4253",
+  "balance": "477700000000000000",
+  "bjj": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+  "hezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+  "itemId": 4342,
+  "nonce": 4,
+  "token": {
+    "USD": 1793,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  }
+},
+{
+  "accountIndex": "hez:ETH:256",
+  "balance": "1874280899837791518",
+  "bjj": "hez:YN2DmRh0QgDrxz3NLDqH947W5oNys7YWqkxsQmFVeI_m",
+  "hezEthereumAddress": "hez:0x9F255048EC1141831A28019e497F3f76e559356E",
+  "itemId": 1,
+  "nonce": 2,
+  "token": {
+    "USD": 1793,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  }
+}]
+```
+
 ### Create Account Authorization
 
+Imagine that Bob wants to send a transfer of Ether to Mary using Hermez, but Mary only has an Ethereum account but no Hermez account. To complete this transfer, Mary could open a Hermez account and proceed as the previous transfer example. Alternatively, Mary could authorize the Coordinator to create a Hermez account on her behalf so that she can receive Bob's transfer.
 
+First we create a wallet for Mary:
+
+```dart
+    // load third account
+    final wallet3 =
+        await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY3);
+    final HermezWallet hermezWallet3 = wallet3[0];
+    final String hermezEthereumAddress3 = wallet3[1];
+```
+
+The authorization for the creation of a Hermez account is done using the private key stored in the newly created Hermez wallet.
+
+NOTE: that the account is not created at this moment. The account will be created when Bob performs the transfer. Also, it is Bob that pays for the fees associated with the account creation.
+
+```dart
+    final signature = await hermezWallet3
+        .signCreateAccountAuthorization(EXAMPLES_PRIVATE_KEY3);
+    final res = await coordinatorApi.postCreateAccountAuthorization(
+        hermezWallet3.hermezEthereumAddress,
+        hermezWallet3.publicKeyBase64,
+        signature);
+```
+
+We can find out if the Coordinator has been authorized to create a Hermez account on behalf of a user by:
+
+```dart
+final authResponse = await coordinatorApi.getCreateAccountAuthorization(hermezWallet3.hermezEthereumAddress);
+```
+
+```json
+{
+  "hezEthereumAddress": "hez:0xd3B6DcfCA7Eb3207905Be27Ddfa69453625ffbf9",
+  "bjj": "hez:ct0ml6FjdUN6uGUHZ70qOq5-58cZ19SJDeldMH021oOk",
+  "signature": "0x22ffc6f8d569a92c48a4e784a11a9e57b840fac21eaa7fedc9dc040c4a45d502744a35eeb0ab173234c0f687b252bd0364647bff8db270ffcdf1830257de28e41c",
+  "timestamp": "2021-03-16T14:56:05.295946Z"
+}
+```
+
+Once we verify the receiving Ethereum account has authorized the creation of a Hermez account, we can proceed with the transfer from Bob's account to Mary's account. For this, we set the destination address to Mary's Ethereum address and set the fee using the createAccount value.
+
+```dart
+    // set amount to transfer
+    final amount = 0.0001;
+    final amountTransfer = getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedTransferAmount =
+    HermezCompressedAmount.compressAmount(amountTransfer.toDouble());
+
+    // fee computation
+    final state = await coordinatorApi.getState();
+    final fees = state.recommendedFee;
+    final usdTokenExchangeRate = tokenERC20.USD;
+    final fee = fees.createAccount / usdTokenExchangeRate;
+    
+    // generate L2 transaction
+    final l2TransferTx = {
+      "from": infoAccountSender.accountIndex,
+      "to": hermezWallet3.hermezEthereumAddress,
+      "amount": compressedTransferAmount,
+      "fee": fee
+    };
+
+    final transferResponse = await tx.generateAndSendL2Tx(
+        l2TransferTx, hermezWallet, infoAccountSender.token);
+```
+
+```json
+{
+  "status": 200,
+  "id": "0x025398af5b69f132d8c2c5b7b225df1436baf7d1774a6b017a233bf273b4675c8f",
+  "nonce": 0
+}
+```
+
+After the transfer has been forged, we can check Mary's account on Hermez
+
+```dart
+// get receiver account information
+    final infoAccountReceiver = (await coordinatorApi
+            .getAccounts(hermezWallet3.hermezEthereumAddress, [tokenERC20.id]))
+        .accounts[0];
+```
+
+```json
+{
+  "accountIndex": "hez:ETH:265",
+  "balance": "1000000000000000",
+  "bjj": "hez:ct0ml6FjdUN6uGUHZ70qOq5-58cZ19SJDeldMH021oOk",
+  "hezEthereumAddress": "hez:0xd3B6DcfCA7Eb3207905Be27Ddfa69453625ffbf9",
+  "itemId": 10,
+  "nonce": 0,
+  "token": {
+    "USD": 1795.94,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-03-16T14:56:57.460862Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  }
+}
+```

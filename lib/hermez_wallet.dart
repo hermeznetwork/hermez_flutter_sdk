@@ -108,11 +108,9 @@ class HermezWallet {
   }
 
   /// Generates the signature necessary for /create-account-authorization endpoint
-  /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-  /// @param {Object} signerData - Signer data used to build a Signer to create the walet
+  /// @param {String} privateKey - private key used to create the wallet
   /// @returns {String} The generated signature
-  dynamic signCreateAccountAuthorization(
-      String chainId, String privateKey) async {
+  Future<String> signCreateAccountAuthorization(String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
 
     final bJJ = this.publicKeyCompressedHex.startsWith('0x')
@@ -122,7 +120,7 @@ class HermezWallet {
     final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId': BigInt.parse(chainId),
+      'chainId': BigInt.from(getCurrentEnvironment().chainId),
       'verifyingContract':
           EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
     };

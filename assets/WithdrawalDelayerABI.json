@@ -73,12 +73,24 @@
       "inputs": [
         {
           "indexed": false,
+          "internalType": "uint64",
+          "name": "initialWithdrawalDelay",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
           "internalType": "address",
-          "name": "newHermezGovernanceDAOAddress",
+          "name": "initialHermezGovernanceAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "initialEmergencyCouncil",
           "type": "address"
         }
       ],
-      "name": "NewHermezGovernanceDAOAddress",
+      "name": "InitializeWithdrawalDelayerEvent",
       "type": "event"
     },
     {
@@ -87,11 +99,11 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "newHermezKeeperAddress",
+          "name": "newEmergencyCouncil",
           "type": "address"
         }
       ],
-      "name": "NewHermezKeeperAddress",
+      "name": "NewEmergencyCouncil",
       "type": "event"
     },
     {
@@ -100,11 +112,11 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "newWhiteHackGroupAddress",
+          "name": "newHermezGovernanceAddress",
           "type": "address"
         }
       ],
-      "name": "NewWhiteHackGroupAddress",
+      "name": "NewHermezGovernanceAddress",
       "type": "event"
     },
     {
@@ -180,6 +192,20 @@
         }
       ],
       "name": "changeWithdrawalDelay",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimEmergencyCouncil",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimGovernance",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -292,12 +318,25 @@
     },
     {
       "inputs": [],
+      "name": "getEmergencyCouncil",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getEmergencyModeStartingTime",
       "outputs": [
         {
-          "internalType": "uint128",
+          "internalType": "uint64",
           "name": "",
-          "type": "uint128"
+          "type": "uint64"
         }
       ],
       "stateMutability": "view",
@@ -305,33 +344,7 @@
     },
     {
       "inputs": [],
-      "name": "getHermezGovernanceDAOAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getHermezKeeperAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getWhiteHackGroupAddress",
+      "name": "getHermezGovernanceAddress",
       "outputs": [
         {
           "internalType": "address",
@@ -347,9 +360,9 @@
       "name": "getWithdrawalDelay",
       "outputs": [
         {
-          "internalType": "uint128",
+          "internalType": "uint64",
           "name": "",
-          "type": "uint128"
+          "type": "uint64"
         }
       ],
       "stateMutability": "view",
@@ -382,40 +395,53 @@
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "pendingEmergencyCouncil",
+      "outputs": [
         {
-          "internalType": "address",
-          "name": "newAddress",
+          "internalType": "address payable",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "setHermezGovernanceDAOAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "pendingGovernance",
+      "outputs": [
         {
           "internalType": "address",
-          "name": "newAddress",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "setHermezKeeperAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address payable",
-          "name": "newAddress",
+          "name": "newEmergencyCouncil",
           "type": "address"
         }
       ],
-      "name": "setWhiteHackGroupAddress",
+      "name": "transferEmergencyCouncil",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newGovernance",
+          "type": "address"
+        }
+      ],
+      "name": "transferGovernance",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -452,17 +478,12 @@
         },
         {
           "internalType": "address",
-          "name": "_initialHermezKeeperAddress",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_initialHermezGovernanceDAOAddress",
+          "name": "_initialHermezGovernanceAddress",
           "type": "address"
         },
         {
           "internalType": "address payable",
-          "name": "_initialWhiteHackGroupAddress",
+          "name": "_initialEmergencyCouncil",
           "type": "address"
         }
       ],
