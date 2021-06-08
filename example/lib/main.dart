@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:hermez_sdk/api.dart' as coordinatorApi;
 import 'package:hermez_sdk/hermez_compressed_amount.dart';
@@ -41,13 +43,13 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
     //getHermezSupportedTokens();
     //createHermezWallets();
-
     //moveTokensFromEthereumToHermez();
     //getTokenBalance();
     //moveTokensFromHermezToEthereumStep1Exit();
-    moveTokensFromHermezToEthereumStep1ForceExit();
-    moveTokensFromHermezToEthereumStep2Withdraw();
+    //moveTokensFromHermezToEthereumStep1ForceExit();
+    //moveTokensFromHermezToEthereumStep2Withdraw();
     //createAccountAuthorization();
+    //createInternalAccount();
   }
 
   void initPlatformState() {
@@ -348,6 +350,59 @@ class _MyAppState extends State<MyApp> {
 
     final transferResponse = await tx.generateAndSendL2Tx(
         l2TransferTx, hermezWallet, infoAccountSender.token);
+  }
+
+  void createInternalAccount() async {
+    // load ethereum token
+    TokensResponse tokenResponse = await coordinatorApi.getTokens();
+    Token tokenERC20 = tokenResponse.tokens[0];
+
+    // load first account
+    final wallet =
+        await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY1);
+    final HermezWallet hermezWallet = wallet[0];
+    final String hermezEthereumAddress = wallet[1];
+
+    // get sender account information
+    final accountSenderResponse = await coordinatorApi
+        .getAccounts(hermezEthereumAddress, [tokenERC20.id]);
+    final infoAccountSender = accountSenderResponse.accounts.length > 0
+        ? accountSenderResponse.accounts[0]
+        : null;
+
+    // Create Internal Account
+    // create new bjj private key to receive user transactions
+    final Uint8List pvtBjjKey = Uint8List(32);
+    pvtBjjKey.fillRange(0, 32, 1);
+
+    // create rollup internal account from bjj private key
+    final wallet4 = await HermezWallet.createWalletFromBjjPvtKey(pvtBjjKey);
+    final hermezWallet4 = wallet4[0];
+
+    // fee computation
+    final state = await coordinatorApi.getState();
+    final fees = state.recommendedFee;
+    final usdTokenExchangeRate = tokenERC20.USD;
+    final fee = fees.createAccountInternal / usdTokenExchangeRate;
+
+    // set amount to transfer
+    final amount = 0.0001;
+    final amountTransferInternal =
+        getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedTransferInternalAmount =
+        HermezCompressedAmount.compressAmount(
+            amountTransferInternal.toDouble());
+
+    // generate L2 transaction
+    final transferToInternal = {
+      'from': infoAccountSender.accountIndex,
+      'to': hermezWallet4.publicKeyBase64,
+      'amount': compressedTransferInternalAmount,
+      'fee': fee
+    };
+
+    final internalAccountResponse = await tx.generateAndSendL2Tx(
+        transferToInternal, hermezWallet4, tokenERC20);
   }
 
   @override

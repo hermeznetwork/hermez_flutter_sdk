@@ -170,6 +170,20 @@ class HermezWallet {
 
     return List.from([hermezWallet, hermezEthereumAddress]);
   }
+
+  /// Creates a HermezWallet from Babyjubjub private key
+  /// This creates a wallet for an internal account
+  /// An internal account has a Babyjubjub key and Ethereum account 0xFFFF...FFFF
+  /// Random wallet is created if no private key is provided
+  /// @param {Uint8List} privateKey - 32 bytes buffer
+  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
+  static dynamic createWalletFromBjjPvtKey(Uint8List privateKey) async {
+    Uint8List privateBjjKey = privateKey != null ? privateKey : Uint8List(32);
+    final hermezWallet =
+        new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR);
+
+    return List.from([hermezWallet, INTERNAL_ACCOUNT_ETH_ADDR]);
+  }
 }
 
 /*/// Verifies signature for a given message using babyjubjub

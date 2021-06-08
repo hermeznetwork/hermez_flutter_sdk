@@ -822,3 +822,86 @@ After the transfer has been forged, we can check Mary's account on Hermez
   }
 }
 ```
+
+### Create Internal Accounts
+
+Until now we have seen that accounts have an Ethereum address and a Baby JubJub key. This is the case for normal accounts. However, there is a second type of account that only requires a Baby JubJub key. These accounts are called internal accounts.
+
+The advantage of these accounts is that they are much more inexpensive to create than a normal account, since these accounts only exist on Hermez. The downside is that one cannot perform deposits or withdrawals from this type of account. However, there are some scenarios where these accounts are useful. For example, in those scenarios where one requires a temporary account. (for example, Exchanges could use these accounts to receive a transfer from users).F
+
+```dart
+    // Create Internal Account
+    // create new bjj private key to receive user transactions
+    final Uint8List pvtBjjKey = Uint8List(32);
+    pvtBjjKey.fillRange(0, 32, 1);
+
+    // create rollup internal account from bjj private key
+    final wallet4 = await HermezWallet.createWalletFromBjjPvtKey(pvtBjjKey);
+    final hermezWallet4 = wallet4[0];
+
+    // fee computation
+    final state = await coordinatorApi.getState();
+    final fees = state.recommendedFee;
+    final usdTokenExchangeRate = tokenERC20.USD;
+    final fee = fees.createAccountInternal / usdTokenExchangeRate;
+
+    // set amount to transfer
+    final amount = 0.0001;
+    final amountTransferInternal =
+        getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedTransferInternalAmount =
+        HermezCompressedAmount.compressAmount(
+            amountTransferInternal.toDouble());
+
+    // generate L2 transaction
+    final transferToInternal = {
+      'from': infoAccountSender.accountIndex,
+      'to': hermezWallet4.publicKeyBase64,
+      'amount': compressedTransferInternalAmount,
+      'fee': fee
+    };
+
+    final internalAccountResponse = await tx.generateAndSendL2Tx(
+        transferToInternal, hermezWallet4, tokenERC20);
+```
+
+```json
+{
+  "status": 200,
+  "id": "0x02ac000f39eee60b198c85348443002991753de912337720b9ef85d48e9dcfe83e",
+  "nonce": 0
+}
+```
+
+Once the transaction is forged, we can check the account information
+
+```dart
+    // get internal account information
+    final infoAccountInternal = (await coordinatorApi
+            .getAccounts(hermezWallet4.publicKeyBase64, [tokenERC20.id]))
+        .accounts[0];
+```
+
+```json
+{
+  "accountIndex": "hez:ETH:259",
+  "balance": "1000000000000000000",
+  "bjj": "hez:KmbnR34pOUhSaaPOkeWbaeZVjMqojfyYy8sYIHRSlaKx",
+  "hezEthereumAddress": "hez:0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF",
+  "itemId": 4,
+  "nonce": 0,
+  "token": {
+    "USD": 1798.51,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-03-16T15:44:08.33507Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  }
+}
+```
+
+We can verify it is in fact an internal account because the associated hezEthereumAddress is hez:0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.
