@@ -1,7 +1,7 @@
 # hermez_sdk
 
-[![pub package](https://img.shields.io/badge/pub-2.1.0-orange)](https://pub.dev/packages/hermez_sdk)
-[![build](https://github.com/hermeznetwork/hermez_mobile_library/workflows/hermez_sdk/badge.svg?branch=master)](https://github.com/hermeznetwork/hermez_mobile_library/actions?query=workflow%3Ahermez_sdk)
+[![pub package](https://img.shields.io/badge/pub-1.0.0-orange)](https://pub.dev/packages/hermez_sdk)
+[![build](https://github.com/hermeznetwork/hermez-mobile-library/workflows/hermez_sdk/badge.svg?branch=master)](https://github.com/hermeznetwork/hermez-mobile-library/actions?query=workflow%3Ahermez-mobile-library)
 [![license](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/hermeznetwork/hermez_mobile_library/blob/master/LICENSE)
 
 ## Description
