@@ -4,6 +4,11 @@
 ### Dart ###
 # See https://www.dartlang.org/guides/libraries/private-files
 
+.DS_Store
+.atom/
+.idea/
+.vscode/
+
 # Files and directories created by pub
 .packages
 .pub/
@@ -27,6 +32,8 @@ doc/api/
 *.js_
 *.js.deps
 *.js.map
+
+
 
 ### Flutter ###
 # Flutter/Dart/Pub related
