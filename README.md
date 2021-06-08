@@ -24,6 +24,15 @@ dependencies:
         ref: branchPathName
 ```
 
+Also, add the abi contracts in json files to the assets folder of your project and to your `pubspec.yaml` file like this
+
+```yaml
+assets:
+    - HermezABI.json
+    - ERC20ABI.json
+    - WithdrawalDelayerABI.json
+```
+
 ## Setup
 
 NOTE: In order to interact with Hermez, you will need to supply your own Ethereum node. You can check these links to help you set up a node (https://blog.infura.io/getting-started-with-infura-28e41844cc89, https://blog.infura.io/getting-started-with-infuras-ethereum-api).
@@ -34,15 +43,6 @@ To start using this package first import it in your Dart file.
 
 ```dart
 import 'package:hermez_sdk/hermez_sdk.dart';
-```
-
-Also, add the abi contracts in json files to the assets folder of your project and to your pubspec.yaml
-
-```yaml
-assets:
-    - HermezABI.json
-    - ERC20ABI.json
-    - WithdrawalDelayerABI.json
 ```
 
 ### Initialization
@@ -509,6 +509,66 @@ void moveTokensFromHermezToEthereumStep2Withdraw() async {
 ```
 
 ### Transfers
+
+First, we compute the fees for the transaction. For this we consult the recommended fees from the Coordinator.
+
+```dart
+    // fee computation
+    final state = await coordinatorApi.getState();
+    final fees = state.recommendedFee;
+```
+
+```json
+{
+  "existingAccount": 96.34567219671051,
+  "createAccount": 192.69134439342102,
+  "createAccountInternal": 240.86418049177627
+}
+```
+
+The returned fees are the suggested fees for different transactions:
+
+- existingAccount : Make a transfer to an existing account
+- createAccount : Make a transfer to a non-existent account, and create a regular account
+- createAccountInternal : Make a transfer to an non-existent account and create internal account
+
+The fee amounts are given in USD. However, fees are payed in the token of the transaction. So, we need to do a conversion.
+
+```dart
+    final usdTokenExchangeRate = tokenERC20.USD;
+    final fee = fees.existingAccount / usdTokenExchangeRate;
+```
+
+Finally we make the final transfer transaction.
+
+```dart
+    // set amount to transfer
+    final amount = 0.0001;
+    final amountTransfer = getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedTransferAmount =
+            HermezCompressedAmount.compressAmount(amountTransfer.toDouble());
+    // generate L2 transaction
+    final l2TxTransfer = {
+      from: infoAccountSender.accountIndex,
+      to: infoAccountReceiver.accountIndex,
+      amount: compressedTransferAmount,
+      fee: fee
+    };
+
+    final transferResponse = await tx.generateAndSendL2Tx(l2TxTransfer, hermezWallet, infoAccountSender.token);
+```
+
+```json
+{
+  "status": 200,
+  "id": "0x02e7c2c293173f21249058b1d71afd5b1f3c0de4f1a173bac9b9aa4a2d149483a2",
+  "nonce": 3
+}
+```
+
+The result status 200 shows that transaction has been correctly received. Additionally, we receive the nonce matching the transaction we sent, and an id that we can use to verify the status of the transaction either using getHistoryTransaction() or getPoolTransaction().
+
+As we saw with the Exit transaction, every transaction includes a ´nonce´. This nonce is a protection mechanism to avoid replay attacks. Every L2 transaction will increase the nonce by 1.
 
 ### Transaction Status
 
