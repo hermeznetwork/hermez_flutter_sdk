@@ -35,12 +35,12 @@ void main() {
       final isInstant = true;
 
       // perform withdraw
-      withdraw(
+      final txHash = withdraw(
           double.parse(exitInfo.balance),
           exitInfo.accountIndex,
           exitInfo.token,
           hermezWallet.publicKeyCompressedHex,
-          BigInt.from(exitInfo.batchNum),
+          exitInfo.batchNum,
           exitInfo.merkleProof.siblings,
           privKey1,
           isInstant: isInstant);

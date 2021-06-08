@@ -303,15 +303,15 @@ Alternatively, an account query can be filtered using the assigned accountIndex
 
 Withdrawing funds is a two step process:
 
-    1. Exit
-    2. Withdrawal
+1. Exit
+2. Withdrawal
 
 #### Exit
 
 The Exit transaction is used as a first step to retrieve the funds from Hermez Network back to Ethereum. There are two types of Exit transactions:
 
-    - Normal Exit, referred as Exit from now on. This is a L2 transaction type.
-    - Force Exit, an L1 transaction type which has extended guarantees that will be processed by the Coordinator. We will talk more about Force Exit here
+- Normal Exit, referred as Exit from now on. This is a L2 transaction type.
+- Force Exit, an L1 transaction type which has extended guarantees that will be processed by the Coordinator. We will talk more about Force Exit here
     
 The Exit is requested as follows:
 
@@ -398,10 +398,10 @@ final txExitPool = await coordinatorApi.getPoolTransaction(exitResponse['id']);
 
 We can see the state field is set to pend (meaning pending). There are 4 possible states:
 
-    1. pend : Pending
-    2. fging : Forging
-    3. fged : Forged
-    4. invl : Invalid
+1. pend : Pending
+2. fging : Forging
+3. fged : Forged
+4. invl : Invalid
     
 If we continue polling the Coordinator about the status of the transaction, the state will eventually be set to fged.
 
@@ -422,7 +422,91 @@ final infoAccount = accountResponse.accounts.length > 0 ? accountResponse.accoun
 
 After doing any type of Exit transaction, which moves the user's funds from their token account to a specific Exit Merkle tree, one needs to do a Withdraw of those funds to an Ethereum L1 account. To do a Withdraw we need to indicate the accountIndex that includes the Ethereum address where the funds will be transferred, the amount and type of tokens, and some information to verify the ownership of those tokens. Additionally, there is one boolean flag. If set to true, the Withdraw will be instantaneous.
 
+```dart
+void moveTokensFromHermezToEthereumStep2Withdraw() async {
+    // load ethereum token and account
+
+    ...
+
+    final exitInfoN = (await coordinatorApi.getExits(
+            hermezEthereumAddress, true, tokenERC20.id))
+        .exits;
+
+    if (exitInfoN != null && exitInfoN.length > 0) {
+      final exitInfo = exitInfoN.last;
+      // set to perform instant withdraw
+      final isInstant = true;
+
+      // perform withdraw
+      tx.withdraw(
+          double.parse(exitInfo.balance),
+          exitInfo.accountIndex,
+          exitInfo.token,
+          hermezWallet.publicKeyCompressedHex,
+          exitInfo.batchNum,
+          exitInfo.merkleProof.siblings,
+          EXAMPLES_PRIVATE_KEY1,
+          isInstant: isInstant);
+    }
+}
+```
+
+The funds should now appear in the Ethereum account that made the withdrawal.
+
 #### Force Exit
+
+This is the L1 equivalent of an Exit. With this option, the smart contract forces Coordinators to pick up L1 transactions before they pick up L2 transactions to ensure that L1 transactions will eventually be picked up.
+
+This is a security measure. We don't expect users to need to make a Force Exit.
+
+```dart
+void moveTokensFromHermezToEthereumStep1ForceExit() async {
+    // load ethereum token and account info
+    
+    ...
+
+    // set amount to force exit
+    final amount = 0.0001;
+    final amountForceExit = getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedForceExitAmount =
+        HermezCompressedAmount.compressAmount(amountForceExit.toDouble());
+
+    // perform force exit
+    tx.forceExit(compressedForceExitAmount, infoAccountSender.accountIndex,
+        tokenERC20, EXAMPLES_PRIVATE_KEY1);
+}
+```
+
+The last step to recover the funds will be to send a new Withdraw request to the smart contract as we did after the regular Exit request.
+
+```dart
+void moveTokensFromHermezToEthereumStep2Withdraw() async {
+    // load ethereum token and account
+
+    ...
+
+    final exitInfoN = (await coordinatorApi.getExits(
+            hermezEthereumAddress, true, tokenERC20.id))
+        .exits;
+
+    if (exitInfoN != null && exitInfoN.length > 0) {
+      final exitInfo = exitInfoN.last;
+      // set to perform instant withdraw
+      final isInstant = true;
+
+      // perform withdraw
+      tx.withdraw(
+          double.parse(exitInfo.balance),
+          exitInfo.accountIndex,
+          exitInfo.token,
+          hermezWallet.publicKeyCompressedHex,
+          exitInfo.batchNum,
+          exitInfo.merkleProof.siblings,
+          EXAMPLES_PRIVATE_KEY1,
+          isInstant: isInstant);
+    }
+}
+```
 
 ### Transfers
 
