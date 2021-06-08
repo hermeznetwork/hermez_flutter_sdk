@@ -36,6 +36,15 @@ To start using this package first import it in your Dart file.
 import 'package:hermez_sdk/hermez_sdk.dart';
 ```
 
+Also, add the abi contracts in json files to the assets folder of your project and to your pubspec.yaml
+
+```yaml
+assets:
+    - HermezABI.json
+    - ERC20ABI.json
+    - WithdrawalDelayerABI.json
+```
+
 ### Initialization
 
 To initialize the Hermez SDK you can call the init method with one of the supported environments as a parameter, or setup all the different parameters passing the environment 'custom'.
@@ -241,9 +250,6 @@ We can see that the field accountIndex is formed by the token symbol it holds an
 Alternatively, an account query can be filtered using the assigned accountIndex
 
 ```dart
- 
-    ...
-
     final account1ByIdx = coordinatorApi.getAccount(infoAccountSender.accountIndex);
 
     final account2ByIdx = coordinatorApi.getAccount(infoAccountReceiver.accountIndex);
@@ -295,9 +301,126 @@ Alternatively, an account query can be filtered using the assigned accountIndex
 
 ### Move tokens from Hermez to Ethereum Network
 
+Withdrawing funds is a two step process:
+
+    1. Exit
+    2. Withdrawal
+
 #### Exit
 
+The Exit transaction is used as a first step to retrieve the funds from Hermez Network back to Ethereum. There are two types of Exit transactions:
+
+    - Normal Exit, referred as Exit from now on. This is a L2 transaction type.
+    - Force Exit, an L1 transaction type which has extended guarantees that will be processed by the Coordinator. We will talk more about Force Exit here
+    
+The Exit is requested as follows:
+
+```dart
+void moveTokensFromHermezToEthereumStep1Exit() async {
+    // load account
+
+    ...
+    
+    // set amount to exit
+    final amount = 0.0001;
+    final amountExit = getTokenAmountBigInt(amount, tokenERC20.decimals);
+    final compressedExitAmount =
+    HermezCompressedAmount.compressAmount(amountExit.toDouble());
+
+    // set fee in transaction
+    final state = await coordinatorApi.getState();
+    final userFee = state.recommendedFee.existingAccount;
+
+    // generate L2 transaction
+    final l2ExitTx = {
+    'type': 'Exit',
+    'from': infoAccountSender.accountIndex,
+    'amount': compressedExitAmount,
+    'fee': userFee
+    };
+
+    final exitResponse = await tx.generateAndSendL2Tx(l2ExitTx, hermezWallet, infoAccountSender.token);
+  }
+```
+
+```json
+{
+  "status": 200,
+  "id": "0x0257305cdc43060a754a5c2ea6b0e0f6e28735ea8e75d841ca4a7377aa099d91b7",
+  "nonce": 2
+}
+```
+
+After submitting our Exit request to the Coordinator, we can check the status of the transaction by calling the Coordinator's Transaction Pool. The Coordinator's transaction pool stores all those transactions that are waiting to be forged.
+
+```dart
+final txExitPool = await coordinatorApi.getPoolTransaction(exitResponse['id']);
+```
+
+```json
+{
+  "amount": "1000000000000000000",
+  "fee": 204,
+  "fromAccountIndex": "hez:ETH:4253",
+  "fromBJJ": "hez:dMfPJlK_UtFqVByhP3FpvykOg5kAU3jMLD7OTx_4gwzO",
+  "fromHezEthereumAddress": "hez:0x74d5531A3400f9b9d63729bA9C0E5172Ab0FD0f6",
+  "id": "0x0257305cdc43060a754a5c2ea6b0e0f6e28735ea8e75d841ca4a7377aa099d91b7",
+  "info": null,
+  "nonce": 2,
+  "requestAmount": null,
+  "requestFee": null,
+  "requestFromAccountIndex": null,
+  "requestNonce": null,
+  "requestToAccountIndex": null,
+  "requestToBJJ": null,
+  "requestToHezEthereumAddress": null,
+  "requestTokenId": null,
+  "signature": "38f23d06826be8ea5a0893ee67f4ede885a831523c0c626c102edb05e1cf890e418b5820e3e6d4b530386d0bc84b3c3933d655527993ad77a55bb735d5a67c03",
+  "state": "pend",
+  "timestamp": "2021-03-16T12:31:50.407428Z",
+  "toAccountIndex": "hez:ETH:1",
+  "toBjj": null,
+  "toHezEthereumAddress": null,
+  "token": {
+    "USD": 1781.9,
+    "decimals": 18,
+    "ethereumAddress": "0x0000000000000000000000000000000000000000",
+    "ethereumBlockNum": 0,
+    "fiatUpdate": "2021-02-28T18:55:17.372008Z",
+    "id": 0,
+    "itemId": 1,
+    "name": "Ether",
+    "symbol": "ETH"
+  },
+  "type": "Exit"
+}
+```
+
+We can see the state field is set to pend (meaning pending). There are 4 possible states:
+
+    1. pend : Pending
+    2. fging : Forging
+    3. fged : Forged
+    4. invl : Invalid
+    
+If we continue polling the Coordinator about the status of the transaction, the state will eventually be set to fged.
+
+We can also query the Coordinator to check whether or not our transaction has been forged. getHistoryTransaction reports those transactions that have been forged by the Coordinator.
+
+```dart
+final txExitConf = await coordinatorApi.getHistoryTransaction(txExitPool.id);
+```
+
+And we can confirm our account status and check that the correct amount has been transfered out of the account.
+
+```dart
+final accountResponse = await coordinatorApi.getAccounts(hermezEthereumAddress, [tokenERC20.id]);
+final infoAccount = accountResponse.accounts.length > 0 ? accountResponse.accounts[0]: null;
+```
+
 #### Withdraw
+
+After doing any type of Exit transaction, which moves the user's funds from their token account to a specific Exit Merkle tree, one needs to do a Withdraw of those funds to an Ethereum L1 account. To do a Withdraw we need to indicate the accountIndex that includes the Ethereum address where the funds will be transferred, the amount and type of tokens, and some information to verify the ownership of those tokens. Additionally, there is one boolean flag. If set to true, the Withdraw will be instantaneous.
 
 #### Force Exit
 

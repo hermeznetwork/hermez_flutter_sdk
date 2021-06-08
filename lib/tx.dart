@@ -71,11 +71,26 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @returns {String} transaction hash
 Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     Token token, String babyJubJub, String privateKey,
-    {BigInt approveGasLimit,
-    BigInt depositGasLimit,
-    gasPrice = GAS_MULTIPLIER}) async {
-  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
+    {BigInt approveMaxGas, BigInt depositMaxGas, int gasPrice = 0}) async {
+  if (approveMaxGas == null || depositMaxGas == null) {
+    LinkedHashMap<String, BigInt> gasLimits =
+        await depositGasLimit(amount, hezEthereumAddress, token, babyJubJub);
+    if (approveMaxGas == null) {
+      approveMaxGas = gasLimits['approveGasLimit'];
+    }
+    if (depositMaxGas == null) {
+      depositMaxGas = gasLimits['depositGasLimit'];
+    }
+  }
 
+  EtherAmount ethGasPrice;
+  if (gasPrice > 0) {
+    ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
+  } else {
+    ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
+  }
+
+  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
   final Account account = accounts != null && accounts.accounts.isNotEmpty
       ? accounts.accounts[0]
       : null;
@@ -86,8 +101,6 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   final credentials =
       await HermezSDK.currentWeb3Client.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
-
-  EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
 
   final transactionParameters = [
     account != null ? BigInt.zero : hexToInt(babyJubJub),
@@ -112,7 +125,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         function: _addL1Transaction(hermezContract),
         from: from,
         parameters: transactionParameters,
-        maxGas: depositGasLimit.toInt() - 1000,
+        maxGas: depositMaxGas.toInt() - 1000,
         gasPrice: ethGasPrice,
         value: EtherAmount.fromUnitAndValue(
             EtherUnit.wei, BigInt.from(decompressedAmount)),
@@ -120,7 +133,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
 
     print(
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
-        ' amountInWei: $decompressedAmount, depositGasLimit: ${depositGasLimit.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
+        ' amountInWei: $decompressedAmount, depositGasLimit: ${depositMaxGas.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
     String txHash;
     try {
@@ -141,7 +154,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
 
   await approve(BigInt.from(decompressedAmount), from.hex,
       token.ethereumAddress, token.name, credentials,
-      gasLimit: approveGasLimit, gasPrice: gasPrice);
+      gasLimit: approveMaxGas, gasPrice: gasPrice);
 
   int nonceAfter = await HermezSDK.currentWeb3Client
       .getTransactionCount(from, atBlock: BlockNum.pending());
@@ -160,20 +173,22 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
-      maxGas: depositGasLimit.toInt() - 1000,
+      maxGas: depositMaxGas.toInt() - 1000,
       gasPrice: ethGasPrice,
       nonce: correctNonce);
 
   print(
       'deposit ERC20--> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
-      ' amountInWei: $amount, depositGasLimit: ${depositGasLimit.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
+      ' amountInWei: $amount, depositGasLimit: ${depositMaxGas.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
   String txHash;
   try {
     txHash = await HermezSDK.currentWeb3Client.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {}
+  } catch (e) {
+    print(e.toString());
+  }
 
   print(txHash);
 
@@ -204,7 +219,9 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
       : null;
 
   final hermezContract = await ContractParser.fromAssets(
-      'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
+      'HermezABI.json',
+      getCurrentEnvironment().contracts[ContractName.hermez],
+      ContractName.hermez);
 
   final transactionParameters = [
     account != null ? BigInt.zero : hexToInt(babyJubJub),
@@ -221,18 +238,16 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
 
   if (token.id == 0) {
-    value = EtherAmount.fromUnitAndValue(
-        EtherUnit.wei, BigInt.from(decompressedAmount));
-    Transaction transaction = Transaction.callContract(
-        contract: hermezContract,
-        function: _addL1Transaction(hermezContract),
-        from: from,
-        parameters: transactionParameters,
-        value: value);
-
-    data = transaction.data;
-
     try {
+      value = EtherAmount.fromUnitAndValue(
+          EtherUnit.wei, BigInt.from(decompressedAmount));
+      Transaction transaction = Transaction.callContract(
+          contract: hermezContract,
+          function: _addL1Transaction(hermezContract),
+          from: from,
+          parameters: transactionParameters,
+          value: value);
+      data = transaction.data;
       depositMaxGas = await HermezSDK.currentWeb3Client
           .estimateGas(sender: from, to: to, value: value, data: data);
       depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
@@ -258,16 +273,14 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
 
   result['approveGasLimit'] = approveMaxGas;
 
-  Transaction transaction = Transaction.callContract(
-      contract: hermezContract,
-      function: _addL1Transaction(hermezContract),
-      from: from,
-      parameters: transactionParameters,
-      value: value);
-
-  data = transaction.data;
-
   try {
+    Transaction transaction = Transaction.callContract(
+        contract: hermezContract,
+        function: _addL1Transaction(hermezContract),
+        from: from,
+        parameters: transactionParameters,
+        value: value);
+    data = transaction.data;
     depositMaxGas = await HermezSDK.currentWeb3Client
         .estimateGas(sender: from, to: to, value: value, data: data);
     depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
