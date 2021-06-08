@@ -1,3 +1,6 @@
-## 0.0.1
+## 1.0.0
 
-* TODO: Describe initial release.
+* adds support for iOS and Android 🎉 
+* Hermez wallets creation
+* complete communication with coordinators Api
+* adds Deposit, Withdraw and Transfers operations
