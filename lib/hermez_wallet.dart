@@ -51,38 +51,6 @@ class HermezWallet {
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
-  /// Creates a Hermez Wallet and Ethereum Wallet from mnemonic phrase
-  /// @param {String} mnemonic - mnemonic phrase
-  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromMnemonic(String mnemonic) async {
-    //final Web3Client provider = getProvider();
-    /*String seed = bip39.mnemonicToSeedHex(mnemonic);
-    KeyData master = HDKey.getMasterKeyFromSeed(seed);
-
-    print(HEX.encode(master
-        .key)); // 171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012
-    print(HEX.encode(master
-        .chainCode)); // ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b
-    // "m/44'/60'/0'/0/0"
-    // m / purpose' / coin_type' / account' / change / address_index
-    //KeyData data = HDKey.derivePath("m/0'/2147483647'", seed);
-    KeyData data = HDKey.derivePath("m/44'/60'/0'/0", seed);
-    var pb = HDKey.getPublicKey(data.key);
-    print(HEX.encode(data
-        .key)); // ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4
-    print(HEX.encode(data
-        .chainCode)); // 138f0b2551bcafeca6ff2aa88ba8ed0ed8de070841f0c4ef0165df8181eaad7f
-    print(HEX.encode(
-        pb)); // 005ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d
-
-    final signer = EthPrivateKey.createRandom(Random.secure());
-    final ethereumAddress = await signer.extractAddress();
-    final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
-    final hermezWallet =
-        new HermezWallet(Uint8List.fromList(data.key), hermezEthereumAddress);
-    return {hermezWallet, hermezEthereumAddress};*/
-  }
-
 /*/// Signs message with private key
   /// @param {String} messageStr - message to sign
   /// @returns {String} - Babyjubjub signature packed and encoded as an hex string
@@ -120,7 +88,7 @@ class HermezWallet {
     final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId': BigInt.from(getCurrentEnvironment().chainId),
+      'chainId': BigInt.from(getCurrentEnvironment().chainId).toRadixString(16),
       'verifyingContract':
           EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
     };
@@ -179,6 +147,9 @@ class HermezWallet {
   /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
   static dynamic createWalletFromBjjPvtKey(Uint8List privateKey) async {
     Uint8List privateBjjKey = privateKey != null ? privateKey : Uint8List(32);
+    if (privateKey == null) {
+      privateBjjKey.fillRange(0, 32, 1);
+    }
     final hermezWallet =
         new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR);
 

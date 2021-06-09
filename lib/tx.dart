@@ -37,6 +37,8 @@ ContractFunction _withdrawMerkleProof(DeployedContract contract) =>
     contract.function('withdrawMerkleProof');
 ContractFunction _withdrawal(DeployedContract contract) =>
     contract.function('withdrawal');
+ContractFunction _instantWithdrawalViewer(DeployedContract contract) =>
+    contract.function('instantWithdrawalViewer');
 
 ContractEvent _addTokenEvent(DeployedContract contract) =>
     contract.event('AddToken');
@@ -205,8 +207,8 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   BigInt depositMaxGas = BigInt.zero;
   EthereumAddress from =
       EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
-  EthereumAddress to =
-      EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']);
+  EthereumAddress to = EthereumAddress.fromHex(
+      getCurrentEnvironment().contracts[ContractName.hermez]);
   EtherAmount value = EtherAmount.zero();
   Uint8List data;
 
@@ -286,8 +288,8 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
     depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
   } catch (e) {
     depositMaxGas = BigInt.from(GAS_LIMIT_HIGH);
-    String fromAddress =
-        getCurrentEnvironment().contracts['Hermez']; // Random ethereum address
+    String fromAddress = getCurrentEnvironment()
+        .contracts[ContractName.hermez]; // Random ethereum address
     depositMaxGas += await transferGasLimit(BigInt.from(decompressedAmount),
         fromAddress, ethereumAddress, token.ethereumAddress, token.name);
   }
@@ -443,7 +445,8 @@ Future<String> withdraw(
 
   if (gasLimit == null) {
     gasLimit = await withdrawGasLimit(amount, from.hex, accountIndex, token,
-        babyJubJub, batchNumber, merkleSiblings);
+        babyJubJub, batchNumber, merkleSiblings,
+        isInstant: isInstant);
   }
 
   EtherAmount ethGasPrice;
@@ -508,7 +511,8 @@ Future<BigInt> withdrawGasLimit(
       'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
 
   BigInt withdrawMaxGas = BigInt.zero;
-  EthereumAddress from = EthereumAddress.fromHex(fromEthereumAddress);
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress));
   EthereumAddress to =
       EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']);
   EtherAmount value = EtherAmount.zero();
@@ -653,6 +657,23 @@ Future<BigInt> delayedWithdrawGasLimit(
       BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
 
   return withdrawMaxGas;
+}
+
+Future<bool> isInstantWithdrawalAllowed(double amount, Token token) async {
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json',
+      getCurrentEnvironment().contracts[ContractName.hermez],
+      ContractName.hermez);
+
+  final instantWithdrawalCall = await HermezSDK.currentWeb3Client.call(
+      contract: hermezContract,
+      function: _instantWithdrawalViewer(hermezContract),
+      params: [
+        EthereumAddress.fromHex(token.ethereumAddress),
+        BigInt.from(amount),
+      ]);
+  final allowed = instantWithdrawalCall.first as bool;
+  return allowed;
 }
 
 /// Sends a L2 transaction to the Coordinator

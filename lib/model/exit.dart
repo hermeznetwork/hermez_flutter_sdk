@@ -10,7 +10,7 @@ class Exit {
   final MerkleProof merkleProof;
   final String balance;
   final int instantWithdraw;
-  final String delayedWithdrawRequest;
+  final int delayedWithdrawRequest;
   final int delayedWithdraw;
   final Token token;
   final String bjj;
