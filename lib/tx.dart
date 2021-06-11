@@ -585,14 +585,17 @@ Future<String> delayedWithdraw(Token token, String privateKey,
     ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
   }
 
+  int nonce = await HermezSDK.currentWeb3Client
+      .getTransactionCount(from, atBlock: BlockNum.pending());
+
   final withdrawalDelayerContract = await ContractParser.fromAssets(
       'WithdrawalDelayerABI.json',
-      getCurrentEnvironment().contracts['WithdrawalDelayer'],
-      "WithdrawalDelayer");
+      getCurrentEnvironment().contracts[ContractName.withdrawalDelayer],
+      ContractName.withdrawalDelayer);
 
   final transactionParameters = [
     from,
-    token.id == 0 ? 0x0 : token.ethereumAddress
+    token.id == 0 ? 0x0 : EthereumAddress.fromHex(token.ethereumAddress)
   ];
 
   Transaction transaction = Transaction.callContract(
@@ -600,14 +603,17 @@ Future<String> delayedWithdraw(Token token, String privateKey,
       function: _withdrawal(withdrawalDelayerContract),
       parameters: transactionParameters,
       maxGas: gasLimit.toInt(),
-      gasPrice: ethGasPrice);
+      gasPrice: ethGasPrice,
+      nonce: nonce);
 
   String txHash;
   try {
     txHash = await HermezSDK.currentWeb3Client.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment().chainId);
-  } catch (e) {}
+  } catch (e) {
+    print(e.toString());
+  }
 
   print(txHash);
 
@@ -617,20 +623,21 @@ Future<String> delayedWithdraw(Token token, String privateKey,
 Future<BigInt> delayedWithdrawGasLimit(
     String fromEthereumAddress, Token token) async {
   BigInt withdrawMaxGas = BigInt.zero;
-  EthereumAddress from = EthereumAddress.fromHex(fromEthereumAddress);
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress));
   EthereumAddress to = EthereumAddress.fromHex(
-      getCurrentEnvironment().contracts['WithdrawalDelayer']);
+      getCurrentEnvironment().contracts[ContractName.withdrawalDelayer]);
   EtherAmount value = EtherAmount.zero();
   Uint8List data;
 
   final withdrawalDelayerContract = await ContractParser.fromAssets(
       'WithdrawalDelayerABI.json',
-      getCurrentEnvironment().contracts['WithdrawalDelayer'],
-      "WithdrawalDelayer");
+      getCurrentEnvironment().contracts[ContractName.withdrawalDelayer],
+      ContractName.withdrawalDelayer);
 
   final transactionParameters = [
     from,
-    token.id == 0 ? 0x0 : token.ethereumAddress
+    token.id == 0 ? 0x0 : EthereumAddress.fromHex(token.ethereumAddress)
   ];
 
   Transaction transaction = Transaction.callContract(
@@ -652,7 +659,7 @@ Future<BigInt> delayedWithdrawGasLimit(
     }
     //withdrawMaxGas += BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
   }
-
+  withdrawMaxGas += BigInt.from(GAS_LIMIT_OFFSET);
   withdrawMaxGas =
       BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
 

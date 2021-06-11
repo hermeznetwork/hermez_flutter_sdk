@@ -8,9 +8,9 @@ class Exit {
   final String accountIndex;
   final int itemId;
   final MerkleProof merkleProof;
-  final String balance;
+  String balance;
   final int instantWithdraw;
-  final int delayedWithdrawRequest;
+  int delayedWithdrawRequest;
   final int delayedWithdraw;
   final Token token;
   final String bjj;
