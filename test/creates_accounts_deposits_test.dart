@@ -18,12 +18,12 @@ void main() {
     // load token to deposit information
     final tokenToDeposit = 0;
     final token = await getTokens();
-    final tokenERC20 = token.tokens[tokenToDeposit];
+    final tokenERC20 = token.tokens![tokenToDeposit];
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
-    final HermezWallet hermezWallet = wallet[0]; // hermezWallet
-    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final HermezWallet? hermezWallet = wallet[0]; // hermezWallet
+    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // load second account
     final List wallet2 =

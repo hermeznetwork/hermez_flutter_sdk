@@ -1,9 +1,9 @@
 class ForgedTransactionsRequest {
-  final int tokenId;
-  final String ethereumAddress;
-  final String accountIndex;
-  final int batchNum;
-  final int fromItem;
+  final int? tokenId;
+  final String? ethereumAddress;
+  final String? accountIndex;
+  final int? batchNum;
+  final int? fromItem;
 
   ForgedTransactionsRequest(
       {this.tokenId,

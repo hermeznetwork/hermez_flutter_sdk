@@ -1,11 +1,11 @@
 class Metrics {
-  final double transactionsPerBatch;
-  final double batchFrequency;
-  final double transactionsPerSecond;
-  final int tokenAccounts;
-  final int wallets;
-  final double avgTransactionFee;
-  final double estimatedTimeToForgeL1;
+  final double? transactionsPerBatch;
+  final double? batchFrequency;
+  final double? transactionsPerSecond;
+  final int? tokenAccounts;
+  final int? wallets;
+  final double? avgTransactionFee;
+  final double? estimatedTimeToForgeL1;
 
   Metrics(
       {this.transactionsPerBatch,

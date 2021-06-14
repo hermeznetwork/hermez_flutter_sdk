@@ -11,7 +11,7 @@ class CircomLib {
       ? DynamicLibrary.open("libbabyjubjub.so")
       : DynamicLibrary.process();
 
-  CStringFree cstringFree;
+  late CStringFree cstringFree;
 
   CircomLib() {
     _packSignature = lib
@@ -71,7 +71,7 @@ class CircomLib {
         lib.lookup<NativeFunction<CStringFreeFFI>>("cstring_free").asFunction();
   }
 
-  Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
+  late Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
   String packSignature(String signature) {
     if (lib == null) return "ERROR: The library is not initialized";
 
@@ -90,7 +90,7 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
+  late Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
   String unpackSignature(String compressedSignature) {
     if (lib == null) return "ERROR: The library is not initialized";
 
@@ -105,7 +105,7 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
+  late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
   String packPoint(String pointX, String pointY) {
     if (lib == null) return "ERROR: The library is not initialized";
 
@@ -121,7 +121,7 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Utf8> Function(Pointer<Utf8>) _unpackPoint;
+  late Pointer<Utf8> Function(Pointer<Utf8>) _unpackPoint;
   List<String> unpackPoint(String compressedPoint) {
     final pointPtr = compressedPoint.toNativeUtf8();
     final resultPtr = _unpackPoint(pointPtr);
@@ -135,17 +135,17 @@ class CircomLib {
   }
 
   // circomlib.poseidon -> hashPoseidon
-  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>,
+  late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>,
       Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>) _hashPoseidon;
-  String hashPoseidon(String txCompressedData, String toEthAddr, String toBjjAy,
-      String rqTxCompressedDatav2, String rqToEthAddr, String rqToBjjAy) {
+  String hashPoseidon(String txCompressedData, String toEthAddr, String? toBjjAy,
+      String? rqTxCompressedDatav2, String? rqToEthAddr, String? rqToBjjAy) {
     if (lib == null) return "ERROR: The library is not initialized";
     final ptr1 = txCompressedData.toNativeUtf8();
     final ptr2 = toEthAddr.toNativeUtf8();
-    final ptr3 = toBjjAy.toNativeUtf8();
-    final ptr4 = rqTxCompressedDatav2.toNativeUtf8();
-    final ptr5 = rqToEthAddr.toNativeUtf8();
-    final ptr6 = rqToBjjAy.toNativeUtf8();
+    final ptr3 = toBjjAy!.toNativeUtf8();
+    final ptr4 = rqTxCompressedDatav2!.toNativeUtf8();
+    final ptr5 = rqToEthAddr!.toNativeUtf8();
+    final ptr6 = rqToBjjAy!.toNativeUtf8();
     final resultPtr = _hashPoseidon(ptr1, ptr2, ptr3, ptr4, ptr5, ptr6);
     String resultString = resultPtr.toDartString();
     resultString = resultString.replaceAll("Fr(", "");
@@ -159,7 +159,7 @@ class CircomLib {
   }
 
   // privKey.signPoseidon -> signPoseidon
-  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
+  late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
   String signPoseidon(String privateKey, String msg) {
     if (lib == null) return "ERROR: The library is not initialized";
     final prvKeyPtr = privateKey.toNativeUtf8();
@@ -175,7 +175,7 @@ class CircomLib {
   }
 
   // privKey.verifyPoseidon -> verifyPoseidon
-  Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>)
+  late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>)
       _verifyPoseidon;
   bool verifyPoseidon(
       String publicKey, String compressedSignature, String msg) {
@@ -188,7 +188,7 @@ class CircomLib {
     return result;
   }
 
-  Pointer<Utf8> Function(Pointer<Utf8>) _prv2Pub;
+  late Pointer<Utf8> Function(Pointer<Utf8>) _prv2Pub;
   String prv2pub(String privateKey) {
     final prvKeyPtr = privateKey.toNativeUtf8();
     final resultPtr = _prv2Pub(prvKeyPtr);

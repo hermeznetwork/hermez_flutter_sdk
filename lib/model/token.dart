@@ -1,13 +1,13 @@
 class Token {
-  final double USD;
-  final int decimals;
-  String ethereumAddress;
-  final int ethereumBlockNum;
-  final String fiatUpdate;
-  final int id;
-  final int itemId;
-  final String name;
-  final String symbol;
+  final double? USD;
+  final int? decimals;
+  String? ethereumAddress;
+  final int? ethereumBlockNum;
+  final String? fiatUpdate;
+  final int? id;
+  final int? itemId;
+  final String? name;
+  final String? symbol;
 
   Token({
     this.USD,

@@ -2,11 +2,11 @@ import 'batch.dart';
 import 'forger.dart';
 
 class Network {
-  final int lastEthereumBlock;
-  final int lastSynchedBlock;
-  final Batch lastBatch;
-  final int currentSlot;
-  final List<Forger> nextForgers;
+  final int? lastEthereumBlock;
+  final int? lastSynchedBlock;
+  final Batch? lastBatch;
+  final int? currentSlot;
+  final List<Forger>? nextForgers;
 
   Network(
       {this.lastEthereumBlock,
@@ -32,7 +32,7 @@ class Network {
   Map<String, dynamic> toJson() => {
         'lastEthereumBlock': lastEthereumBlock,
         'lastSynchedBlock': lastSynchedBlock,
-        'lastBatch': lastBatch.toJson(),
+        'lastBatch': lastBatch!.toJson(),
         'currentSlot': currentSlot,
         'nextForgers': nextForgers,
       };

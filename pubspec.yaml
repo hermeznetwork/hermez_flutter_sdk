@@ -1,11 +1,10 @@
 name: hermez_sdk
-description: Flutter Plugin for Hermez Mobile SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
 version: 1.0.0+1
-author: Hermez team
 homepage: https://hermez.io
+description: Hermez Flutter SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.20.0 <2.0.0"
 
 analyzer:
@@ -16,17 +15,16 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.12.0 # Update to 0.13.0
-  web3dart: ^1.2.3 # Update to 2.0.0 - problem with bitcoin_flutter
-  web_socket_channel: ^1.1.0
+  http: ^0.13.3 #0.12.0 # Update to 0.13.3 - current version needed for web3dart 1.2.3
+  web3dart: ^2.1.3 # ^1.2.3 # Update to 2.1.3 - problem with bitcoin_flutter
+  web_socket_channel: ^2.1.0 # 1.1.0 # Update to 2.1.0 - depends on crypto 3.0.0 - common dependency with web3dart and bip39 (crypto 2.0.3)
   provider: ^5.0.0
-  bip39: ^1.0.3 # update to 1.0.6
-  # tweetnacl: ^0.3.2
-  hex: ^0.1.2 # Update to 0.2.0 - current version needed for bitcoin_flutter
+  bip39: ^1.0.6 # 1.0.3 update to 1.0.6
+  hex: ^0.2.0 # 0.1.2 Update to 0.2.0 - current version needed for bitcoin_flutter
   ffi: ^1.0.0
   shared_preferences: ^2.0.5 # ^0.5.12+4 # Update to ^2.0.5
   # path_provider_windows: ^0.1.0
-
+  # tweetnacl: ^0.3.2
   # sha3: ^0.1.1
   # flutter_liquidcore: ^1.1.1
 
@@ -40,8 +38,7 @@ dev_dependencies:
       # entry-points:
     # - 'example.h'
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+
 
 # The following section is specific to Flutter.
 flutter:
@@ -62,34 +59,7 @@ flutter:
         # pluginClass: HermezPlugin
         # fileName: hello_web.dart
 
-  # To add assets to your plugin package, add an assets section, like this:
-      assets:
-        - ERC20ABI.json
-        - HermezABI.json
-        - WithdrawalDelayerABI.json
-  #
-  # For details regarding assets in packages, see
-  # https://flutter.dev/assets-and-images/#from-packages
-  #
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # To add custom fonts to your plugin package, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts in packages, see
-  # https://flutter.dev/custom-fonts/#from-packages
+assets:
+  - ERC20ABI.json
+  - HermezABI.json
+  - WithdrawalDelayerABI.json

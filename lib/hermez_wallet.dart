@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:hermez_sdk/addresses.dart';
 import 'package:hermez_sdk/utils/eip712.dart';
 import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 
+import 'addresses.dart';
 import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
 import 'environment.dart';
@@ -15,12 +15,12 @@ import "tx_utils.dart" show buildTransactionHashMessage;
 /// Manage Babyjubjub keys
 /// Perform standard wallet actions
 class HermezWallet {
-  dynamic privateKey;
+  late dynamic privateKey;
   dynamic publicKey;
   dynamic publicKeyHex;
-  String publicKeyCompressed;
-  String publicKeyCompressedHex;
-  String publicKeyBase64;
+  String? publicKeyCompressed;
+  String? publicKeyCompressedHex;
+  String? publicKeyBase64;
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
@@ -47,7 +47,7 @@ class HermezWallet {
     this.publicKeyCompressed = compressedPublicKey.toString();
     this.publicKeyCompressedHex =
         compressedPublicKey.toRadixString(16).padLeft(64, '0');
-    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
+    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex!);
     this.hermezEthereumAddress = hermezEthereumAddress;
   }
 
@@ -81,16 +81,16 @@ class HermezWallet {
   Future<String> signCreateAccountAuthorization(String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
 
-    final bJJ = this.publicKeyCompressedHex.startsWith('0x')
-        ? this.publicKeyCompressedHex
+    final bJJ = this.publicKeyCompressedHex!.startsWith('0x')
+        ? this.publicKeyCompressedHex!
         : '0x${this.publicKeyCompressedHex}';
 
     final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId': BigInt.from(getCurrentEnvironment().chainId).toRadixString(16),
+      'chainId': BigInt.from(getCurrentEnvironment()!.chainId).toRadixString(16),
       'verifyingContract':
-          EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez'])
+          EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!)
     };
 
     final Map<String, dynamic> message = {

@@ -37,10 +37,12 @@ BigInt multiHash(List<BigInt> arr) {
       }
     }
     Pointer<Uint8> ptr =
-        Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems));
+        Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems as List<int>));
     //final ph = eddsaBabyJub.hashPoseidon(ptr);
     //r = F.add(r, ph);
   }
+  // TODO: fix this
+  return BigInt.zero;
   //return F.normalize(r);
 }
 
@@ -59,7 +61,7 @@ BigInt hashBuffer(Uint8List msgBuff) {
     final v = msgBuff.sublist(fullParts * n).toList();
     msgArray.addAll(v);
   }
-  return multiHash(msgArray);
+  return multiHash(msgArray as List<BigInt>);
 }
 
 /// Converts an amount in BigInt and decimals to a String with correct decimal point placement
@@ -93,7 +95,7 @@ Uint8List hexToBuffer(String source) {
       ')');
 
   // String (Dart uses UTF-16) to bytes
-  var list = new List<int>();
+  List<int> list = [];
   source.runes.forEach((rune) {
     if (rune >= 0x10000) {
       rune -= 0x10000;

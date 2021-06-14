@@ -8,8 +8,8 @@ import 'utils/structs.dart' as Structs;
 
 /// Class representing EdDSA Baby Jub signature
 class Signature {
-  List<BigInt> r8;
-  BigInt s;
+  late List<BigInt> r8;
+  late BigInt s;
 
   /// Create a Signature with the R8 point and S scalar
   /// @param {List[BigInt]} r8 - R8 point
@@ -45,12 +45,12 @@ class Signature {
     }
     BigInt x = Uint8ArrayUtils.leBuff2int(xList);
     BigInt y = Uint8ArrayUtils.leBuff2int(yList);
-    List<BigInt> r8 = List<BigInt>();
+    List<BigInt> r8 = [];
     r8.add(x);
     r8.add(y);
 
     BigInt s =
-        Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(sig.s, 32));
+        Uint8ArrayUtils.leBuff2int(Uint8ArrayUtils.fromPointer(sig.s!, 32));
     //calloc.free(pointPtr);
     return new Signature(r8, s);
   }
@@ -58,7 +58,7 @@ class Signature {
 
 /// Class representing a EdDSA Baby Jub public key
 class PublicKey {
-  List<BigInt> p;
+  late List<BigInt> p;
 
   /// Create a PublicKey from a curve point p
   /// @param {List[BigInt]} p - curve point
@@ -85,7 +85,7 @@ class PublicKey {
     }
     BigInt x = BigInt.parse(p[0]);
     BigInt y = BigInt.parse(p[1]);
-    List<BigInt> point = List<BigInt>();
+    List<BigInt> point = [];
     point.add(x);
     point.add(y);
     return new PublicKey(point);
@@ -107,14 +107,14 @@ class PublicKey {
 
   bool verify(String messageHash, Signature signature) {
     CircomLib circomLib = CircomLib();
-    List<int> pointList = List<int>();
+    List<int> pointList = [];
     pointList.add(p[0].toInt());
     pointList.add(p[1].toInt());
-    List<int> sigList = List<int>();
+    List<int> sigList = [];
     sigList.add(signature.r8[0].toInt());
     sigList.add(signature.r8[1].toInt());
     sigList.add(signature.s.toInt());
-    circomLib.verifyPoseidon(
+    return circomLib.verifyPoseidon(
         Uint8ArrayUtils.uint8ListToString(Uint8List.fromList(pointList)),
         Uint8ArrayUtils.uint8ListToString(Uint8List.fromList(sigList)),
         messageHash);
@@ -123,7 +123,7 @@ class PublicKey {
 
 /// Class representing EdDSA Baby Jub private key
 class PrivateKey {
-  Uint8List sk;
+  late Uint8List sk;
 
   /// Create a PrivateKey from a 32 byte Buffer
   /// @param {Uint8List} buf - private key
@@ -146,7 +146,7 @@ class PrivateKey {
     stringList[1] = stringList[1].replaceAll(")", "");
     BigInt x = hexToInt(stringList[0]);
     BigInt y = hexToInt(stringList[1]);
-    List<BigInt> p = List<BigInt>();
+    List<BigInt> p = [];
     p.add(x);
     p.add(y);
     return new PublicKey(p);

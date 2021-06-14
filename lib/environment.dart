@@ -1,9 +1,9 @@
 import 'api.dart' as coordinatorApi;
 
-EnvParams params = Env().params['rinkeby'];
+EnvParams? params = Env(web3ApiKey: '').params['rinkeby'];
 
 class Env {
-  Env({String web3ApiKey}) {
+  Env({required String web3ApiKey}) {
     params['mainnet'] = EnvParams(
         1,
         {
@@ -106,7 +106,7 @@ Set<String> getSupportedEnvironments() {
 /// @param {String} env - Supported environment name
 /// @param {String} web3ApiKey - Web3 api key
 /// @param optional {EnvParams} envParams - Custom environment object, only used when env value is 'custom'
-void setEnvironment(String env, String web3ApiKey, {EnvParams envParams}) {
+void setEnvironment(String env, String? web3ApiKey, {EnvParams? envParams}) {
   if (env == null) {
     throw new ArgumentError('A environment is required');
   }
@@ -122,15 +122,15 @@ void setEnvironment(String env, String web3ApiKey, {EnvParams envParams}) {
   if (env == 'custom' && envParams != null) {
     params = envParams;
   } else {
-    params = Env(web3ApiKey: web3ApiKey).params[env];
+    params = Env(web3ApiKey: web3ApiKey!).params[env];
   }
 
-  coordinatorApi.setBaseApiUrl(params.baseApiUrl);
+  coordinatorApi.setBaseApiUrl(params!.baseApiUrl);
 }
 
 /// Returns the current environment
 /// @returns {Object} Contains contract addresses, Hermez API and Batch Explorer urls
 /// and the Etherscan URL por the provider
-EnvParams getCurrentEnvironment() {
+EnvParams? getCurrentEnvironment() {
   return params;
 }

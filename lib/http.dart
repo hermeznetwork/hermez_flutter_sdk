@@ -11,7 +11,8 @@ Future<String> extractJSON(http.Response response) async {
 }
 
 Future<http.Response> get(String baseAddress, String endpoint,
-    {Map<String, String> queryParameters}) async {
+    {Map<String, String?>? queryParameters}) async {
+  var response;
   try {
     var uri;
     baseAddress = baseAddress.replaceFirst("https://", "");
@@ -20,7 +21,7 @@ Future<http.Response> get(String baseAddress, String endpoint,
     } else {
       uri = Uri.https(baseAddress, '$API_VERSION$endpoint');
     }
-    final response = await http.get(
+    response = await http.get(
       uri,
       headers: {
         HttpHeaders.acceptHeader: 'application/json',
@@ -28,14 +29,16 @@ Future<http.Response> get(String baseAddress, String endpoint,
     );
 
     return returnResponseOrThrowException(response);
-  } on IOException catch (e) {
-    print(e.toString());
-    //throw NetworkException();
+  } on IOException {
+    throw NetworkException();
+  } catch (e) {
+    print(e);
+    return response;
   }
 }
 
-Future<http.Response> post(String baseAddress, String endpoint,
-    {Map<String, dynamic> body}) async {
+Future<http.Response?> post(String baseAddress, String endpoint,
+    {Map<String, dynamic>? body}) async {
   var response;
   try {
     var uri;

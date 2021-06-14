@@ -1,9 +1,9 @@
 class Period {
-  final int slotNum;
-  final int fromBlock;
-  final int toBlock;
-  final String fromTimestamp;
-  final String toTimestamp;
+  final int? slotNum;
+  final int? fromBlock;
+  final int? toBlock;
+  final String? fromTimestamp;
+  final String? toTimestamp;
 
   Period(
       {this.slotNum,

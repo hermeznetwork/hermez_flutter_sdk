@@ -20,7 +20,7 @@ dynamic getContract(
   if (contractsCache.containsKey(contractAddress)) {
     return contractsCache[contractAddress + signerId];
   }
-  Web3Client provider = HermezSDK.currentWeb3Client;
+  Web3Client? provider = HermezSDK.currentWeb3Client;
   //final signer = getSigner(provider, signerData);
 //ContractAbi.fromJson(abi, '');
   DeployedContract contract =

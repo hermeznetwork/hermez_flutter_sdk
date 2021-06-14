@@ -5,7 +5,7 @@ final _dylibPrefix = Platform.isWindows ? '' : 'lib';
 final _dylibExtension =
     Platform.isWindows ? '.dll' : (Platform.isMacOS ? '.dylib' : '.so');
 final _dylibName = '${_dylibPrefix}babyjubjub$_dylibExtension';
-DynamicLibrary _dylib;
+DynamicLibrary? _dylib;
 
 //final EXAMPLES_WEB3_URL = 'http://192.168.250.102:8545';
 //final EXAMPLES_WEB3_RDP_URL = 'ws://192.168.250.102:8545';
@@ -28,7 +28,7 @@ final EXAMPLES_PRIVATE_KEY3 =
     '5b8ecba6b2d0320b95a1b442e6029cf08090f31b739fd347f1634d04039876e8';
 
 class SetupUtil {
-  static Future<DynamicLibrary> getDylibAsync() async {
+  static Future<DynamicLibrary?> getDylibAsync() async {
     await _ensureInitilizedAsync();
     return _dylib;
   }

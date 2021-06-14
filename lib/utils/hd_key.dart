@@ -11,8 +11,8 @@ import 'package:pointycastle/macs/hmac.dart';
 import '../constants.dart' show HERMEZ_ACCOUNT_ACCESS_MESSAGE;
 
 class KeyData {
-  List<int> key;
-  List<int> chainCode;
+  List<int>? key;
+  List<int>? chainCode;
   KeyData({this.key, this.chainCode});
 }
 
@@ -36,14 +36,14 @@ class _HDKey {
   KeyData _getCKDPriv(KeyData data, int index) {
     Uint8List dataBytes = Uint8List(37);
     dataBytes[0] = 0x00;
-    dataBytes.setRange(1, 33, data.key);
+    dataBytes.setRange(1, 33, data.key!);
     dataBytes.buffer.asByteData().setUint32(33, index);
-    return this._getKeys(dataBytes, data.chainCode);
+    return this._getKeys(dataBytes, data.chainCode as Uint8List);
   }
 
   KeyData getMasterKeyFromSeed(String seed) {
     final seedBytes = HEX.decode(seed);
-    return this._getKeys(seedBytes, _HDKey._curveBytes);
+    return this._getKeys(seedBytes as Uint8List, _HDKey._curveBytes as Uint8List);
   }
 
   /*Uint8List getPublicKey(Uint8List privateKey, [bool withZeroByte = true]) {

@@ -1,12 +1,12 @@
 import 'bucket.dart';
 
 class Rollup {
-  final int ethereumBlockNum;
-  final int forgeL1L2BatchTimeout;
-  final String feeAddToken;
-  final int
+  final int? ethereumBlockNum;
+  final int? forgeL1L2BatchTimeout;
+  final String? feeAddToken;
+  final int?
       withdrawalDelay; // The time that everyone needs to wait until a withdrawal of the funds is allowed, in seconds.
-  final List<Bucket> buckets;
+  final List<Bucket>? buckets;
 
   Rollup(
       {this.ethereumBlockNum,

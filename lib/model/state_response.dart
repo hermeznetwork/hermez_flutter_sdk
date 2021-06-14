@@ -7,12 +7,12 @@ import 'rollup.dart';
 import 'withdrawal_delayer.dart';
 
 class StateResponse {
-  final Network network;
-  final Metrics metrics;
-  final Rollup rollup;
-  final LinkedHashMap<String, dynamic> auction;
-  final WithdrawalDelayer withdrawalDelayer;
-  final RecommendedFee recommendedFee;
+  final Network? network;
+  final Metrics? metrics;
+  final Rollup? rollup;
+  final LinkedHashMap<String, dynamic>? auction;
+  final WithdrawalDelayer? withdrawalDelayer;
+  final RecommendedFee? recommendedFee;
 
   StateResponse(
       {this.network,
@@ -40,11 +40,11 @@ class StateResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'network': network.toJson(),
+        'network': network!.toJson(),
         'metrics': metrics,
         'rollup': rollup,
         'auction': auction,
-        'withdrawalDelayer': withdrawalDelayer.toJson(),
-        'recommendedFee': recommendedFee.toJson(),
+        'withdrawalDelayer': withdrawalDelayer!.toJson(),
+        'recommendedFee': recommendedFee!.toJson(),
       };
 }

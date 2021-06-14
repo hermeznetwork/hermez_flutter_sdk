@@ -1,7 +1,7 @@
 class RecommendedFee {
-  final double existingAccount;
-  final double createAccount;
-  final double createAccountInternal;
+  final double? existingAccount;
+  final double? createAccount;
+  final double? createAccountInternal;
 
   RecommendedFee(
       {this.existingAccount, this.createAccount, this.createAccountInternal});

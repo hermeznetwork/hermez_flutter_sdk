@@ -1,10 +1,10 @@
 class Bucket {
-  final String ceilUSD;
-  final String blockStamp;
-  final String withdrawals;
-  final String rateBlocks;
-  final String rateWithdrawals;
-  final String maxWithdrawals;
+  final String? ceilUSD;
+  final String? blockStamp;
+  final String? withdrawals;
+  final String? rateBlocks;
+  final String? rateWithdrawals;
+  final String? maxWithdrawals;
 
   Bucket(
       {this.ceilUSD,

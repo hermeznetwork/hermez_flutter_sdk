@@ -1,12 +1,12 @@
 class MerkleProof {
-  final String root;
-  final List<BigInt> siblings;
-  final String oldKey;
-  final String oldValue;
-  final bool isOld0;
-  final String key;
-  final String value;
-  final int fnc;
+  final String? root;
+  final List<BigInt>? siblings;
+  final String? oldKey;
+  final String? oldValue;
+  final bool? isOld0;
+  final String? key;
+  final String? value;
+  final int? fnc;
 
   MerkleProof(
       {this.root,
@@ -19,8 +19,8 @@ class MerkleProof {
       this.fnc});
 
   factory MerkleProof.fromJson(Map<String, dynamic> json) {
-    List<BigInt> siblings =
-        (json['siblings'] as List)?.map((item) => BigInt.parse(item))?.toList();
+    List<BigInt>? siblings =
+        (json['siblings'] as List?)?.map((item) => BigInt.parse(item))?.toList();
     return MerkleProof(
         root: json['root'],
         siblings: siblings,

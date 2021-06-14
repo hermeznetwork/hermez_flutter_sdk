@@ -1,13 +1,13 @@
-import 'package:hermez_sdk/model/token.dart';
+import 'token.dart';
 
 class Account {
-  final String accountIndex;
-  final String balance;
-  final String bjj;
-  final String hezEthereumAddress;
-  final int itemId;
-  final int nonce;
-  final Token token;
+  final String? accountIndex;
+  final String? balance;
+  final String? bjj;
+  final String? hezEthereumAddress;
+  final int? itemId;
+  final int? nonce;
+  final Token? token;
 
   Account(
       {this.accountIndex,
@@ -37,6 +37,6 @@ class Account {
         'hezEthereumAddress': hezEthereumAddress,
         'itemId': itemId,
         'nonce': nonce,
-        'token': token.toJson(),
+        'token': token!.toJson(),
       };
 }

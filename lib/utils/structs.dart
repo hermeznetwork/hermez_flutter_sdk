@@ -45,11 +45,11 @@ import 'package:ffi/ffi.dart';
 }*/
 
 class Signature extends Struct {
-  Pointer<Point> r_b8;
+  Pointer<Point>? r_b8;
 
-  Pointer<Uint8> s;
+  Pointer<Uint8>? s;
 
-  factory Signature.allocate(Pointer<Point> r_b8, Pointer<Uint8> s) =>
+  factory Signature.allocate(Pointer<Point>? r_b8, Pointer<Uint8>? s) =>
       calloc<Signature>().ref
         ..r_b8 = r_b8
         ..s = s;
@@ -57,14 +57,14 @@ class Signature extends Struct {
 
 class Point extends Struct {
   //@ffi.Pointer()
-  Pointer<Uint8> x;
+  Pointer<Uint8>? x;
 
   //@ffi.Pointer()
-  Pointer<Uint8> y;
+  Pointer<Uint8>? y;
 
-  Pointer<Point> address;
+  Pointer<Point>? address;
 
-  factory Point.allocate(Pointer<Uint8> x, Pointer<Uint8> y) {
+  factory Point.allocate(Pointer<Uint8>? x, Pointer<Uint8>? y) {
     final pointer = calloc<Point>();
     return pointer.ref
       ..address = pointer

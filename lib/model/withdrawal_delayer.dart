@@ -1,11 +1,11 @@
 class WithdrawalDelayer {
-  final int ethereumBlockNum;
-  final String ethereumGovernanceAddress;
-  final String emergencyCouncilAddress;
-  final int
+  final int? ethereumBlockNum;
+  final String? ethereumGovernanceAddress;
+  final String? emergencyCouncilAddress;
+  final int?
       withdrawalDelay; // The time that everyone needs to wait until a withdrawal of the funds is allowed, in seconds.
-  final int emergencyModeStartingBlock;
-  final bool emergencyMode;
+  final int? emergencyModeStartingBlock;
+  final bool? emergencyMode;
 
   WithdrawalDelayer(
       {this.ethereumBlockNum,

@@ -1,9 +1,9 @@
 class Coordinator {
-  final int itemId;
-  final String forgerAddr;
-  final String bidderAddr;
-  final String URL;
-  final int ethereumBlock;
+  final int? itemId;
+  final String? forgerAddr;
+  final String? bidderAddr;
+  final String? URL;
+  final int? ethereumBlock;
 
   Coordinator(
       {this.itemId,
