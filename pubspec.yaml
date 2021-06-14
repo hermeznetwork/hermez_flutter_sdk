@@ -1,7 +1,10 @@
 name: hermez_sdk
-description: Hermez Flutter SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android).
-version: 1.0.0+1
+description: Hermez Flutter SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android) to communicate with the Hermez Network.
+version: 1.0.0+2
 homepage: https://hermez.io
+repository: https://github.com/hermeznetwork/hermez_flutter_sdk
+issue_tracker: https://github.com/hermeznetwork/hermez_flutter_sdk/issues
+documentation: https://docs.hermez.io/
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -14,20 +17,14 @@ analyzer:
 dependencies:
   flutter:
     sdk: flutter
-
   http: ^0.13.3
   web3dart: ^2.1.3
   web_socket_channel: ^2.1.0
   provider: ^5.0.0
   bip39: ^1.0.6
   hex: ^0.2.0
-  ffi: ^1.0.0
+  ffi: ^1.1.2
   shared_preferences: ^2.0.6
-  # path_provider_windows: ^0.1.0
-  # tweetnacl: ^0.3.2
-  # sha3: ^0.1.1
-  # flutter_liquidcore: ^1.1.1
-
 
 dev_dependencies:
   flutter_test:
@@ -41,11 +38,6 @@ flutter:
         pluginClass: HermezPlugin
       ios:
         pluginClass: HermezPlugin
-      # macos:
-        # pluginClass: HermezPlugin
-      # web:
-        # pluginClass: HermezPlugin
-        # fileName: hello_web.dart
 
 assets:
   - ERC20ABI.json

@@ -24,7 +24,7 @@ If you want to test a specific branch of the repository, pull `hermez_sdk` like 
 dependencies:
   hermez_sdk:
       git:
-        url: ssh://git@github.com/hermeznetwork/hermez-mobile-library.git
+        url: ssh://git@github.com/hermeznetwork/hermez-flutter-sdk.git
         ref: branchPathName
 ```
 
@@ -36,6 +36,12 @@ assets:
     - ERC20ABI.json
     - WithdrawalDelayerABI.json
 ```
+
+## Features and bugs
+
+Please file feature requests and bugs at the [issue tracker][tracker].
+
+[tracker]: https://github.com/hermeznetwork/hermez_flutter_sdk/issues
 
 ## Setup
 
