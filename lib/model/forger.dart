@@ -2,8 +2,8 @@ import 'coordinator.dart';
 import 'period.dart';
 
 class Forger {
-  final Coordinator coordinator;
-  final Period period;
+  final Coordinator? coordinator;
+  final Period? period;
 
   Forger({this.coordinator, this.period});
 
@@ -17,7 +17,7 @@ class Forger {
   }
 
   Map<String, dynamic> toJson() => {
-        'coordinator': coordinator.toJson(),
-        'period': period.toJson(),
+        'coordinator': coordinator!.toJson(),
+        'period': period!.toJson(),
       };
 }

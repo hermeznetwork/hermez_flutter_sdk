@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermez_sdk/api.dart';
@@ -5,6 +7,7 @@ import 'package:hermez_sdk/hermez_wallet.dart';
 import 'package:hermez_sdk/tx.dart';
 import 'package:hermez_sdk/utils.dart';
 import 'package:hermez_sdk/utils/uint8_list_utils.dart';
+import 'package:http/http.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'setup_util.dart';
@@ -29,12 +32,12 @@ void main() {
     // load token to deposit information
     final tokenToDeposit = 0;
     final token = await getTokens();
-    final tokenERC20 = token.tokens[tokenToDeposit];
+    final tokenERC20 = token.tokens![tokenToDeposit];
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
     final HermezWallet hermezWallet = wallet[0]; // hermezWallet
-    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // load second account
     final List wallet2 =
@@ -56,20 +59,23 @@ void main() {
     // performs create account authorization account 2
     /*final signature = await hermezWallet2.signCreateAccountAuthorization(
         getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);*/
-    final response = await postCreateAccountAuthorization(
-        hermezWallet2.hermezEthereumAddress, hermezWallet2.publicKeyBase64, "");
+    final response = await (postCreateAccountAuthorization(
+        hermezWallet2.hermezEthereumAddress,
+        hermezWallet2.publicKeyBase64,
+        "") as FutureOr<Response>);
     //signature);
     print('create account authorization response:${response.statusCode}');
 
     // get sender account information
     final infoAccountSender =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+            .accounts![0];
 
     // set amount to transfer
     final amountTransfer = getTokenAmountBigInt(0.0001, 18);
     // set fee in transaction
     final state = await getState();
-    final recommendedFee = state.recommendedFee;
+    final recommendedFee = state.recommendedFee!;
 
     // generate L2 transaction
     final l2TxTransfer = {
@@ -80,7 +86,7 @@ void main() {
     };
 
     final transferResponse = await generateAndSendL2Tx(
-        l2TxTransfer, hermezWallet, infoAccountSender.token);
+        l2TxTransfer, hermezWallet, infoAccountSender.token!);
     print('transferResponse: $transferResponse');
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });

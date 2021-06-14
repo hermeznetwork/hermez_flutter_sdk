@@ -4,17 +4,17 @@ import 'merkle_proof.dart';
 import 'token.dart';
 
 class Exit {
-  final int batchNum;
-  final String accountIndex;
-  final int itemId;
-  final MerkleProof merkleProof;
-  final String balance;
-  final int instantWithdraw;
-  final int delayedWithdrawRequest;
-  final int delayedWithdraw;
-  final Token token;
-  final String bjj;
-  final String hezEthereumAddress;
+  final int? batchNum;
+  final String? accountIndex;
+  final int? itemId;
+  final MerkleProof? merkleProof;
+  String? balance;
+  final int? instantWithdraw;
+  int? delayedWithdrawRequest;
+  final int? delayedWithdraw;
+  final Token? token;
+  final String? bjj;
+  final String? hezEthereumAddress;
 
   Exit(
       {this.batchNum,
@@ -86,12 +86,12 @@ class Exit {
         'batchNum': batchNum,
         'accountIndex': accountIndex,
         'itemId': itemId,
-        'merkleProof': merkleProof.toJson(),
+        'merkleProof': merkleProof!.toJson(),
         'balance': balance,
         'instantWithdrawn': instantWithdraw,
         'delayedWithdrawRequest': delayedWithdrawRequest,
         'delayedWithdrawn': delayedWithdraw,
-        'token': token.toJson(),
+        'token': token!.toJson(),
         'bjj': bjj,
         'hezEthereumAddress': hezEthereumAddress
       };

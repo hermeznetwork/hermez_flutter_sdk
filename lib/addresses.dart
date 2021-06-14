@@ -25,7 +25,7 @@ String getHermezAddress(String ethereumAddress) {
 /// @param {String} hezEthereumAddress
 ///
 /// @returns {String}
-String getEthereumAddress(String hezEthereumAddress) {
+String? getEthereumAddress(String? hezEthereumAddress) {
   if (hezEthereumAddress != null &&
       hezEthereumAddress.startsWith(hermezPrefix)) {
     return hezEthereumAddress.replaceFirst(hermezPrefix, '');
@@ -51,7 +51,7 @@ bool isEthereumAddress(String test) {
 /// @param {String} test
 ///
 /// @returns {bool}
-bool isHermezEthereumAddress(String test) {
+bool isHermezEthereumAddress(String? test) {
   if (test != null && hezEthereumAddressPattern.hasMatch(test)) {
     return true;
   }
@@ -63,7 +63,7 @@ bool isHermezEthereumAddress(String test) {
 /// @param {String} test
 ///
 /// @returns {bool}
-bool isHermezBjjAddress(String test) {
+bool isHermezBjjAddress(String? test) {
   if (test != null && bjjAddressPattern.hasMatch(test)) {
     return true;
   }
@@ -75,7 +75,7 @@ bool isHermezBjjAddress(String test) {
 /// @param {String} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
 ///
 /// @returns {num} accountIndex - e.g. 4444
-num getAccountIndex(String hezAccountIndex) {
+num getAccountIndex(String? hezAccountIndex) {
   if (hezAccountIndex != null) {
     int colonIndex = hezAccountIndex.lastIndexOf(':') + 1;
     return num.parse(hezAccountIndex.substring(colonIndex));
@@ -87,7 +87,7 @@ num getAccountIndex(String hezAccountIndex) {
 /// Checks if given string matches regex of a Hermez account index
 /// @param {String} test
 /// @returns {Boolean}
-bool isHermezAccountIndex(String test) {
+bool isHermezAccountIndex(String? test) {
   if (test != null && accountIndexPattern.hasMatch(test)) {
     return true;
   }
@@ -107,7 +107,7 @@ String hexToBase64BJJ(String bjjCompressedHex) {
   var sum = 0;
   for (var i = 0; i < bjjSwapBuffer.length; i++) {
     sum += bjjSwapBuffer[i];
-    sum = sum % pow(2, 8);
+    sum = sum % (pow(2, 8) as int);
   }
 
   final BytesBuilder finalBuffBjj = BytesBuilder();

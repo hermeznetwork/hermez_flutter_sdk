@@ -1,18 +1,18 @@
 class Batch {
-  final int itemId;
-  final int batchNum;
-  final int ethereumBlockNum;
-  final String ethereumBlockHash;
-  final String timestamp;
-  final String forgerAddr;
+  final int? itemId;
+  final int? batchNum;
+  final int? ethereumBlockNum;
+  final String? ethereumBlockHash;
+  final String? timestamp;
+  final String? forgerAddr;
   final dynamic collectedFees;
-  final double historicTotalCollectedFeesUSD;
-  final String stateRoot;
-  final int numAccounts;
-  final String exitRoot;
-  final int forgeL1TransactionsNum;
-  final int slotNum;
-  final int forgedTransactions;
+  final double? historicTotalCollectedFeesUSD;
+  final String? stateRoot;
+  final int? numAccounts;
+  final String? exitRoot;
+  final int? forgeL1TransactionsNum;
+  final int? slotNum;
+  final int? forgedTransactions;
 
   Batch(
       {this.itemId,

@@ -1,7 +1,7 @@
 class ExitsRequest {
-  final String hezEthereumAddress;
-  final bool onlyPendingWithdraws;
-  final int tokenId;
+  final String? hezEthereumAddress;
+  final bool? onlyPendingWithdraws;
+  final int? tokenId;
 
   ExitsRequest(
       {this.hezEthereumAddress, this.onlyPendingWithdraws, this.tokenId});

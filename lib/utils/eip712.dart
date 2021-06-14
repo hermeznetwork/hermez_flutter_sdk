@@ -28,7 +28,7 @@ class TypedDataDomain {
   String version;
   BigInt chainId;
   EthereumAddress verifyingContract;
-  String salt;
+  String? salt;
 
   TypedDataDomain(this.name, this.version, this.chainId, this.verifyingContract,
       {this.salt});
@@ -75,7 +75,7 @@ class eip712 {
     abiValues.add(zeroPad(typeHashBytes, 32));
 
     // Add field contents
-    types[primaryType].forEach((TypedDataArgument field) {
+    types[primaryType]!.forEach((TypedDataArgument field) {
       var value = data[field.name];
       if (types[field.type] != null) {
         abiTypes.add('bytes32');
@@ -122,7 +122,7 @@ class eip712 {
       final argType = arrayArg < 0 ? arg.type : arg.type.substring(0, arrayArg);
 
       if (typedDataTypes[argType] != null &&
-          typedDataTypes[argType].length > 0) {
+          typedDataTypes[argType]!.length > 0) {
         bool set = false;
         for (int x = 0; x < subTypes.length; x++) {
           if (subTypes[x] == argType) {

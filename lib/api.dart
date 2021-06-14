@@ -81,13 +81,13 @@ Set<String> getForgerUrls(Set<String> nextForgerUrls) {
 /// @param {Array} responsesArray - An array of responses, including errors
 /// @returns response
 /// @throws Axios Error
-http.Response filterResponses(Set<http.Response> responsesArray) {
+http.Response? filterResponses(Set<http.Response?> responsesArray) {
   Set<http.Response> invalidResponses = Set.from(responsesArray);
   invalidResponses.removeWhere((res) => res.statusCode == 200);
   if (invalidResponses.length == responsesArray.length) {
     return responsesArray.first;
   } else {
-    return responsesArray.firstWhere((res) => res.statusCode == 200);
+    return responsesArray.firstWhere((res) => res!.statusCode == 200);
   }
 }
 
@@ -95,9 +95,9 @@ http.Response filterResponses(Set<http.Response> responsesArray) {
 /// @returns {Array} An array of URLs of the next forgers
 Future<Set<String>> getNextForgerUrls() async {
   StateResponse coordinatorState = await getState();
-  return coordinatorState.network.nextForgers
+  return coordinatorState.network!.nextForgers!
       .map((nextForger) =>
-          nextForger.coordinator.URL.replaceFirst("https://", ""))
+          nextForger.coordinator!.URL!.replaceFirst("https://", ""))
       .toSet();
 }
 
@@ -106,14 +106,14 @@ Future<Set<String>> getNextForgerUrls() async {
 /// @param {int[]} tokenIds - Array of token IDs as registered in the network
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered token accounts and pagination data
-Future<AccountsResponse> getAccounts(String address, List<int> tokenIds,
+Future<AccountsResponse> getAccounts(String? address, List<int?> tokenIds,
     {int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
-  Map<String, String> params = {};
-  if (isHermezEthereumAddress(address) && address.isNotEmpty)
+  Map<String, String?> params = {};
+  if (isHermezEthereumAddress(address) && address!.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
-  else if (isHermezBjjAddress(address) && address.isNotEmpty)
+  else if (isHermezBjjAddress(address) && address!.isNotEmpty)
     params.putIfAbsent('BJJ', () => address);
   if (tokenIds.isNotEmpty)
     params.putIfAbsent('tokenIds', () => tokenIds.join(','));
@@ -151,10 +151,10 @@ Future<Account> getAccount(String accountIndex) async {
 /// @param {int} fromItem - Item from where to start the request
 /// @returns {object} Response data with filtered transactions and pagination data
 Future<ForgedTransactionsResponse> getTransactions(
-    {String address,
-    List<int> tokenIds,
-    int batchNum,
-    String accountIndex,
+    {String? address,
+    List<int>? tokenIds,
+    int? batchNum,
+    String? accountIndex,
     int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
@@ -188,7 +188,7 @@ Future<ForgedTransactionsResponse> getTransactions(
 /// GET request to the /transactions-history/:transactionId endpoint. Returns a specific forged transaction
 /// @param {string} transactionId - The ID for the specific transaction
 /// @returns {object} Response data with the transaction
-Future<ForgedTransaction> getHistoryTransaction(String transactionId) async {
+Future<ForgedTransaction?> getHistoryTransaction(String transactionId) async {
   final response =
       await get(baseApiUrl, TRANSACTIONS_HISTORY_URL + '/' + transactionId);
   if (response.statusCode == 200) {
@@ -220,13 +220,13 @@ Future<PoolTransaction> getPoolTransaction(String transactionId) async {
 /// POST request to the /transaction-pool endpoint. Sends an L2 transaction to the network
 /// @param {object} transaction - Transaction data returned by TxUtils.generateL2Transaction
 /// @returns {string} Transaction id
-Future<http.Response> postPoolTransaction(
+Future<http.Response?> postPoolTransaction(
     Map<String, dynamic> transaction) async {
   Set<String> nextForgerUrls = await getNextForgerUrls();
   Set<String> forgerUrls = getForgerUrls(nextForgerUrls);
-  Set<http.Response> responsesArray = Set();
+  Set<http.Response?> responsesArray = Set();
   for (String apiUrl in forgerUrls) {
-    http.Response response =
+    http.Response? response =
         await post(apiUrl, TRANSACTIONS_POOL_URL, body: transaction);
     responsesArray.add(response);
   }
@@ -238,11 +238,11 @@ Future<http.Response> postPoolTransaction(
 /// @param {boolean} onlyPendingWithdraws - Filter by exits that still haven't been withdrawn
 /// @returns {object} Response data with the list of exits
 Future<ExitsResponse> getExits(
-    String address, bool onlyPendingWithdraws, int tokenId) async {
-  Map<String, String> params = {};
-  if (isHermezEthereumAddress(address) && address.isNotEmpty)
+    String? address, bool onlyPendingWithdraws, int tokenId) async {
+  Map<String, String?> params = {};
+  if (isHermezEthereumAddress(address) && address!.isNotEmpty)
     params.putIfAbsent('hezEthereumAddress', () => address);
-  if (isHermezBjjAddress(address) && address.isNotEmpty)
+  if (isHermezBjjAddress(address) && address!.isNotEmpty)
     params.putIfAbsent('BJJ', () => address);
   params.putIfAbsent(
       'onlyPendingWithdraws', () => onlyPendingWithdraws.toString());
@@ -280,7 +280,7 @@ Future<Exit> getExit(int batchNum, String accountIndex) async {
 /// @param {int[]} tokenIds - An array of token IDs
 /// @returns {object} Response data with the list of tokens
 Future<TokensResponse> getTokens(
-    {List<int> tokenIds,
+    {List<int>? tokenIds,
     int fromItem = 0,
     order = PaginationOrder.ASC,
     limit = DEFAULT_PAGE_SIZE}) async {
@@ -357,7 +357,7 @@ Future<String> getBatch(int batchNum) async {
 /// @param {String} forgerAddr - A coordinator forger address
 /// @param {String} bidderAddr - A coordinator bidder address
 /// @returns {Object} Response data with a specific coordinator
-Future<List<Coordinator>> getCoordinators(String forgerAddr, String bidderAddr,
+Future<List<Coordinator>?> getCoordinators(String forgerAddr, String bidderAddr,
     {int fromItem = 0,
     PaginationOrder order = PaginationOrder.ASC,
     int limit = DEFAULT_PAGE_SIZE}) async {
@@ -408,12 +408,12 @@ Future<String> getBids(int slotNum, String bidderAddr, int fromItem) async {
 /// @param {String} bjj - BabyJubJub address of the account that makes the authorization
 /// @param {String} signature - The signature of the request
 /// @returns {Object} Response data
-Future<http.Response> postCreateAccountAuthorization(
-    String hezEthereumAddress, String bjj, String signature) async {
-  Map<String, String> params = {};
+Future<http.Response?> postCreateAccountAuthorization(
+    String? hezEthereumAddress, String? bjj, String signature) async {
+  Map<String, String?> params = {};
   params.putIfAbsent('hezEthereumAddress',
-      () => hezEthereumAddress.isNotEmpty ? hezEthereumAddress : '');
-  params.putIfAbsent('bjj', () => bjj.isNotEmpty ? bjj : '');
+      () => hezEthereumAddress!.isNotEmpty ? hezEthereumAddress : '');
+  params.putIfAbsent('bjj', () => bjj!.isNotEmpty ? bjj : '');
   params.putIfAbsent('signature', () => signature.isNotEmpty ? signature : '');
   try {
     return await post(baseApiUrl, ACCOUNT_CREATION_AUTH_URL, body: params);
@@ -422,7 +422,7 @@ Future<http.Response> postCreateAccountAuthorization(
   }
 }
 
-Future<CreateAccountAuthorization> getCreateAccountAuthorization(
+Future<CreateAccountAuthorization?> getCreateAccountAuthorization(
     String hezEthereumAddress) async {
   try {
     final response = await get(

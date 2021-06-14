@@ -58,10 +58,10 @@ const bitsShiftPrecision = 60;
 ///
 /// @returns {Object} encodedTransaction
 Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
-    {String providerUrl}) {
+    {String? providerUrl}) {
   final Map<String, dynamic> encodedTransaction = Map.from(transaction);
 
-  encodedTransaction["chainId"] = getCurrentEnvironment().chainId;
+  encodedTransaction["chainId"] = getCurrentEnvironment()!.chainId;
 
   encodedTransaction["fromAccountIndex"] =
       getAccountIndex(transaction["fromAccountIndex"]);
@@ -185,10 +185,10 @@ int getFeeIndex(num fee, num amount) {
 /// @returns {BigInt} Resulting fee in token value
 BigInt getFeeValue(num feeIndex, num amount) {
   if (feeIndex < 192) {
-    final fee = BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
+    final fee = BigInt.from(amount * feeFactorsAsBigInts[feeIndex as int]);
     return fee >> bitsShiftPrecision;
   } else {
-    return BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
+    return BigInt.from(amount * feeFactorsAsBigInts[feeIndex as int]);
   }
 }
 
@@ -208,6 +208,8 @@ String getTransactionType(Map transaction) {
       return 'TransferToEthAddr';
     } else if (isHermezBjjAddress(transaction['to'])) {
       return 'TransferToBJJ';
+    } else {
+      return 'Transfer';
     }
   } else {
     return 'Exit';
@@ -224,13 +226,13 @@ String getTransactionType(Map transaction) {
 /// @param {Number} tokenId - The token id of the token in the transaction
 ///
 /// @return {Number} nonce
-Future<num> getNonce(
-    num currentNonce, String accountIndex, String bjj, num tokenId) async {
+Future<num?> getNonce(
+    num? currentNonce, String? accountIndex, String? bjj, num? tokenId) async {
   if (currentNonce != null) {
     return currentNonce;
   }
 
-  final accountData = await api.getAccount(accountIndex);
+  final accountData = await api.getAccount(accountIndex!);
   var nonce = accountData.nonce;
 
   final List<dynamic> poolTxs = await getPoolTransactions(accountIndex, bjj);
@@ -243,7 +245,7 @@ Future<num> getNonce(
   // return current nonce if no transactions are pending
   if (poolTxsNonces.length > 0) {
     while (poolTxsNonces.indexOf(nonce) != -1) {
-      nonce++;
+      nonce = nonce! + 1;
     }
   }
 
@@ -364,15 +366,15 @@ BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
 /// @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 
 Future<Set<Map<String, dynamic>>> generateL2Transaction(
-    Map tx, String bjj, Token token) async {
+    Map tx, String? bjj, Token token) async {
   final type = tx['type'] != null ? tx['type'] : getTransactionType(tx);
   final nonce = await getNonce(tx['nonce'], tx['from'], bjj, token.id);
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
   final decompressedAmount =
       HermezCompressedAmount.decompressAmount(tx['amount']);
-  final feeBigInt = getTokenAmountBigInt(tx['fee'], token.decimals);
+  final feeBigInt = getTokenAmountBigInt(tx['fee'], token.decimals!);
 
-  String toHezEthereumAddress;
+  String? toHezEthereumAddress;
   if (type == 'TransferToEthAddr') {
     toHezEthereumAddress = tx['to'];
   }

@@ -2,8 +2,8 @@ const HERMEZ_COMPRESSED_AMOUNT_TYPE = 'HermezCompressedAmount';
 
 /// Class representing valid amounts in the Hermez network
 class HermezCompressedAmount {
-  String type;
-  num value;
+  String? type;
+  late num value;
 
   /// Builds an instance of HermezCompressedAmount, a wrapper
   /// for compressed BigInts in 40 bits used within the Hermez network

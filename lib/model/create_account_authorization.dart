@@ -1,8 +1,8 @@
 class CreateAccountAuthorization {
-  final String hezEthereumAddress;
-  final String bjj;
-  final String signature;
-  final String timestamp;
+  final String? hezEthereumAddress;
+  final String? bjj;
+  final String? signature;
+  final String? timestamp;
 
   CreateAccountAuthorization(
       {this.hezEthereumAddress, this.bjj, this.signature, this.timestamp});

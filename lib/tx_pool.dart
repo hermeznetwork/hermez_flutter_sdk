@@ -18,16 +18,17 @@ Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 /// @param {String} bjj - The account's BabyJubJub
 ///
 /// @returns {List<Transaction>}
-Future<List<PoolTransaction>> getPoolTransactions(
-    String accountIndex, String bJJ) async {
-  final chainId = getCurrentEnvironment().chainId.toString();
+Future<List<PoolTransaction?>> getPoolTransactions(
+    String? accountIndex, String? bJJ) async {
+  final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
   if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
     final emptyTransactionPool = {};
     prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
   }
-  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
+  final transactionPool =
+      json.decode(prefs.get(TRANSACTION_POOL_KEY) as String);
 
   final chainIdTransactionPool =
       transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};
@@ -40,18 +41,18 @@ Future<List<PoolTransaction>> getPoolTransactions(
       accountIndex != null &&
       Transaction.fromJson(json.decode(transaction)).fromAccountIndex !=
           accountIndex);
-  List<PoolTransaction> successfulTransactions = List();
+  List<PoolTransaction?> successfulTransactions = [];
   for (String transactionString in accountTransactionPool) {
     final transaction = Transaction.fromJson(json.decode(transactionString));
-    ForgedTransaction historyTransaction;
+    ForgedTransaction? historyTransaction;
     // TODO: History tx is needed???
     try {
-      historyTransaction = await getHistoryTransaction(transaction.id);
+      historyTransaction = await getHistoryTransaction(transaction.id!);
     } catch (e) {
       print(e.toString());
     }
     try {
-      final poolTransaction = await getPoolTransaction(transaction.id);
+      final poolTransaction = await getPoolTransaction(transaction.id!);
       if (historyTransaction != null) {
         // TODO: pool txs are unforged, is it needed??
         if (poolTransaction.info != null || poolTransaction.state == 'fged') {
@@ -78,15 +79,16 @@ Future<List<PoolTransaction>> getPoolTransactions(
 /// @param {string} transaction - The transaction to add to the pool
 /// @param {string} bJJ - The account with which the transaction was made
 /// @returns {void}
-void addPoolTransaction(String transaction, String bJJ) async {
-  final chainId = getCurrentEnvironment().chainId.toString();
+void addPoolTransaction(String transaction, String? bJJ) async {
+  final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
   if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
     final emptyTransactionPool = {};
     prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
   }
-  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
+  final transactionPool =
+      json.decode(prefs.get(TRANSACTION_POOL_KEY) as String);
 
   final chainIdTransactionPool =
       transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};
@@ -112,15 +114,16 @@ void addPoolTransaction(String transaction, String bJJ) async {
 /// @param {string} bJJ - The account with which the transaction was originally made
 /// @param {string} transactionId - The transaction identifier to remove from the pool
 /// @returns {void}
-void removePoolTransaction(String bJJ, String transactionId) async {
-  final chainId = getCurrentEnvironment().chainId.toString();
+void removePoolTransaction(String? bJJ, String? transactionId) async {
+  final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
   if (!prefs.containsKey(TRANSACTION_POOL_KEY)) {
     final emptyTransactionPool = {};
     prefs.setString(TRANSACTION_POOL_KEY, json.encode(emptyTransactionPool));
   }
-  final transactionPool = json.decode(prefs.get(TRANSACTION_POOL_KEY));
+  final transactionPool =
+      json.decode(prefs.get(TRANSACTION_POOL_KEY) as String);
 
   final chainIdTransactionPool =
       transactionPool.containsKey(chainId) ? transactionPool[chainId] : {};

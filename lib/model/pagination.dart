@@ -1,6 +1,6 @@
 class Pagination {
-  final int totalItems;
-  final int lastReturnedItem;
+  final int? totalItems;
+  final int? lastReturnedItem;
 
   Pagination({this.totalItems, this.lastReturnedItem});
 

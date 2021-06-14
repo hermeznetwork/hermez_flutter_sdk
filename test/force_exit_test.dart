@@ -18,15 +18,15 @@ void main() {
     // load token to deposit information
     final tokenToDeposit = 0;
     final token = await getTokens();
-    final tokenERC20 = token.tokens[tokenToDeposit];
+    final tokenERC20 = token.tokens![tokenToDeposit];
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
-    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // get account information
     final infoAccount =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts![0];
 
     // set amount to force-exit
     final amountExit = getTokenAmountBigInt(0.0001, 18);

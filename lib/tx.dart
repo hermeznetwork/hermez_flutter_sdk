@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
@@ -71,9 +72,15 @@ Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
 /// @param {Number} gasMultiplier - Optional gas multiplier
 ///
 /// @returns {String} transaction hash
-Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
-    Token token, String babyJubJub, String privateKey,
-    {BigInt approveMaxGas, BigInt depositMaxGas, int gasPrice = 0}) async {
+Future<String?> deposit(
+    HermezCompressedAmount amount,
+    String hezEthereumAddress,
+    Token token,
+    String babyJubJub,
+    String privateKey,
+    {BigInt? approveMaxGas,
+    BigInt? depositMaxGas,
+    int gasPrice = 0}) async {
   if (approveMaxGas == null || depositMaxGas == null) {
     LinkedHashMap<String, BigInt> gasLimits =
         await depositGasLimit(amount, hezEthereumAddress, token, babyJubJub);
@@ -89,19 +96,19 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   if (gasPrice > 0) {
     ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
   } else {
-    ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
+    ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
   }
 
   final accounts = await getAccounts(hezEthereumAddress, [token.id]);
-  final Account account = accounts != null && accounts.accounts.isNotEmpty
-      ? accounts.accounts[0]
+  final Account? account = accounts != null && accounts.accounts!.isNotEmpty
+      ? accounts.accounts![0]
       : null;
 
-  final hermezContract = await ContractParser.fromAssets(
-      'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
+  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
+      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
 
   final credentials =
-      await HermezSDK.currentWeb3Client.credentialsFromPrivateKey(privateKey);
+      await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
   final transactionParameters = [
@@ -111,7 +118,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         : BigInt.zero,
     BigInt.from(amount.value),
     BigInt.zero,
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.zero,
     hexToBytes('0x')
   ];
@@ -119,7 +126,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
   final decompressedAmount = HermezCompressedAmount.decompressAmount(amount);
 
   if (token.id == 0) {
-    int nonce = await HermezSDK.currentWeb3Client
+    int nonce = await HermezSDK.currentWeb3Client!
         .getTransactionCount(from, atBlock: BlockNum.pending());
 
     Transaction transaction = Transaction.callContract(
@@ -127,7 +134,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         function: _addL1Transaction(hermezContract),
         from: from,
         parameters: transactionParameters,
-        maxGas: depositMaxGas.toInt() - 1000,
+        maxGas: depositMaxGas!.toInt() - 1000,
         gasPrice: ethGasPrice,
         value: EtherAmount.fromUnitAndValue(
             EtherUnit.wei, BigInt.from(decompressedAmount)),
@@ -137,11 +144,11 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
         'deposit ETH --> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
         ' amountInWei: $decompressedAmount, depositGasLimit: ${depositMaxGas.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
-    String txHash;
+    String? txHash;
     try {
-      txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+      txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
           credentials, transaction,
-          chainId: getCurrentEnvironment().chainId);
+          chainId: getCurrentEnvironment()!.chainId);
     } catch (e) {
       print(e.toString());
     }
@@ -151,14 +158,14 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
     return txHash;
   }
 
-  int nonceBefore = await HermezSDK.currentWeb3Client
+  int nonceBefore = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
   await approve(BigInt.from(decompressedAmount), from.hex,
-      token.ethereumAddress, token.name, credentials,
+      token.ethereumAddress!, token.name!, credentials,
       gasLimit: approveMaxGas, gasPrice: gasPrice);
 
-  int nonceAfter = await HermezSDK.currentWeb3Client
+  int nonceAfter = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
   int correctNonce = nonceAfter;
@@ -175,7 +182,7 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
-      maxGas: depositMaxGas.toInt() - 1000,
+      maxGas: depositMaxGas!.toInt() - 1000,
       gasPrice: ethGasPrice,
       nonce: correctNonce);
 
@@ -183,11 +190,11 @@ Future<String> deposit(HermezCompressedAmount amount, String hezEthereumAddress,
       'deposit ERC20--> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
       ' amountInWei: $amount, depositGasLimit: ${depositMaxGas.toInt()}, gasPrice: ${ethGasPrice.getInWei}');
 
-  String txHash;
+  String? txHash;
   try {
-    txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+    txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
+        chainId: getCurrentEnvironment()!.chainId);
   } catch (e) {
     print(e.toString());
   }
@@ -206,23 +213,23 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   BigInt approveMaxGas = BigInt.zero;
   BigInt depositMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress)!);
   EthereumAddress to = EthereumAddress.fromHex(
-      getCurrentEnvironment().contracts[ContractName.hermez]);
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!);
   EtherAmount value = EtherAmount.zero();
-  Uint8List data;
+  Uint8List? data;
 
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
   final accounts = await getAccounts(hezEthereumAddress, [token.id]);
 
-  final Account account = accounts != null && accounts.accounts.isNotEmpty
-      ? accounts.accounts[0]
+  final Account? account = accounts != null && accounts.accounts!.isNotEmpty
+      ? accounts.accounts![0]
       : null;
 
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json',
-      getCurrentEnvironment().contracts[ContractName.hermez],
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
       ContractName.hermez);
 
   final transactionParameters = [
@@ -232,7 +239,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
         : BigInt.zero,
     BigInt.from(amount.value),
     BigInt.zero,
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.zero,
     hexToBytes('0x')
   ];
@@ -250,7 +257,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
           parameters: transactionParameters,
           value: value);
       data = transaction.data;
-      depositMaxGas = await HermezSDK.currentWeb3Client
+      depositMaxGas = await HermezSDK.currentWeb3Client!
           .estimateGas(sender: from, to: to, value: value, data: data);
       depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
     } catch (e) {
@@ -268,7 +275,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   }
 
   approveMaxGas = await approveGasLimit(BigInt.from(decompressedAmount),
-      ethereumAddress, token.ethereumAddress, token.name);
+      ethereumAddress!, token.ethereumAddress!, token.name!);
 
   approveMaxGas =
       BigInt.from((approveMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
@@ -283,12 +290,12 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
         parameters: transactionParameters,
         value: value);
     data = transaction.data;
-    depositMaxGas = await HermezSDK.currentWeb3Client
+    depositMaxGas = await HermezSDK.currentWeb3Client!
         .estimateGas(sender: from, to: to, value: value, data: data);
     depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
   } catch (e) {
     depositMaxGas = BigInt.from(GAS_LIMIT_HIGH);
-    String fromAddress = getCurrentEnvironment()
+    String? fromAddress = getCurrentEnvironment()!
         .contracts[ContractName.hermez]; // Random ethereum address
     depositMaxGas += await transferGasLimit(BigInt.from(decompressedAmount),
         fromAddress, ethereumAddress, token.ethereumAddress, token.name);
@@ -312,19 +319,19 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
 /// @param {Object} privateKey - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasMultiplier - Optional gas multiplier
-Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
+Future<String?> forceExit(HermezCompressedAmount amount, String? accountIndex,
     Token token, String privateKey,
     {gasLimit = GAS_LIMIT, gasPrice = GAS_MULTIPLIER}) async {
-  final hermezContract = await ContractParser.fromAssets(
-      'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
+  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
+      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
 
   final credentials =
-      await HermezSDK.currentWeb3Client.credentialsFromPrivateKey(privateKey);
+      await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
   EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
 
-  int nonce = await HermezSDK.currentWeb3Client
+  int nonce = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
   final transactionParameters = [
@@ -332,7 +339,7 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
     BigInt.from(getAccountIndex(accountIndex)),
     BigInt.zero,
     BigInt.from(amount.value),
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.one,
     hexToBytes('0x')
   ];
@@ -346,11 +353,11 @@ Future<String> forceExit(HermezCompressedAmount amount, String accountIndex,
       maxGas: gasLimit,
       gasPrice: ethGasPrice,
       nonce: nonce);
-  String txHash;
+  String? txHash;
   try {
-    txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+    txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
+        chainId: getCurrentEnvironment()!.chainId);
   } catch (e) {
     print(e.toString());
   }
@@ -373,21 +380,21 @@ Future<BigInt> forceExitGasLimit(String hezEthereumAddress,
     HermezCompressedAmount amount, String accountIndex, Token token) async {
   BigInt forceExitMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress)!);
   EthereumAddress to =
-      EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']);
+      EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
   EtherAmount value = EtherAmount.zero();
-  Uint8List data;
+  Uint8List? data;
 
-  final hermezContract = await ContractParser.fromAssets(
-      'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
+  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
+      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
 
   final transactionParameters = [
     BigInt.zero,
     BigInt.from(getAccountIndex(accountIndex)),
     BigInt.zero,
     BigInt.from(amount.value),
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.one,
     hexToBytes('0x')
   ];
@@ -400,7 +407,7 @@ Future<BigInt> forceExitGasLimit(String hezEthereumAddress,
   data = transaction.data;
 
   try {
-    forceExitMaxGas = await HermezSDK.currentWeb3Client
+    forceExitMaxGas = await HermezSDK.currentWeb3Client!
         .estimateGas(sender: from, to: to, value: value, data: data);
     forceExitMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
     forceExitMaxGas = BigInt.from(
@@ -428,24 +435,24 @@ Future<BigInt> forceExitGasLimit(String hezEthereumAddress,
 /// @param {Boolean} filterSiblings - Whether siblings should be filtered
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasPrice - Optional gas price
-Future<String> withdraw(
+Future<String?> withdraw(
     double amount,
-    String accountIndex,
+    String? accountIndex,
     Token token,
     String babyJubJub,
     int batchNumber,
-    List<BigInt> merkleSiblings,
+    List<BigInt>? merkleSiblings,
     String privateKey,
     {bool isInstant = true,
-    BigInt gasLimit,
+    BigInt? gasLimit,
     int gasPrice = 0}) async {
   final credentials =
-      await HermezSDK.currentWeb3Client.credentialsFromPrivateKey(privateKey);
+      await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
   if (gasLimit == null) {
     gasLimit = await withdrawGasLimit(amount, from.hex, accountIndex, token,
-        babyJubJub, batchNumber, merkleSiblings,
+        babyJubJub, batchNumber, merkleSiblings!,
         isInstant: isInstant);
   }
 
@@ -453,19 +460,19 @@ Future<String> withdraw(
   if (gasPrice > 0) {
     ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
   } else {
-    ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
+    ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
   }
 
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json',
-      getCurrentEnvironment().contracts[ContractName.hermez],
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
       ContractName.hermez);
 
-  int nonce = await HermezSDK.currentWeb3Client
+  int nonce = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
   final transactionParameters = [
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.from(amount),
     hexToInt(babyJubJub),
     BigInt.from(batchNumber),
@@ -484,11 +491,11 @@ Future<String> withdraw(
       gasPrice: ethGasPrice,
       nonce: nonce);
 
-  String txHash;
+  String? txHash;
   try {
-    txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+    txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
+        chainId: getCurrentEnvironment()!.chainId);
   } catch (e) {
     print(e.toString());
   }
@@ -501,25 +508,25 @@ Future<String> withdraw(
 Future<BigInt> withdrawGasLimit(
     double amount,
     String fromEthereumAddress,
-    String accountIndex,
+    String? accountIndex,
     Token token,
     String babyJubJub,
     int batchNumber,
     List<BigInt> merkleSiblings,
     {bool isInstant = true}) async {
-  final hermezContract = await ContractParser.fromAssets(
-      'HermezABI.json', getCurrentEnvironment().contracts['Hermez'], "Hermez");
+  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
+      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
 
   BigInt withdrawMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress));
+      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress)!);
   EthereumAddress to =
-      EthereumAddress.fromHex(getCurrentEnvironment().contracts['Hermez']);
+      EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
   EtherAmount value = EtherAmount.zero();
-  Uint8List data;
+  Uint8List? data;
 
   final transactionParameters = [
-    BigInt.from(token.id),
+    BigInt.from(token.id!),
     BigInt.from(amount),
     hexToInt(babyJubJub),
     BigInt.from(batchNumber),
@@ -568,10 +575,10 @@ Future<BigInt> withdrawGasLimit(
 /// @param {Object} signerData - Signer data used to build a Signer to send the transaction
 /// @param {Number} gasLimit - Optional gas limit
 /// @param {Number} gasPrice - Optional gas price
-Future<String> delayedWithdraw(Token token, String privateKey,
-    {BigInt gasLimit, int gasPrice = 0}) async {
+Future<String?> delayedWithdraw(Token token, String privateKey,
+    {BigInt? gasLimit, int gasPrice = 0}) async {
   final credentials =
-      await HermezSDK.currentWeb3Client.credentialsFromPrivateKey(privateKey);
+      await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
   if (gasLimit == null) {
@@ -582,17 +589,20 @@ Future<String> delayedWithdraw(Token token, String privateKey,
   if (gasPrice > 0) {
     ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
   } else {
-    ethGasPrice = await HermezSDK.currentWeb3Client.getGasPrice();
+    ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
   }
+
+  int nonce = await HermezSDK.currentWeb3Client!
+      .getTransactionCount(from, atBlock: BlockNum.pending());
 
   final withdrawalDelayerContract = await ContractParser.fromAssets(
       'WithdrawalDelayerABI.json',
-      getCurrentEnvironment().contracts['WithdrawalDelayer'],
-      "WithdrawalDelayer");
+      getCurrentEnvironment()!.contracts[ContractName.withdrawalDelayer]!,
+      ContractName.withdrawalDelayer);
 
   final transactionParameters = [
     from,
-    token.id == 0 ? 0x0 : token.ethereumAddress
+    token.id == 0 ? 0x0 : EthereumAddress.fromHex(token.ethereumAddress!)
   ];
 
   Transaction transaction = Transaction.callContract(
@@ -600,14 +610,17 @@ Future<String> delayedWithdraw(Token token, String privateKey,
       function: _withdrawal(withdrawalDelayerContract),
       parameters: transactionParameters,
       maxGas: gasLimit.toInt(),
-      gasPrice: ethGasPrice);
+      gasPrice: ethGasPrice,
+      nonce: nonce);
 
-  String txHash;
+  String? txHash;
   try {
-    txHash = await HermezSDK.currentWeb3Client.sendTransaction(
+    txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
-        chainId: getCurrentEnvironment().chainId);
-  } catch (e) {}
+        chainId: getCurrentEnvironment()!.chainId);
+  } catch (e) {
+    print(e.toString());
+  }
 
   print(txHash);
 
@@ -617,20 +630,21 @@ Future<String> delayedWithdraw(Token token, String privateKey,
 Future<BigInt> delayedWithdrawGasLimit(
     String fromEthereumAddress, Token token) async {
   BigInt withdrawMaxGas = BigInt.zero;
-  EthereumAddress from = EthereumAddress.fromHex(fromEthereumAddress);
+  EthereumAddress from =
+      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress)!);
   EthereumAddress to = EthereumAddress.fromHex(
-      getCurrentEnvironment().contracts['WithdrawalDelayer']);
+      getCurrentEnvironment()!.contracts[ContractName.withdrawalDelayer]!);
   EtherAmount value = EtherAmount.zero();
-  Uint8List data;
+  Uint8List? data;
 
   final withdrawalDelayerContract = await ContractParser.fromAssets(
       'WithdrawalDelayerABI.json',
-      getCurrentEnvironment().contracts['WithdrawalDelayer'],
-      "WithdrawalDelayer");
+      getCurrentEnvironment()!.contracts[ContractName.withdrawalDelayer]!,
+      ContractName.withdrawalDelayer);
 
   final transactionParameters = [
     from,
-    token.id == 0 ? 0x0 : token.ethereumAddress
+    token.id == 0 ? 0x0 : EthereumAddress.fromHex(token.ethereumAddress!)
   ];
 
   Transaction transaction = Transaction.callContract(
@@ -641,7 +655,7 @@ Future<BigInt> delayedWithdrawGasLimit(
   data = transaction.data;
 
   try {
-    withdrawMaxGas = await HermezSDK.currentWeb3Client
+    withdrawMaxGas = await HermezSDK.currentWeb3Client!
         .estimateGas(sender: from, to: to, value: value, data: data);
   } catch (e) {
     // DEFAULT DELAYED WITHDRAW: ???? 230K + Transfer + (siblings.length * 31K)
@@ -652,27 +666,27 @@ Future<BigInt> delayedWithdrawGasLimit(
     }
     //withdrawMaxGas += BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
   }
-
+  withdrawMaxGas += BigInt.from(GAS_LIMIT_OFFSET);
   withdrawMaxGas =
       BigInt.from((withdrawMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
 
   return withdrawMaxGas;
 }
 
-Future<bool> isInstantWithdrawalAllowed(double amount, Token token) async {
+Future<bool?> isInstantWithdrawalAllowed(double amount, Token token) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json',
-      getCurrentEnvironment().contracts[ContractName.hermez],
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
       ContractName.hermez);
 
-  final instantWithdrawalCall = await HermezSDK.currentWeb3Client.call(
+  final instantWithdrawalCall = await HermezSDK.currentWeb3Client!.call(
       contract: hermezContract,
       function: _instantWithdrawalViewer(hermezContract),
       params: [
-        EthereumAddress.fromHex(token.ethereumAddress),
+        EthereumAddress.fromHex(token.ethereumAddress!),
         BigInt.from(amount),
       ]);
-  final allowed = instantWithdrawalCall.first as bool;
+  final allowed = instantWithdrawalCall.first as bool?;
   return allowed;
 }
 
@@ -682,8 +696,9 @@ Future<bool> isInstantWithdrawalAllowed(double amount, Token token) async {
 /// @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
 ///
 /// @return {Object} - Object with the response status, transaction id and the transaction nonce
-dynamic sendL2Transaction(Map<String, dynamic> transaction, String bJJ) async {
-  Response result = await postPoolTransaction(transaction);
+dynamic sendL2Transaction(Map<String, dynamic> transaction, String? bJJ) async {
+  Response result =
+      await (postPoolTransaction(transaction) as FutureOr<Response>);
 
   if (result.statusCode == 200) {
     addPoolTransaction(json.encode(transaction), bJJ);

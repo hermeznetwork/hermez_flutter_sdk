@@ -1,15 +1,18 @@
 import 'dart:collection';
 
+import 'metrics.dart';
 import 'network.dart';
 import 'recommended_fee.dart';
+import 'rollup.dart';
+import 'withdrawal_delayer.dart';
 
 class StateResponse {
-  final Network network;
-  final LinkedHashMap<String, dynamic> metrics;
-  final LinkedHashMap<String, dynamic> rollup;
-  final LinkedHashMap<String, dynamic> auction;
-  final LinkedHashMap<String, dynamic> withdrawalDelayer;
-  final RecommendedFee recommendedFee;
+  final Network? network;
+  final Metrics? metrics;
+  final Rollup? rollup;
+  final LinkedHashMap<String, dynamic>? auction;
+  final WithdrawalDelayer? withdrawalDelayer;
+  final RecommendedFee? recommendedFee;
 
   StateResponse(
       {this.network,
@@ -21,23 +24,27 @@ class StateResponse {
 
   factory StateResponse.fromJson(Map<String, dynamic> json) {
     Network network = Network.fromJson(json['network']);
+    Metrics metrics = Metrics.fromJson(json['metrics']);
+    Rollup rollup = Rollup.fromJson(json['rollup']);
+    WithdrawalDelayer withdrawalDelayer =
+        WithdrawalDelayer.fromJson(json['withdrawalDelayer']);
     RecommendedFee recommendedFee =
         RecommendedFee.fromJson(json['recommendedFee']);
     return StateResponse(
         network: network,
-        metrics: json['metrics'],
-        rollup: json['rollup'],
+        metrics: metrics,
+        rollup: rollup,
         auction: json['auction'],
-        withdrawalDelayer: json['withdrawalDelayer'],
+        withdrawalDelayer: withdrawalDelayer,
         recommendedFee: recommendedFee);
   }
 
   Map<String, dynamic> toJson() => {
-        'network': network.toJson(),
+        'network': network!.toJson(),
         'metrics': metrics,
         'rollup': rollup,
         'auction': auction,
-        'withdrawalDelayer': withdrawalDelayer,
-        'recommendedFee': recommendedFee.toJson(),
+        'withdrawalDelayer': withdrawalDelayer!.toJson(),
+        'recommendedFee': recommendedFee!.toJson(),
       };
 }
