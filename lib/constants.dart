@@ -47,7 +47,8 @@ const BASE_WEB3_RDP_URL = 'wss://192.168.250.101:8545';*/
 
 const ETHERSCAN_URL = 'https://etherscan.io';*/
 
-const INTERNAL_ACCOUNT_ETH_ADDR = 'hez:0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF';
+const INTERNAL_ACCOUNT_ETH_ADDR =
+    'hez:0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF';
 
 const STORAGE_VERSION_KEY = 'hermezStorageVersion';
 const STORAGE_VERSION = 1;

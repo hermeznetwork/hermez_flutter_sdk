@@ -137,8 +137,13 @@ class CircomLib {
   // circomlib.poseidon -> hashPoseidon
   late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>,
       Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>) _hashPoseidon;
-  String hashPoseidon(String txCompressedData, String toEthAddr, String? toBjjAy,
-      String? rqTxCompressedDatav2, String? rqToEthAddr, String? rqToBjjAy) {
+  String hashPoseidon(
+      String txCompressedData,
+      String toEthAddr,
+      String? toBjjAy,
+      String? rqTxCompressedDatav2,
+      String? rqToEthAddr,
+      String? rqToBjjAy) {
     if (lib == null) return "ERROR: The library is not initialized";
     final ptr1 = txCompressedData.toNativeUtf8();
     final ptr2 = toEthAddr.toNativeUtf8();

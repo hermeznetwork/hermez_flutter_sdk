@@ -25,7 +25,8 @@ void main() {
 
     // get sender account information
     final infoAccountSender =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts![0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+            .accounts![0];
 
     // set amount to transfer
     final amountExit = getTokenAmountBigInt(0.0001, 18);

@@ -1,3 +1,8 @@
+## 1.0.0+1
+
+* adds support for dart null safety
+* formatted files
+
 ## 1.0.0
 
 * adds support for iOS and Android 🎉 

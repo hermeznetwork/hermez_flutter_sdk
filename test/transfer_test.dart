@@ -32,7 +32,8 @@ void main() {
 
     // get sender account information
     final infoAccountSender =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts![0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+            .accounts![0];
 
     // get receiver account information
     final infoAccountReceiver =

@@ -26,7 +26,8 @@ void main() {
 
     // get account information
     final infoAccount =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts![0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+            .accounts![0];
 
     // set amount to force-exit
     final amountExit = getTokenAmountBigInt(0.0001, 18);
