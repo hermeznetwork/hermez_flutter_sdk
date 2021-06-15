@@ -1,3 +1,8 @@
+## 1.0.0+2
+
+* added metadata for pub.dev
+* fixed readme file
+
 ## 1.0.0+1
 
 * adds support for dart null safety

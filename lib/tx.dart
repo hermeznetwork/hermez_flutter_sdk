@@ -158,21 +158,21 @@ Future<String?> deposit(
     return txHash;
   }
 
-  int nonceBefore = await HermezSDK.currentWeb3Client!
-      .getTransactionCount(from, atBlock: BlockNum.pending());
+  //int nonceBefore = await HermezSDK.currentWeb3Client!
+  //    .getTransactionCount(from, atBlock: BlockNum.pending());
 
   await approve(BigInt.from(decompressedAmount), from.hex,
       token.ethereumAddress!, token.name!, credentials,
       gasLimit: approveMaxGas, gasPrice: gasPrice);
 
-  int nonceAfter = await HermezSDK.currentWeb3Client!
+  int nonce = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
-  int correctNonce = nonceAfter;
+  /*int correctNonce = nonceAfter;
 
   if (nonceBefore == nonceAfter) {
     correctNonce = nonceAfter + 1;
-  }
+  }*/
 
   // Keep in mind that web3.eth.getTransactionCount(walletAddress)
   // will only give you the last CONFIRMED nonce.
@@ -184,7 +184,7 @@ Future<String?> deposit(
       parameters: transactionParameters,
       maxGas: depositMaxGas!.toInt() - 1000,
       gasPrice: ethGasPrice,
-      nonce: correctNonce);
+      nonce: nonce);
 
   print(
       'deposit ERC20--> privateKey: $privateKey, sender: $from, receiver: ${hermezContract.address},'
