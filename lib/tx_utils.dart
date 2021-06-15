@@ -407,8 +407,7 @@ Future<Set<Map<String, dynamic>>> generateL2Transaction(
   transaction.putIfAbsent('requestAmount', () => null);
   transaction.putIfAbsent('requestFee', () => null);
   transaction.putIfAbsent('requestNonce', () => null);
-  Map<String, dynamic> encodedTransaction =
-      await encodeTransaction(transaction);
+  Map<String, dynamic> encodedTransaction = encodeTransaction(transaction);
   transaction.putIfAbsent(
       'id',
       () => getL2TxId(

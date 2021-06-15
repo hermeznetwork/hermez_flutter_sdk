@@ -46,7 +46,7 @@ void main() {
     final String hermezEthereumAddress2 = wallet2[1]; // hermezEthereumAddress
 
     // set amount to transfer
-    final amountDeposit = getTokenAmountBigInt(0.1, 18);
+    //final amountDeposit = getTokenAmountBigInt(0.1, 18);
 
     // perform deposit account 1
     /*await deposit(

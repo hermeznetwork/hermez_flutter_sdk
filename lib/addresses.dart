@@ -40,7 +40,7 @@ String? getEthereumAddress(String? hezEthereumAddress) {
 ///
 /// @returns {bool}
 bool isEthereumAddress(String test) {
-  if (test != null && ethereumAddressPattern.hasMatch(test)) {
+  if (ethereumAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;

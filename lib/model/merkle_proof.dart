@@ -19,9 +19,8 @@ class MerkleProof {
       this.fnc});
 
   factory MerkleProof.fromJson(Map<String, dynamic> json) {
-    List<BigInt>? siblings = (json['siblings'] as List?)
-        ?.map((item) => BigInt.parse(item))
-        ?.toList();
+    List<BigInt>? siblings =
+        (json['siblings'] as List?)?.map((item) => BigInt.parse(item)).toList();
     return MerkleProof(
         root: json['root'],
         siblings: siblings,
