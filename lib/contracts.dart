@@ -1,4 +1,3 @@
-import 'package:hermez_sdk/hermez_sdk.dart';
 import 'package:web3dart/web3dart.dart';
 
 Map<String, dynamic> contractsCache = new Map<String, dynamic>();
@@ -20,7 +19,7 @@ dynamic getContract(
   if (contractsCache.containsKey(contractAddress)) {
     return contractsCache[contractAddress + signerId];
   }
-  Web3Client? provider = HermezSDK.currentWeb3Client;
+  //Web3Client? provider = HermezSDK.currentWeb3Client;
   //final signer = getSigner(provider, signerData);
 //ContractAbi.fromJson(abi, '');
   DeployedContract contract =

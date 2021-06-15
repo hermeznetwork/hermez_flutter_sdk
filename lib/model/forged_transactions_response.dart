@@ -9,7 +9,7 @@ class ForgedTransactionsResponse {
   factory ForgedTransactionsResponse.fromJson(Map<String, dynamic> json) {
     List<ForgedTransaction>? transactions = (json['transactions'] as List?)
         ?.map((item) => ForgedTransaction.fromJson(item))
-        ?.toList();
+        .toList();
     return ForgedTransactionsResponse(
         transactions: transactions, pendingItems: json['pendingItems']);
   }

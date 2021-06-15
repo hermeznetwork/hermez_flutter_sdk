@@ -1,4 +1,5 @@
 class Token {
+  // ignore: non_constant_identifier_names
   final double? USD;
   final int? decimals;
   String? ethereumAddress;
@@ -10,6 +11,7 @@ class Token {
   final String? symbol;
 
   Token({
+    // ignore: non_constant_identifier_names
     this.USD,
     this.decimals,
     this.ethereumAddress,

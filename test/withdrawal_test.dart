@@ -45,6 +45,7 @@ void main() {
           exitInfo.merkleProof!.siblings,
           privKey1,
           isInstant: isInstant);
+      expect(txHash, '0x');
     }
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });

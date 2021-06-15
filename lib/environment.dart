@@ -106,7 +106,7 @@ Set<String> getSupportedEnvironments() {
 /// @param {String} env - Supported environment name
 /// @param {String} web3ApiKey - Web3 api key
 /// @param optional {EnvParams} envParams - Custom environment object, only used when env value is 'custom'
-void setEnvironment(String env, String? web3ApiKey, {EnvParams? envParams}) {
+void setEnvironment(String? env, String? web3ApiKey, {EnvParams? envParams}) {
   if (env == null) {
     throw new ArgumentError('A environment is required');
   }

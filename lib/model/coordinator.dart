@@ -2,6 +2,7 @@ class Coordinator {
   final int? itemId;
   final String? forgerAddr;
   final String? bidderAddr;
+  // ignore: non_constant_identifier_names
   final String? URL;
   final int? ethereumBlock;
 
@@ -9,6 +10,7 @@ class Coordinator {
       {this.itemId,
       this.forgerAddr,
       this.bidderAddr,
+      // ignore: non_constant_identifier_names
       this.URL,
       this.ethereumBlock});
 

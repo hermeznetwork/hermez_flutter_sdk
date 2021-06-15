@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:math';
 import 'dart:typed_data';
-
-import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 
 /*final hash = eddsaBabyJub
     .hashPoseidon(Uint8ArrayUtils.toPointer(Uint8List.fromList([6, 8, 57])));*/
@@ -26,7 +23,7 @@ String bufToHex(Uint8List buf) {
 /// @param {Array} arr - inputs hash
 /// @returns {BigInt} - final hash
 BigInt multiHash(List<BigInt> arr) {
-  BigInt r = BigInt.zero;
+  //BigInt r = BigInt.zero;
   for (int i = 0; i < arr.length; i += 5) {
     const fiveElems = [];
     for (int j = 0; j < 5; j++) {
@@ -36,8 +33,8 @@ BigInt multiHash(List<BigInt> arr) {
         fiveElems.add(BigInt.zero);
       }
     }
-    Pointer<Uint8> ptr =
-        Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems as List<int>));
+    //Pointer<Uint8> ptr =
+    //    Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems as List<int>));
     //final ph = eddsaBabyJub.hashPoseidon(ptr);
     //r = F.add(r, ph);
   }

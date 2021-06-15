@@ -9,7 +9,7 @@ class AccountsResponse {
   factory AccountsResponse.fromJson(Map<String, dynamic> json) {
     List<Account>? accounts = (json['accounts'] as List?)
         ?.map((item) => Account.fromJson(item))
-        ?.toList();
+        .toList();
     return AccountsResponse(
         accounts: accounts, pendingItems: json['pendingItems']);
   }

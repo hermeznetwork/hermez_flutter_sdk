@@ -5,6 +5,7 @@ import 'l2info.dart';
 
 class ForgedTransaction {
   final L1Info? l1info;
+  // ignore: non_constant_identifier_names
   final String? L1orL2;
   final L2Info? l2info;
   final String? amount;
@@ -26,6 +27,7 @@ class ForgedTransaction {
 
   ForgedTransaction(
       {this.l1info,
+      // ignore: non_constant_identifier_names
       this.L1orL2,
       this.l2info,
       this.amount,

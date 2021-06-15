@@ -20,21 +20,22 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _response = '(please, wait)';
 
-  final EXAMPLES_WEB3_CHAIN_ID = 4;
-  final EXAMPLES_WEB3_URL = 'https://rinkeby.infura.io/v3/';
-  final EXAMPLES_WEB3_RDP_URL = 'wss://rinkeby.infura.io/v3/';
-  final EXAMPLES_WEB3_API_KEY = 'e2d8687b60b944d58adc96485cbab18c';
-  final EXAMPLES_HERMEZ_API_URL = 'https://api.testnet.hermez.io';
-  final EXAMPLES_HERMEZ_EXPLORER_URL = 'https://explorer.testnet.hermez.io';
-  final EXAMPLES_HERMEZ_CONTRACT_ADDRESS =
+  /*static const EXAMPLES_WEB3_CHAIN_ID = 4;
+  static const EXAMPLES_WEB3_URL = 'https://rinkeby.infura.io/v3/';
+  static const EXAMPLES_WEB3_RDP_URL = 'wss://rinkeby.infura.io/v3/';*/
+  static const EXAMPLES_WEB3_API_KEY = 'e2d8687b60b944d58adc96485cbab18c';
+  /*static const EXAMPLES_HERMEZ_API_URL = 'https://api.testnet.hermez.io';
+  static const EXAMPLES_HERMEZ_EXPLORER_URL =
+      'https://explorer.testnet.hermez.io';
+  static const EXAMPLES_HERMEZ_CONTRACT_ADDRESS =
       '0x679b11E0229959C1D3D27C9d20529E4C5DF7997c';
-  final EXAMPLES_HERMEZ_WDELAYER_ADDRESS =
-      '0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724';
-  final EXAMPLES_PRIVATE_KEY1 =
+  static const EXAMPLES_HERMEZ_WDELAYER_ADDRESS =
+      '0xeFD96CFBaF1B0Dd24d3882B0D6b8D95F85634724';*/
+  static const EXAMPLES_PRIVATE_KEY1 =
       '0x21a5e7321d0e2f3ca1cc6504396e6594a2211544b08c206847cdee96f832421a';
-  final EXAMPLES_PRIVATE_KEY2 =
+  static const EXAMPLES_PRIVATE_KEY2 =
       '0x3a9270c05ac169097808da4b02e8f9146be0f8a38cfad3dcfc0b398076381fdd';
-  final EXAMPLES_PRIVATE_KEY3 =
+  static const EXAMPLES_PRIVATE_KEY3 =
       '0x3d228fed4dc371f56b8f82f66ff17cd6bf1da7806d7eabb21810313dee819a53';
 
   @override
@@ -85,13 +86,13 @@ class _MyAppState extends State<MyApp> {
     // load first account
     final wallet =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY1);
-    final HermezWallet hermezWallet = wallet[0];
+    //final HermezWallet hermezWallet = wallet[0];
     final String hermezEthereumAddress = wallet[1];
 
     // load second account
     final wallet2 =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY2);
-    final HermezWallet hermezWallet2 = wallet2[0];
+    //final HermezWallet hermezWallet2 = wallet2[0];
     final String hermezEthereumAddress2 = wallet2[1];
 
     setState(() {
@@ -142,13 +143,13 @@ class _MyAppState extends State<MyApp> {
     // load first account
     final wallet =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY1);
-    final HermezWallet hermezWallet = wallet[0];
+    //final HermezWallet hermezWallet = wallet[0];
     final String hermezEthereumAddress = wallet[1];
 
     // load second account
     final wallet2 =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY2);
-    final HermezWallet hermezWallet2 = wallet2[0];
+    //final HermezWallet hermezWallet2 = wallet2[0];
     final String hermezEthereumAddress2 = wallet2[1];
 
     // get sender account information
@@ -166,13 +167,13 @@ class _MyAppState extends State<MyApp> {
         : null;
 
     if (infoAccountSender != null) {
-      final account1ByIdx =
-          coordinatorApi.getAccount(infoAccountSender.accountIndex);
+      //final account1ByIdx =
+      //    coordinatorApi.getAccount(infoAccountSender.accountIndex);
     }
 
     if (infoAccountReceiver != null) {
-      final account2ByIdx =
-          coordinatorApi.getAccount(infoAccountReceiver.accountIndex);
+      //final account2ByIdx =
+      //    coordinatorApi.getAccount(infoAccountReceiver.accountIndex);
     }
 
     setState(() {
@@ -242,7 +243,7 @@ class _MyAppState extends State<MyApp> {
     // load first account
     final wallet =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY1);
-    final HermezWallet hermezWallet = wallet[0];
+    //final HermezWallet hermezWallet = wallet[0];
     final String hermezEthereumAddress = wallet[1];
 
     // get sender account information
@@ -260,6 +261,10 @@ class _MyAppState extends State<MyApp> {
 
     String txHash = await tx.forceExit(compressedForceExitAmount,
         infoAccountSender.accountIndex, tokenERC20, EXAMPLES_PRIVATE_KEY1);
+
+    setState(() {
+      _response = txHash;
+    });
   }
 
   void moveTokensFromHermezToEthereumStep2Withdraw() async {
@@ -291,6 +296,10 @@ class _MyAppState extends State<MyApp> {
           exitInfo.merkleProof.siblings,
           EXAMPLES_PRIVATE_KEY1,
           isInstant: isInstant);
+
+      setState(() {
+        _response = txHash;
+      });
     }
   }
 
@@ -316,16 +325,16 @@ class _MyAppState extends State<MyApp> {
     final wallet3 =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY3);
     final HermezWallet hermezWallet3 = wallet3[0];
-    final String hermezEthereumAddress3 = wallet3[1];
+    //final String hermezEthereumAddress3 = wallet3[1];
 
     final signature = await hermezWallet3
         .signCreateAccountAuthorization(EXAMPLES_PRIVATE_KEY3);
-    final res = await coordinatorApi.postCreateAccountAuthorization(
+    await coordinatorApi.postCreateAccountAuthorization(
         hermezWallet3.hermezEthereumAddress,
         hermezWallet3.publicKeyBase64,
         signature);
 
-    final authResponse = await coordinatorApi
+    await coordinatorApi
         .getCreateAccountAuthorization(hermezWallet3.hermezEthereumAddress);
 
     // set amount to transfer
@@ -350,6 +359,10 @@ class _MyAppState extends State<MyApp> {
 
     final transferResponse = await tx.generateAndSendL2Tx(
         l2TransferTx, hermezWallet, infoAccountSender.token);
+
+    setState(() {
+      _response = transferResponse.toString();
+    });
   }
 
   void createInternalAccount() async {
@@ -360,7 +373,7 @@ class _MyAppState extends State<MyApp> {
     // load first account
     final wallet =
         await HermezWallet.createWalletFromPrivateKey(EXAMPLES_PRIVATE_KEY1);
-    final HermezWallet hermezWallet = wallet[0];
+    //final HermezWallet hermezWallet = wallet[0];
     final String hermezEthereumAddress = wallet[1];
 
     // get sender account information
@@ -403,6 +416,10 @@ class _MyAppState extends State<MyApp> {
 
     final internalAccountResponse = await tx.generateAndSendL2Tx(
         transferToInternal, hermezWallet4, tokenERC20);
+
+    setState(() {
+      _response = internalAccountResponse.toString();
+    });
   }
 
   @override

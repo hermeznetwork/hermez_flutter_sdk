@@ -25,8 +25,7 @@ import 'constants.dart'
         GAS_LIMIT_OFFSET,
         GAS_LIMIT_WITHDRAW_DEFAULT,
         GAS_LIMIT_WITHDRAW_SIBLING,
-        GAS_MULTIPLIER,
-        GAS_STANDARD_ERC20_TX;
+        GAS_MULTIPLIER;
 import 'hermez_compressed_amount.dart';
 import 'model/account.dart';
 import 'tx_pool.dart' show addPoolTransaction;
@@ -41,10 +40,10 @@ ContractFunction _withdrawal(DeployedContract contract) =>
 ContractFunction _instantWithdrawalViewer(DeployedContract contract) =>
     contract.function('instantWithdrawalViewer');
 
-ContractEvent _addTokenEvent(DeployedContract contract) =>
+/*ContractEvent _addTokenEvent(DeployedContract contract) =>
     contract.event('AddToken');
 ContractEvent _l1UserTxEvent(DeployedContract contract) =>
-    contract.event('L1UserTxEvent');
+    contract.event('L1UserTxEvent');*/
 
 /// Get current average gas price from the last ethereum blocks and multiply it
 /// @param {Number} multiplier - multiply the average gas price by this parameter
@@ -99,7 +98,12 @@ Future<String?> deposit(
     ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
   }
 
-  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
+  var accounts;
+  try {
+    accounts = await getAccounts(hezEthereumAddress, [token.id]);
+  } catch (e) {
+    accounts = null;
+  }
   final Account? account = accounts != null && accounts.accounts!.isNotEmpty
       ? accounts.accounts![0]
       : null;
@@ -221,7 +225,12 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
 
   final ethereumAddress = getEthereumAddress(hezEthereumAddress);
 
-  final accounts = await getAccounts(hezEthereumAddress, [token.id]);
+  var accounts;
+  try {
+    accounts = await getAccounts(hezEthereumAddress, [token.id]);
+  } catch (e) {
+    accounts = null;
+  }
 
   final Account? account = accounts != null && accounts.accounts!.isNotEmpty
       ? accounts.accounts![0]
@@ -514,16 +523,15 @@ Future<BigInt> withdrawGasLimit(
     int batchNumber,
     List<BigInt> merkleSiblings,
     {bool isInstant = true}) async {
-  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
-      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
+  /*final hermezContract = await ContractParser.fromAssets('HermezABI.json',
+      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");*/
 
   BigInt withdrawMaxGas = BigInt.zero;
   EthereumAddress from =
       EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress)!);
   EthereumAddress to =
       EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
-  EtherAmount value = EtherAmount.zero();
-  Uint8List? data;
+  //EtherAmount value = EtherAmount.zero();
 
   final transactionParameters = [
     BigInt.from(token.id!),
@@ -537,12 +545,13 @@ Future<BigInt> withdrawGasLimit(
 
   print(transactionParameters);
 
-  Transaction transaction = Transaction.callContract(
+  /*Transaction transaction = Transaction.callContract(
       contract: hermezContract,
       function: _withdrawMerkleProof(hermezContract),
-      parameters: transactionParameters);
+      parameters: transactionParameters);*/
 
-  data = transaction.data;
+  //Uint8List? data;
+  //data = transaction.data;
 
   // TODO: FIX ESTIMATE GAS
 

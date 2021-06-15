@@ -6,7 +6,7 @@ import 'package:hermez_sdk/model/coordinators_response.dart';
 import 'package:http/http.dart' as http;
 
 import 'addresses.dart' show isHermezEthereumAddress, isHermezBjjAddress;
-import 'constants.dart' show BASE_API_URL, DEFAULT_PAGE_SIZE;
+import 'constants.dart' show DEFAULT_PAGE_SIZE;
 import 'model/account.dart';
 import 'model/accounts_response.dart';
 import 'model/create_account_authorization.dart';
@@ -46,7 +46,7 @@ enum PaginationOrder { ASC, DESC }
 Map<String, String> getPageData(
     int fromItem, PaginationOrder order, int limit) {
   Map<String, String> params = {};
-  if (fromItem != null && fromItem > 0) {
+  if (fromItem > 0) {
     params.putIfAbsent('fromItem', () => fromItem.toString());
   }
   params.putIfAbsent('order', () => order.toString().split(".")[1]);

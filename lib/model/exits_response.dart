@@ -9,7 +9,7 @@ class ExitsResponse {
 
   factory ExitsResponse.fromJson(Map<String, dynamic> json) {
     List<Exit>? exits =
-        (json['exits'] as List?)?.map((item) => Exit.fromJson(item))?.toList();
+        (json['exits'] as List?)?.map((item) => Exit.fromJson(item)).toList();
     return ExitsResponse(exits: exits, pagination: json['pagination']);
   }
 

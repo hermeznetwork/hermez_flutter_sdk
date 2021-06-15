@@ -146,7 +146,7 @@ class HermezWallet {
   /// Random wallet is created if no private key is provided
   /// @param {Uint8List} privateKey - 32 bytes buffer
   /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromBjjPvtKey(Uint8List privateKey) async {
+  static dynamic createWalletFromBjjPvtKey(Uint8List? privateKey) async {
     Uint8List privateBjjKey = privateKey != null ? privateKey : Uint8List(32);
     if (privateKey == null) {
       privateBjjKey.fillRange(0, 32, 1);

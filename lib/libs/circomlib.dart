@@ -73,7 +73,7 @@ class CircomLib {
 
   late Pointer<Utf8> Function(Pointer<Utf8>) _packSignature;
   String packSignature(String signature) {
-    if (lib == null) return "ERROR: The library is not initialized";
+    //if (lib == null) return "ERROR: The library is not initialized";
 
     final sig = signature.toNativeUtf8();
     //print("- Calling packSignature with argument: $sig");
@@ -92,7 +92,7 @@ class CircomLib {
 
   late Pointer<Utf8> Function(Pointer<Utf8>) _unpackSignature;
   String unpackSignature(String compressedSignature) {
-    if (lib == null) return "ERROR: The library is not initialized";
+    //if (lib == null) return "ERROR: The library is not initialized";
 
     final sigPtr = compressedSignature.toNativeUtf8();
     final resultPtr = _unpackSignature(sigPtr);
@@ -107,7 +107,7 @@ class CircomLib {
 
   late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _packPoint;
   String packPoint(String pointX, String pointY) {
-    if (lib == null) return "ERROR: The library is not initialized";
+    //if (lib == null) return "ERROR: The library is not initialized";
 
     final ptrX = pointX.toNativeUtf8();
     final ptrY = pointY.toNativeUtf8();
@@ -122,7 +122,7 @@ class CircomLib {
   }
 
   late Pointer<Utf8> Function(Pointer<Utf8>) _unpackPoint;
-  List<String> unpackPoint(String compressedPoint) {
+  List<String>? unpackPoint(String compressedPoint) {
     final pointPtr = compressedPoint.toNativeUtf8();
     final resultPtr = _unpackPoint(pointPtr);
     final result = resultPtr.toDartString();
@@ -144,7 +144,7 @@ class CircomLib {
       String? rqTxCompressedDatav2,
       String? rqToEthAddr,
       String? rqToBjjAy) {
-    if (lib == null) return "ERROR: The library is not initialized";
+    //if (lib == null) return "ERROR: The library is not initialized";
     final ptr1 = txCompressedData.toNativeUtf8();
     final ptr2 = toEthAddr.toNativeUtf8();
     final ptr3 = toBjjAy!.toNativeUtf8();
@@ -166,7 +166,7 @@ class CircomLib {
   // privKey.signPoseidon -> signPoseidon
   late Pointer<Utf8> Function(Pointer<Utf8>, Pointer<Utf8>) _signPoseidon;
   String signPoseidon(String privateKey, String msg) {
-    if (lib == null) return "ERROR: The library is not initialized";
+    //if (lib == null) return "ERROR: The library is not initialized";
     final prvKeyPtr = privateKey.toNativeUtf8();
     final msgPtr = msg.toNativeUtf8();
     final resultPtr = _signPoseidon(prvKeyPtr, msgPtr);

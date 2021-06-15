@@ -34,6 +34,7 @@ class TypedDataDomain {
       {this.salt});
 }
 
+// ignore: camel_case_types
 class eip712 {
   static Uint8List encodeDigest(TypedData typedData) {
     final eip191HeaderHex = "1901";
