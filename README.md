@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/badge/pub-1.0.0-orange)](https://pub.dev/packages/hermez_sdk)
 [![build](https://github.com/hermeznetwork/hermez_flutter_sdk/workflows/hermez_sdk/badge.svg)](https://github.com/hermeznetwork/hermez_flutter_sdk/actions?query=workflow%3Ahermez_sdk)
-[![license](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/hermeznetwork/hermez_mobile_library/blob/master/LICENSE)
+[![license](https://img.shields.io/badge/License-Apache-blue.svg)](https://github.com/hermeznetwork/hermez_mobile_library/blob/master/LICENSE)
 
 ## Description
 
