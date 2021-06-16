@@ -1,6 +1,6 @@
 name: hermez_sdk
-description: Hermez Flutter SDK (https://hermez.io). This plugin provides a cross-platform (iOS, Android) to communicate with the Hermez Network.
-version: 1.0.0+2
+description: Hermez Flutter SDK (https://hermez.io). This plugin provides a cross-platform tool (iOS, Android) to communicate with the Hermez Network.
+version: 1.0.0+3
 homepage: https://hermez.io
 repository: https://github.com/hermeznetwork/hermez_flutter_sdk
 issue_tracker: https://github.com/hermeznetwork/hermez_flutter_sdk/issues

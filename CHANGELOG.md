@@ -1,3 +1,8 @@
+## 1.0.0+3
+
+* changed license file
+* minor fixes
+
 ## 1.0.0+2
 
 * added metadata for pub.dev
