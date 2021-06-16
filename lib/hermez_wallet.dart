@@ -89,7 +89,7 @@ class HermezWallet {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
       'chainId':
-          BigInt.from(getCurrentEnvironment()!.chainId)/*.toRadixString(16)*/,
+          BigInt.from(getCurrentEnvironment()!.chainId) /*.toRadixString(16)*/,
       'verifyingContract':
           EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!)
     };
