@@ -19,8 +19,8 @@ void main() {
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
-    final HermezWallet? hermezWallet = wallet[0]; // hermezWallet
-    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final HermezWallet hermezWallet = wallet[0]; // hermezWallet
+    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // get account information
     final infoAccount =
@@ -28,7 +28,7 @@ void main() {
             .accounts![0];
 
     final exitInfoN =
-        (await getExits(infoAccount.hezEthereumAddress, true, tokenERC20.id!))
+        (await getExits(infoAccount.hezEthereumAddress!, true, tokenERC20.id!))
             .exits!;
     if (exitInfoN.length > 0) {
       final exitInfo = exitInfoN[exitInfoN.length - 1];
@@ -40,9 +40,9 @@ void main() {
           double.parse(exitInfo.balance!),
           exitInfo.accountIndex,
           exitInfo.token!,
-          hermezWallet!.publicKeyCompressedHex!,
+          hermezWallet.publicKeyCompressedHex!,
           exitInfo.batchNum!,
-          exitInfo.merkleProof!.siblings,
+          exitInfo.merkleProof!.siblings!,
           privKey1,
           isInstant: isInstant);
       expect(txHash, '0x');

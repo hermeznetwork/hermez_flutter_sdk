@@ -7,6 +7,10 @@ class TokensRequest {
 
   TokensRequest({this.ids, this.symbols, this.name, this.offset, this.limit});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [TokensRequest]
   factory TokensRequest.fromJson(Map<String, dynamic> json) {
     return TokensRequest(
         ids: json['ids'],

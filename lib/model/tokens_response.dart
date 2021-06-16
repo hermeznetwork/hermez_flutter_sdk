@@ -6,6 +6,10 @@ class TokensResponse {
 
   TokensResponse({this.tokens, this.pendingItems});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [TokensResponse]
   factory TokensResponse.fromJson(Map<String, dynamic> parsedJson) {
     var tokensFromJson = parsedJson['tokens'] as List;
     List<Token> tokensList =

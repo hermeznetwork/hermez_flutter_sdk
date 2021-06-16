@@ -5,6 +5,10 @@ class L2Info {
 
   L2Info({this.fee, this.historicFeeUSD, this.nonce});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [L2Info]
   factory L2Info.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
       return L2Info(

@@ -47,6 +47,10 @@ class ForgedTransaction {
       this.type,
       this.hash});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ForgedTransaction]
   factory ForgedTransaction.fromJson(Map<String, dynamic> json) {
     L1Info l1Info = L1Info.fromJson(json['L1Info']);
     L2Info l2Info = L2Info.fromJson(json['L2Info']);

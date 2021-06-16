@@ -8,8 +8,10 @@ class HermezSDK {
   static EnvParams? _environment;
 
   /// Sets an environment from a supported environment configuration or from a custom environment object
-  /// @param {String} env - Supported environment name
-  /// @param optional {EnvParams} envParams - Custom environment object, only used when env value is 'custom'
+  ///
+  /// @param [String] env - Supported environment name
+  /// @param optional [String] web3ApiKey - web3 provider api key
+  /// @param optional [EnvParams] envParams - Custom environment object, only used when env value is 'custom'
   static void init(String environment,
       {String? web3ApiKey, EnvParams? envParams}) {
     // setup environment
@@ -18,7 +20,7 @@ class HermezSDK {
 
     // setup web3 client
     _web3Client = Web3Client(getCurrentEnvironment()!.baseWeb3Url, Client(),
-        /*enableBackgroundIsolate: true,*/ socketConnector: () {
+        socketConnector: () {
       return IOWebSocketChannel.connect(getCurrentEnvironment()!.baseWeb3RdpUrl)
           .cast<String>();
     });
@@ -29,14 +31,14 @@ class HermezSDK {
   }
 
   /// Returns the current web3 client
-  /// @returns {Object} Contains contract addresses, Hermez API and Batch Explorer urls
-  /// and the Etherscan URL por the provider
+  ///
+  /// @returns [Web3Client] current web3 client
   static Web3Client? get currentWeb3Client {
     return _web3Client;
   }
 
   /// Returns the current environment
-  /// @returns {EnvParams} Contains contract addresses, Hermez API and Batch Explorer urls
+  /// @returns [EnvParams] Contains contract addresses, Hermez API and Batch Explorer urls
   static EnvParams? get currentEnvironment {
     return _environment;
   }

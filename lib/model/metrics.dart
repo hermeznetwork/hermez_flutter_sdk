@@ -16,6 +16,10 @@ class Metrics {
       this.avgTransactionFee,
       this.estimatedTimeToForgeL1});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Metrics]
   factory Metrics.fromJson(Map<String, dynamic> json) {
     return Metrics(
         transactionsPerBatch: json['transactionsPerBatch'],

@@ -13,21 +13,19 @@ final accountIndexPattern = new RegExp('^hez:[a-zA-Z0-9]{2,6}:[0-9]{0,9}\$');
 
 /// Get the hermez address representation of an ethereum address
 ///
-/// @param {String} ethereumAddress
-///
-/// @returns {String}
+/// @param [String] ethereumAddress
+/// @returns [String] - Hermez address
 String getHermezAddress(String ethereumAddress) {
   return hermezPrefix + ethereumAddress;
 }
 
 /// Gets the ethereum address part of a Hermez address
 ///
-/// @param {String} hezEthereumAddress
+/// @param [String] hezEthereumAddress
 ///
-/// @returns {String}
-String? getEthereumAddress(String? hezEthereumAddress) {
-  if (hezEthereumAddress != null &&
-      hezEthereumAddress.startsWith(hermezPrefix)) {
+/// @returns [String] - ethereum address
+String getEthereumAddress(String hezEthereumAddress) {
+  if (hezEthereumAddress.startsWith(hermezPrefix)) {
     return hezEthereumAddress.replaceFirst(hermezPrefix, '');
   } else {
     return hezEthereumAddress;
@@ -36,9 +34,8 @@ String? getEthereumAddress(String? hezEthereumAddress) {
 
 /// Checks if given string matches regex of a Ethereum address
 ///
-/// @param {String} test
-///
-/// @returns {bool}
+/// @param [String] test
+/// @returns [bool] - true if is an ethereum address
 bool isEthereumAddress(String test) {
   if (ethereumAddressPattern.hasMatch(test)) {
     return true;
@@ -48,11 +45,10 @@ bool isEthereumAddress(String test) {
 
 /// Checks if given string matches regex of a Hermez address
 ///
-/// @param {String} test
-///
-/// @returns {bool}
-bool isHermezEthereumAddress(String? test) {
-  if (test != null && hezEthereumAddressPattern.hasMatch(test)) {
+/// @param [String] test
+/// @returns [bool] - true if is a Hermez address
+bool isHermezEthereumAddress(String test) {
+  if (hezEthereumAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -60,11 +56,10 @@ bool isHermezEthereumAddress(String? test) {
 
 /// Checks if given string matches regex of a Hermez BJJ address
 ///
-/// @param {String} test
-///
-/// @returns {bool}
-bool isHermezBjjAddress(String? test) {
-  if (test != null && bjjAddressPattern.hasMatch(test)) {
+/// @param [String] test
+/// @returns [bool] - true if is a Hermez bjj address
+bool isHermezBjjAddress(String test) {
+  if (bjjAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -72,9 +67,8 @@ bool isHermezBjjAddress(String? test) {
 
 /// Extracts the account index from the address with the hez prefix
 ///
-/// @param {String} hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
-///
-/// @returns {num} accountIndex - e.g. 4444
+/// @param [String] hezAccountIndex - Account index with hez prefix e.g. hez:DAI:4444
+/// @returns [num] accountIndex - e.g. 4444
 num getAccountIndex(String? hezAccountIndex) {
   if (hezAccountIndex != null) {
     int colonIndex = hezAccountIndex.lastIndexOf(':') + 1;
@@ -85,18 +79,20 @@ num getAccountIndex(String? hezAccountIndex) {
 }
 
 /// Checks if given string matches regex of a Hermez account index
-/// @param {String} test
-/// @returns {Boolean}
-bool isHermezAccountIndex(String? test) {
-  if (test != null && accountIndexPattern.hasMatch(test)) {
+///
+/// @param [String] test
+/// @returns [bool] - true if is a Hermez account index
+bool isHermezAccountIndex(String test) {
+  if (accountIndexPattern.hasMatch(test)) {
     return true;
   }
   return false;
 }
 
-/// Get API Bjj compressed data format
-/// @param {String} bjjCompressedHex Bjj compressed address encoded as hex string
-/// @returns {String} API adapted bjj compressed address
+/// Get API bjj compressed data format
+///
+/// @param [String] bjjCompressedHex - bjj compressed address encoded as hex string
+/// @returns [String] API adapted bjj compressed address
 String hexToBase64BJJ(String bjjCompressedHex) {
   BigInt bjjScalar = hexToInt(bjjCompressedHex);
   Uint8List littleEndianBytes = Uint8ArrayUtils.bigIntToBytes(bjjScalar);

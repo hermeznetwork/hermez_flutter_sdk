@@ -15,6 +15,10 @@ class Rollup {
       this.withdrawalDelay,
       this.buckets});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Rollup]
   factory Rollup.fromJson(Map<String, dynamic> json) {
     var bucketsFromJson = json['buckets'] as List;
     List<Bucket> bucketsList =

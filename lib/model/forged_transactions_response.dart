@@ -6,6 +6,10 @@ class ForgedTransactionsResponse {
 
   ForgedTransactionsResponse({this.transactions, this.pendingItems});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ForgedTransactionsResponse]
   factory ForgedTransactionsResponse.fromJson(Map<String, dynamic> json) {
     List<ForgedTransaction>? transactions = (json['transactions'] as List?)
         ?.map((item) => ForgedTransaction.fromJson(item))

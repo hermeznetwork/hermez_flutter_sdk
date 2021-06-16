@@ -29,6 +29,10 @@ class Exit {
       this.bjj,
       this.hezEthereumAddress});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Exit]
   factory Exit.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
     MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);

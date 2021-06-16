@@ -22,6 +22,10 @@ class StateResponse {
       this.withdrawalDelayer,
       this.recommendedFee});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [StateResponse]
   factory StateResponse.fromJson(Map<String, dynamic> json) {
     Network network = Network.fromJson(json['network']);
     Metrics metrics = Metrics.fromJson(json['metrics']);

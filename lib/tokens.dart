@@ -16,22 +16,22 @@ ContractFunction _allowance(DeployedContract contract) =>
 ContractFunction _transfer(DeployedContract contract) =>
     contract.function('transfer');
 
-/// Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
+/// Calculates the gas limit of an approve transaction to an ERC 20 contract
+/// for a certain amount of tokens
 ///
-/// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
-/// @param {String} accountAddress - The Ethereum address of the transaction sender
-/// @param {String} contractAddress - The token smart contract address
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
+/// @param [BigInt] amount - Amount of tokens to be approved by the ERC 20 contract
+/// @param [String] accountAddress - The Ethereum address of the transaction sender
+/// @param [String] tokenContractAddress - The token smart contract address
+/// @param [String] tokenContractName - The token smart contract name
 ///
-/// @returns {Promise} transaction
+/// @returns [BigInt] transaction gas limit
 Future<BigInt> approveGasLimit(BigInt amount, String accountAddress,
     String tokenContractAddress, String tokenContractName) async {
   BigInt gasLimit = BigInt.zero;
   EthereumAddress from = EthereumAddress.fromHex(accountAddress);
   EthereumAddress to = EthereumAddress.fromHex(tokenContractAddress);
-  EthereumAddress hermezAddress =
-      EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
+  EthereumAddress hermezAddress = EthereumAddress.fromHex(
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!);
   EtherAmount value = EtherAmount.zero();
   Uint8List? data;
 
@@ -71,23 +71,20 @@ Future<BigInt> approveGasLimit(BigInt amount, String accountAddress,
   }
 }
 
-/// Sends an approve transaction to an ERC 20 contract for a certain amount of tokens
+/// Sends an approve transaction to an ERC20 contract for a certain amount of tokens
 ///
-/// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
-/// @param {String} accountAddress - The Ethereum address of the transaction sender
-/// @param {String} contractAddress - The token smart contract address
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
+/// @param [BigInt] amount - Amount of tokens to be approved by the ERC 20 contract
+/// @param [String] accountAddress - The Ethereum address of the transaction sender
+/// @param [String] tokenContractAddress - The token smart contract address
+/// @param [String] tokenContractName - The token smart contract name
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [BigInt] gasLimit - Gas limit set for sending the transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
 ///
-/// @returns {Promise} transaction
-Future<bool> approve(
-    BigInt amount,
-    String accountAddress,
-    String tokenContractAddress,
-    String tokenContractName,
-    Credentials credentials,
-    {BigInt? gasLimit,
-    int? gasPrice}) async {
+/// @returns [bool] true if there is enough amount of tokens approved
+Future<bool> approve(BigInt amount, String accountAddress,
+    String tokenContractAddress, String tokenContractName, String privateKey,
+    {BigInt? gasLimit, int? gasPrice}) async {
   EtherAmount ethGasPrice;
   if (gasLimit == null) {
     gasLimit = BigInt.from(GAS_LIMIT_HIGH);
@@ -101,6 +98,8 @@ Future<bool> approve(
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress, tokenContractName);
 
+  final credentials =
+      await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   EthereumAddress from = await credentials.extractAddress();
 
   try {
@@ -134,11 +133,8 @@ Future<bool> approve(
           chainId: getCurrentEnvironment()!.chainId);
 
       print(txHash);
-
-      return true;
-    } else {
-      return true;
     }
+    return true;
   } catch (error, trace) {
     print(error);
     print(trace);
@@ -146,27 +142,24 @@ Future<bool> approve(
   }
 }
 
-/// Calculates the gas limit for a transfer transaction to an ERC 20 contract for a certain amount of tokens
+/// Calculates the gas limit for a transfer transaction to an ERC 20 contract
+/// for a certain amount of tokens
 ///
-/// @param {BigInt} amount - Amount of tokens to be transferred by the ERC 20 contract
-/// @param {String} accountAddress - The Ethereum address of the transaction sender
-/// @param {String} tokenContractAddress - The token smart contract address
-/// @param {String} tokenContractName - The token smart contract name
-/// @param {Web3Client} web3client - Web3 Client
+/// @param [BigInt] amount - Amount of tokens to be transferred by the ERC 20 contract
+/// @param [String] fromAddress - The Ethereum address of the transaction sender
+/// @param [String] toAddress - The Ethereum address of the transaction receiver
+/// @param [String] tokenContractAddress - The token smart contract address
+/// @param [String] tokenContractName - The token smart contract name
 ///
-/// @returns {BigInt}
+/// @returns [BigInt] transaction gas limit
 Future<BigInt> transferGasLimit(
     BigInt amount,
-    String? fromAddress,
-    String? toAddress,
-    String? tokenContractAddress,
-    String? tokenContractName) async {
+    String fromAddress,
+    String toAddress,
+    String tokenContractAddress,
+    String tokenContractName) async {
   BigInt gasLimit = BigInt.zero;
-  if (fromAddress == null ||
-      fromAddress.isEmpty ||
-      toAddress == null ||
-      toAddress.isEmpty ||
-      amount.sign == 0) {
+  if (fromAddress.isEmpty || toAddress.isEmpty || amount.sign == 0) {
     gasLimit = BigInt.from(GAS_STANDARD_ERC20_TX);
     gasLimit =
         BigInt.from((gasLimit.toInt() / pow(10, 3)).floor() * pow(10, 3));
@@ -211,44 +204,37 @@ Future<BigInt> transferGasLimit(
 
 /// Sends an transfer transaction to an ERC 20 contract for a certain amount of tokens
 ///
-/// @param {BigInt} amount - Amount of tokens to be approved by the ERC 20 contract
-/// @param {String} accountAddress - The Ethereum address of the transaction sender
-/// @param {String} tokenContractAddress - The token smart contract address
-/// @param {String} tokenContractName - The token smart contract name
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
+/// @param [BigInt] amount - Amount of tokens to be transferred by the ERC 20 contract
+/// @param [String] fromAddress - The Ethereum address of the transaction sender
+/// @param [String] toAddress - The Ethereum address of the transaction receiver
+/// @param [String] tokenContractAddress - The token smart contract address
+/// @param [String] tokenContractName - The token smart contract name
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [BigInt] gasLimit - Gas limit set for sending the transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
 ///
-/// @returns {Promise} transaction
-Future<bool> transfer(
-    BigInt amount,
-    String fromAddress,
-    String toAddress,
-    String tokenContractAddress,
-    String tokenContractName,
-    Credentials credentials,
-    {gasLimit = GAS_LIMIT_HIGH,
-    gasPrice = GAS_MULTIPLIER}
-/*{TransferEvent onTransfer,
-    Function onError}*/
-    ) async {
+/// @returns [String] transaction hash
+Future<String?> transfer(BigInt amount, String fromAddress, String toAddress,
+    String tokenContractAddress, String tokenContractName, String privateKey,
+    {BigInt? gasLimit, int gasPrice = 0}) async {
+  if (gasLimit == null) {
+    gasLimit = BigInt.from(GAS_LIMIT_HIGH);
+  }
+  EtherAmount ethGasPrice;
+  if (gasPrice > 0) {
+    ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
+  } else {
+    ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
+  }
+
   EthereumAddress from = EthereumAddress.fromHex(fromAddress);
   EthereumAddress to = EthereumAddress.fromHex(toAddress);
 
   final contract = await ContractParser.fromAssets(
       'ERC20ABI.json', tokenContractAddress.toString(), tokenContractName);
 
-  /*StreamSubscription event;
-  // Workaround once sendTransacton doesn't return a Promise containing confirmation / receipt
-  if (onTransfer != null) {
-    event = listenTransfer(
-      (from, to, value) async {
-        onTransfer(from, to, value);
-        await event.cancel();
-      },
-      contract,
-      take: 1,
-    );
-  }*/
+  int nonce = await HermezSDK.currentWeb3Client!
+      .getTransactionCount(from, atBlock: BlockNum.pending());
 
   try {
     Transaction transaction = Transaction.callContract(
@@ -256,18 +242,21 @@ Future<bool> transfer(
       function: _transfer(contract),
       parameters: [to, amount],
       from: from,
+      maxGas: gasLimit.toInt(),
+      gasPrice: ethGasPrice,
+      nonce: nonce,
     );
+
+    final credentials = await HermezSDK.currentWeb3Client!
+        .credentialsFromPrivateKey(privateKey);
+
     String txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment()!.chainId);
     print(txHash);
-    return true;
+    return txHash;
   } catch (e) {
     print(e.toString());
-    /*if (onError != null) {
-      onError(ex);
-    }
-    return null;*/
-    return false;
+    return null;
   }
 }

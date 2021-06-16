@@ -7,6 +7,10 @@ class ExitsResponse {
 
   ExitsResponse({this.exits, this.pagination});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ExitsResponse]
   factory ExitsResponse.fromJson(Map<String, dynamic> json) {
     List<Exit>? exits =
         (json['exits'] as List?)?.map((item) => Exit.fromJson(item)).toList();

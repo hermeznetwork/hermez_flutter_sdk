@@ -37,7 +37,7 @@ void main() {
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
     final HermezWallet hermezWallet = wallet[0]; // hermezWallet
-    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // load second account
     final List wallet2 =
@@ -61,7 +61,7 @@ void main() {
         getProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL), privKey1);*/
     final response = await (postCreateAccountAuthorization(
         hermezWallet2.hermezEthereumAddress,
-        hermezWallet2.publicKeyBase64,
+        hermezWallet2.publicKeyBase64!,
         "") as FutureOr<Response>);
     //signature);
     print('create account authorization response:${response.statusCode}');

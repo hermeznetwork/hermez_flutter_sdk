@@ -14,6 +14,10 @@ class Coordinator {
       this.URL,
       this.ethereumBlock});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Coordinator]
   factory Coordinator.fromJson(Map<String, dynamic> json) {
     return Coordinator(
         itemId: json['itemId'],

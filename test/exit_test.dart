@@ -21,7 +21,7 @@ void main() {
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
     final HermezWallet hermezWallet = wallet[0]; // hermezWallet
-    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // get sender account information
     final infoAccountSender =

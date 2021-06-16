@@ -16,6 +16,10 @@ class L1Info {
       this.toForgeL1TransactionsNum,
       this.userOrigin});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [L1Info]
   factory L1Info.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
       return L1Info(

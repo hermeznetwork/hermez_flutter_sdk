@@ -12,6 +12,10 @@ class ForgedTransactionsRequest {
       this.batchNum,
       this.fromItem});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ForgedTransactionsRequest]
   factory ForgedTransactionsRequest.fromJson(Map<String, dynamic> json) {
     return ForgedTransactionsRequest(
       tokenId: json['tokenId'],

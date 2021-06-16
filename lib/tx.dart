@@ -14,18 +14,17 @@ import 'package:http/http.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
-import 'addresses.dart' show getEthereumAddress, getAccountIndex;
+import 'addresses.dart'
+    show getAccountIndex, getEthereumAddress, getHermezAddress;
 import 'api.dart' show getAccounts, postPoolTransaction;
 import 'constants.dart'
     show
-        GAS_LIMIT,
         GAS_LIMIT_DEPOSIT_OFFSET,
         GAS_LIMIT_HIGH,
         GAS_LIMIT_LOW,
         GAS_LIMIT_OFFSET,
         GAS_LIMIT_WITHDRAW_DEFAULT,
-        GAS_LIMIT_WITHDRAW_SIBLING,
-        GAS_MULTIPLIER;
+        GAS_LIMIT_WITHDRAW_SIBLING;
 import 'hermez_compressed_amount.dart';
 import 'model/account.dart';
 import 'tx_pool.dart' show addPoolTransaction;
@@ -45,30 +44,18 @@ ContractFunction _instantWithdrawalViewer(DeployedContract contract) =>
 ContractEvent _l1UserTxEvent(DeployedContract contract) =>
     contract.event('L1UserTxEvent');*/
 
-/// Get current average gas price from the last ethereum blocks and multiply it
-/// @param {Number} multiplier - multiply the average gas price by this parameter
-/// @param {Web3Client} web3Client - Network url (i.e, http://localhost:8545). Optional
-/// @returns {Future<int>} - will return the gas price obtained.
-Future<int> getGasPrice(num multiplier, Web3Client web3client) async {
-  EtherAmount strAvgGas = await web3client.getGasPrice();
-  BigInt avgGas = strAvgGas.getInWei;
-  BigInt res = avgGas * BigInt.from(multiplier);
-  int retValue = res.toInt();
-  return retValue;
-}
-
 /// Makes a deposit.
 /// It detects if it's a 'createAccountDeposit' or a 'deposit' and prepares the parameters accordingly.
 /// Detects if it's an Ether, ERC 20 token and sends the transaction accordingly.
 ///
-/// @param {BigInt} amount - The amount to be deposited
-/// @param {String} hezEthereumAddress - The Hermez address of the transaction sender
-/// @param {Object} token - The token information object as returned from the API
-/// @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
-/// @param {Number} gasLimit - Optional gas limit
-/// @param {Number} gasMultiplier - Optional gas multiplier
+/// @param [HermezCompressedAmount] amount - The compressed amount to be deposited
+/// @param [String] hezEthereumAddress - The Hermez address of the transaction sender
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [BigInt] approveGasLimit - Gas limit set for approving the amount of tokens for the transaction
+/// @param optional [BigInt] depositGasLimit - Gas limit set for the deposit transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
 ///
 /// @returns {String} transaction hash
 Future<String?> deposit(
@@ -108,8 +95,10 @@ Future<String?> deposit(
       ? accounts.accounts![0]
       : null;
 
-  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
-      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json',
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
+      ContractName.hermez);
 
   final credentials =
       await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
@@ -122,7 +111,7 @@ Future<String?> deposit(
         : BigInt.zero,
     BigInt.from(amount.value),
     BigInt.zero,
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.zero,
     hexToBytes('0x')
   ];
@@ -153,34 +142,21 @@ Future<String?> deposit(
       txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
           credentials, transaction,
           chainId: getCurrentEnvironment()!.chainId);
+
+      print(txHash);
+      return txHash;
     } catch (e) {
       print(e.toString());
+      return null;
     }
-
-    print(txHash);
-
-    return txHash;
   }
 
-  //int nonceBefore = await HermezSDK.currentWeb3Client!
-  //    .getTransactionCount(from, atBlock: BlockNum.pending());
-
   await approve(BigInt.from(decompressedAmount), from.hex,
-      token.ethereumAddress!, token.name!, credentials,
+      token.ethereumAddress!, token.name!, privateKey,
       gasLimit: approveMaxGas, gasPrice: gasPrice);
 
   int nonce = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
-
-  /*int correctNonce = nonceAfter;
-
-  if (nonceBefore == nonceAfter) {
-    correctNonce = nonceAfter + 1;
-  }*/
-
-  // Keep in mind that web3.eth.getTransactionCount(walletAddress)
-  // will only give you the last CONFIRMED nonce.
-  // So it won't take the unmined ones into account.
 
   Transaction transaction = Transaction.callContract(
       contract: hermezContract,
@@ -199,15 +175,24 @@ Future<String?> deposit(
     txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment()!.chainId);
+    print(txHash);
+    return txHash;
   } catch (e) {
     print(e.toString());
+    return null;
   }
-
-  print(txHash);
-
-  return txHash;
 }
 
+/// Calculates the gas limit for a deposit transaction.
+/// It detects if it's a 'createAccountDeposit' or a 'deposit' and prepares the parameters accordingly.
+/// Detects if it's an Ether, ERC 20 token and sends the transaction accordingly.
+///
+/// @param [HermezCompressedAmount] amount - The compressed amount to be deposited
+/// @param [String] hezEthereumAddress - The Hermez address of the transaction sender
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+///
+/// @returns [LinkedHashMap<String, BigInt>] transaction gas limits
 Future<LinkedHashMap<String, BigInt>> depositGasLimit(
     HermezCompressedAmount amount,
     String hezEthereumAddress,
@@ -217,7 +202,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   BigInt approveMaxGas = BigInt.zero;
   BigInt depositMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress)!);
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
   EthereumAddress to = EthereumAddress.fromHex(
       getCurrentEnvironment()!.contracts[ContractName.hermez]!);
   EtherAmount value = EtherAmount.zero();
@@ -248,7 +233,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
         : BigInt.zero,
     BigInt.from(amount.value),
     BigInt.zero,
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.zero,
     hexToBytes('0x')
   ];
@@ -284,7 +269,7 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   }
 
   approveMaxGas = await approveGasLimit(BigInt.from(decompressedAmount),
-      ethereumAddress!, token.ethereumAddress!, token.name!);
+      ethereumAddress, token.ethereumAddress!, token.name!);
 
   approveMaxGas =
       BigInt.from((approveMaxGas.toInt() / pow(10, 3)).floor() * pow(10, 3));
@@ -304,10 +289,10 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
     depositMaxGas += BigInt.from(GAS_LIMIT_DEPOSIT_OFFSET);
   } catch (e) {
     depositMaxGas = BigInt.from(GAS_LIMIT_HIGH);
-    String? fromAddress = getCurrentEnvironment()!
-        .contracts[ContractName.hermez]; // Random ethereum address
+    String fromAddress = getCurrentEnvironment()!
+        .contracts[ContractName.hermez]!; // Random ethereum address
     depositMaxGas += await transferGasLimit(BigInt.from(decompressedAmount),
-        fromAddress, ethereumAddress, token.ethereumAddress, token.name);
+        fromAddress, ethereumAddress, token.ethereumAddress!, token.name!);
   }
 
   depositMaxGas =
@@ -320,25 +305,39 @@ Future<LinkedHashMap<String, BigInt>> depositGasLimit(
   return result;
 }
 
-/// Makes a force Exit. This is the L1 transaction equivalent of Exit.
+/// Makes a Force Exit. This is the L1 transaction equivalent of Exit.
 ///
-/// @param {BigInt} amount - The amount to be withdrawn
-/// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
-/// @param {Object} token - The token information object as returned from the API
-/// @param {Object} privateKey - Signer data used to build a Signer to send the transaction
-/// @param {Number} gasLimit - Optional gas limit
-/// @param {Number} gasMultiplier - Optional gas multiplier
-Future<String?> forceExit(HermezCompressedAmount amount, String? accountIndex,
+/// @param [HermezCompressedAmount] amount - The compressed amount to be withdrawn
+/// @param [String] accountIndex - The account index in hez address format e.g. hez:DAI:4444
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [BigInt] gasLimit - Gas limit set for sending the transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
+///
+/// @returns [String] transaction hash
+Future<String?> forceExit(HermezCompressedAmount amount, String accountIndex,
     Token token, String privateKey,
-    {gasLimit = GAS_LIMIT, gasPrice = GAS_MULTIPLIER}) async {
-  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
-      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
+    {BigInt? gasLimit, int gasPrice = 0}) async {
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json',
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
+      ContractName.hermez);
 
   final credentials =
       await HermezSDK.currentWeb3Client!.credentialsFromPrivateKey(privateKey);
   final from = await credentials.extractAddress();
 
-  EtherAmount ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
+  if (gasLimit == null) {
+    gasLimit = await forceExitGasLimit(
+        amount, getHermezAddress(from.hex), accountIndex, token);
+  }
+
+  EtherAmount ethGasPrice;
+  if (gasPrice > 0) {
+    ethGasPrice = EtherAmount.inWei(BigInt.from(gasPrice));
+  } else {
+    ethGasPrice = await HermezSDK.currentWeb3Client!.getGasPrice();
+  }
 
   int nonce = await HermezSDK.currentWeb3Client!
       .getTransactionCount(from, atBlock: BlockNum.pending());
@@ -348,7 +347,7 @@ Future<String?> forceExit(HermezCompressedAmount amount, String? accountIndex,
     BigInt.from(getAccountIndex(accountIndex)),
     BigInt.zero,
     BigInt.from(amount.value),
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.one,
     hexToBytes('0x')
   ];
@@ -359,51 +358,52 @@ Future<String?> forceExit(HermezCompressedAmount amount, String? accountIndex,
       contract: hermezContract,
       function: _addL1Transaction(hermezContract),
       parameters: transactionParameters,
-      maxGas: gasLimit,
+      maxGas: gasLimit.toInt(),
       gasPrice: ethGasPrice,
       nonce: nonce);
-  String? txHash;
+  String txHash;
   try {
     txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment()!.chainId);
+
+    print(txHash);
+    return txHash;
   } catch (e) {
     print(e.toString());
+    return null;
   }
-
-  print(txHash);
-
-  return txHash;
 }
 
 /// Estimates a force Exit Max Gas. This is the L1 transaction equivalent of Exit.
 ///
-/// @param {BigInt} amount - The amount to be withdrawn
-/// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
-/// @param {Object} token - The token information object as returned from the API
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
-/// @param {Number} gasLimit - Optional gas limit
-/// @param {Number} gasMultiplier - Optional gas multiplier
-Future<BigInt> forceExitGasLimit(String hezEthereumAddress,
-    HermezCompressedAmount amount, String accountIndex, Token token) async {
+/// @param [HermezCompressedAmount] amount - The compressed amount to be withdrawn
+/// @param [String] hezEthereumAddress - The Hermez address of the transaction sender
+/// @param [String] accountIndex - The account index in hez address format e.g. hez:DAI:4444
+/// @param [Token] token - The token information object as returned from the API
+///
+/// @returns [BigInt] transaction gas limit
+Future<BigInt> forceExitGasLimit(HermezCompressedAmount amount,
+    String hezEthereumAddress, String accountIndex, Token token) async {
   BigInt forceExitMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress)!);
-  EthereumAddress to =
-      EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
+  EthereumAddress to = EthereumAddress.fromHex(
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!);
   EtherAmount value = EtherAmount.zero();
   Uint8List? data;
 
-  final hermezContract = await ContractParser.fromAssets('HermezABI.json',
-      getCurrentEnvironment()!.contracts['Hermez']!, "Hermez");
+  final hermezContract = await ContractParser.fromAssets(
+      'HermezABI.json',
+      getCurrentEnvironment()!.contracts[ContractName.hermez]!,
+      ContractName.hermez);
 
   final transactionParameters = [
     BigInt.zero,
     BigInt.from(getAccountIndex(accountIndex)),
     BigInt.zero,
     BigInt.from(amount.value),
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.one,
     hexToBytes('0x')
   ];
@@ -432,25 +432,25 @@ Future<BigInt> forceExitGasLimit(String hezEthereumAddress,
 
 /// Finalise the withdraw. This a L1 transaction.
 ///
-/// @param {BigInt} amount - The amount to be withdrawn
-/// @param {String} accountIndex - The account index in hez address format e.g. hez:DAI:4444
-/// @param {Object} token - The token information object as returned from the API
-/// @param {String} babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
-/// @param {BigInt} merkleRoot - The merkle root of the exit being withdrawn.
-/// @param {Array} merkleSiblings - An array of BigInts representing the siblings of the exit being withdrawn.
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
-/// @param {Boolean} isInstant - Whether it should be an Instant Withdrawal
-/// @param {Boolean} filterSiblings - Whether siblings should be filtered
-/// @param {Number} gasLimit - Optional gas limit
-/// @param {Number} gasPrice - Optional gas price
+/// @param [BigInt] amount - The amount to be withdrawn
+/// @param [String] accountIndex - The account index in hez address format e.g. hez:DAI:4444
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+/// @param [int] batchNumber - The batch number of the exit being withdrawn.
+/// @param [List<BigInt>] merkleSiblings - An list of BigInts representing the siblings of the exit being withdrawn.
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [bool] isInstant - Whether it should be an Instant Withdrawal
+/// @param optional [BigInt] gasLimit - Gas limit set for sending the transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
+///
+/// @returns [String] transaction hash
 Future<String?> withdraw(
     double amount,
     String? accountIndex,
     Token token,
     String babyJubJub,
     int batchNumber,
-    List<BigInt>? merkleSiblings,
+    List<BigInt> merkleSiblings,
     String privateKey,
     {bool isInstant = true,
     BigInt? gasLimit,
@@ -461,7 +461,7 @@ Future<String?> withdraw(
 
   if (gasLimit == null) {
     gasLimit = await withdrawGasLimit(amount, from.hex, accountIndex, token,
-        babyJubJub, batchNumber, merkleSiblings!,
+        babyJubJub, batchNumber, merkleSiblings,
         isInstant: isInstant);
   }
 
@@ -481,7 +481,7 @@ Future<String?> withdraw(
       .getTransactionCount(from, atBlock: BlockNum.pending());
 
   final transactionParameters = [
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.from(amount),
     hexToInt(babyJubJub),
     BigInt.from(batchNumber),
@@ -505,15 +505,25 @@ Future<String?> withdraw(
     txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment()!.chainId);
+    print(txHash);
+    return txHash;
   } catch (e) {
     print(e.toString());
+    return null;
   }
-
-  print(txHash);
-
-  return txHash;
 }
 
+/// Estimates a withdraw Max Gas. This a L1 transaction.
+///
+/// @param [BigInt] amount - The amount to be withdrawn
+/// @param [String] accountIndex - The account index in hez address format e.g. hez:DAI:4444
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] babyJubJub - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+/// @param [int] batchNumber - The batch number of the exit being withdrawn.
+/// @param [List<BigInt>] merkleSiblings - An list of BigInts representing the siblings of the exit being withdrawn.
+/// @param optional [bool] isInstant - Whether it should be an Instant Withdrawal
+///
+/// @returns [BigInt] transaction gas limit
 Future<BigInt> withdrawGasLimit(
     double amount,
     String fromEthereumAddress,
@@ -563,7 +573,7 @@ Future<BigInt> withdrawGasLimit(
   withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
   if (token.id != 0) {
     withdrawMaxGas += await transferGasLimit(BigInt.from(amount), to.hex,
-        from.hex, token.ethereumAddress, token.name);
+        from.hex, token.ethereumAddress!, token.name!);
   }
   withdrawMaxGas +=
       BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
@@ -579,11 +589,12 @@ Future<BigInt> withdrawGasLimit(
 
 /// Makes the final withdrawal from the WithdrawalDelayer smart contract after enough time has passed.
 ///
-/// @param {Object} token - The token information object as returned from the API
-/// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-/// @param {Object} signerData - Signer data used to build a Signer to send the transaction
-/// @param {Number} gasLimit - Optional gas limit
-/// @param {Number} gasPrice - Optional gas price
+/// @param [Token] token - The token information object as returned from the API
+/// @param [String] privateKey - Ethereum private key used to send the transaction
+/// @param optional [BigInt] gasLimit - Gas limit set for sending the transaction
+/// @param optional [int] gasPrice - Gas price set for sending the transaction
+///
+/// @returns [String] transaction hash
 Future<String?> delayedWithdraw(Token token, String privateKey,
     {BigInt? gasLimit, int gasPrice = 0}) async {
   final credentials =
@@ -591,7 +602,7 @@ Future<String?> delayedWithdraw(Token token, String privateKey,
   final from = await credentials.extractAddress();
 
   if (gasLimit == null) {
-    gasLimit = await delayedWithdrawGasLimit(from.hex, token);
+    gasLimit = await delayedWithdrawGasLimit(getHermezAddress(from.hex), token);
   }
 
   EtherAmount ethGasPrice;
@@ -627,20 +638,25 @@ Future<String?> delayedWithdraw(Token token, String privateKey,
     txHash = await HermezSDK.currentWeb3Client!.sendTransaction(
         credentials, transaction,
         chainId: getCurrentEnvironment()!.chainId);
+    print(txHash);
+    return txHash;
   } catch (e) {
     print(e.toString());
+    return null;
   }
-
-  print(txHash);
-
-  return txHash;
 }
 
+/// Estimates the delayed withdrawal Max Gas.
+///
+/// @param [String] hezEthereumAddress - The Hermez address of the transaction sender
+/// @param [Token] token - The token information object as returned from the API
+///
+/// @returns [BigInt] transaction gas limit
 Future<BigInt> delayedWithdrawGasLimit(
-    String fromEthereumAddress, Token token) async {
+    String hezEthereumAddress, Token token) async {
   BigInt withdrawMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress)!);
+      EthereumAddress.fromHex(getEthereumAddress(hezEthereumAddress));
   EthereumAddress to = EthereumAddress.fromHex(
       getCurrentEnvironment()!.contracts[ContractName.withdrawalDelayer]!);
   EtherAmount value = EtherAmount.zero();
@@ -670,8 +686,8 @@ Future<BigInt> delayedWithdrawGasLimit(
     // DEFAULT DELAYED WITHDRAW: ???? 230K + Transfer + (siblings.length * 31K)
     withdrawMaxGas = BigInt.from(GAS_LIMIT_WITHDRAW_DEFAULT);
     if (token.id != 0) {
-      withdrawMaxGas += await transferGasLimit(
-          value.getInWei, to.hex, from.hex, token.ethereumAddress, token.name);
+      withdrawMaxGas += await transferGasLimit(value.getInWei, to.hex, from.hex,
+          token.ethereumAddress!, token.name!);
     }
     //withdrawMaxGas += BigInt.from(GAS_LIMIT_WITHDRAW_SIBLING * merkleSiblings.length);
   }
@@ -682,7 +698,13 @@ Future<BigInt> delayedWithdrawGasLimit(
   return withdrawMaxGas;
 }
 
-Future<bool?> isInstantWithdrawalAllowed(double amount, Token token) async {
+/// Checks if the withdraw is allowed to be instant or not.
+///
+/// @param [double] amount - The amount to be withdrawn
+/// @param [Token] token - The token information object as returned from the API
+///
+/// @returns [BigInt] transaction gas limit
+Future<bool> isInstantWithdrawalAllowed(double amount, Token token) async {
   final hermezContract = await ContractParser.fromAssets(
       'HermezABI.json',
       getCurrentEnvironment()!.contracts[ContractName.hermez]!,
@@ -695,19 +717,19 @@ Future<bool?> isInstantWithdrawalAllowed(double amount, Token token) async {
         EthereumAddress.fromHex(token.ethereumAddress!),
         BigInt.from(amount),
       ]);
-  final allowed = instantWithdrawalCall.first as bool?;
+  final allowed = instantWithdrawalCall.first as bool;
   return allowed;
 }
 
 /// Sends a L2 transaction to the Coordinator
 ///
-/// @param {Object} transaction - Transaction object prepared by TxUtils.generateL2Transaction
-/// @param {String} bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
+/// @param [Map<String, dynamic>] transaction - Transaction object prepared by TxUtils.generateL2Transaction
+/// @param [String] bJJ - The compressed BabyJubJub in hexadecimal format of the transaction sender.
 ///
-/// @return {Object} - Object with the response status, transaction id and the transaction nonce
-dynamic sendL2Transaction(Map<String, dynamic> transaction, String? bJJ) async {
-  Response result =
-      await (postPoolTransaction(transaction) as FutureOr<Response>);
+/// @return [Map<String, dynamic>] - Object with the response status, transaction id and the transaction nonce
+Future<Map<String, dynamic>> sendL2Transaction(
+    Map<String, dynamic> transaction, String? bJJ) async {
+  Response result = await postPoolTransaction(transaction);
 
   if (result.statusCode == 200) {
     addPoolTransaction(json.encode(transaction), bJJ);
@@ -721,18 +743,16 @@ dynamic sendL2Transaction(Map<String, dynamic> transaction, String? bJJ) async {
 }
 
 /// Compact L2 transaction generated and sent to a Coordinator.
-/// @param {Object} transaction - ethAddress and babyPubKey together
-/// @param {String} transaction.from - The account index that's sending the transaction e.g hez:DAI:4444
-/// @param {String} transaction.to - The account index of the receiver e.g hez:DAI:2156. If it's an Exit, set to a falseable value
-/// @param {BigInt} transaction.amount - The amount being sent as a BigInt
-/// @param {Number} transaction.fee - The amount of tokens to be sent as a fee to the Coordinator
-/// @param {Number} transaction.nonce - The current nonce of the sender's token account
-/// @param {HermezWallet} wallet - Transaction sender Hermez Wallet
-/// @param {Token} token - The token information object as returned from the Coordinator.
-dynamic generateAndSendL2Tx(
-    dynamic transaction, HermezWallet wallet, Token token) async {
+///
+/// @param [Map<String, dynamic>] transaction
+/// @param [HermezWallet] wallet - Transaction sender Hermez Wallet
+/// @param [Token] token - The token information object as returned from the Coordinator.
+///
+/// @return [Map<String, dynamic>] - Object with the response status, transaction id and the transaction nonce
+Future<Map<String, dynamic>> generateAndSendL2Tx(
+    Map<String, dynamic> transaction, HermezWallet wallet, Token token) async {
   final Set<Map<String, dynamic>> l2TxParams = await generateL2Transaction(
-      transaction, wallet.publicKeyCompressedHex, token);
+      transaction, wallet.publicKeyCompressedHex!, token);
 
   Map<String, dynamic> l2Transaction = l2TxParams.first;
   Map<String, dynamic> l2EncodedTransaction = l2TxParams.last;

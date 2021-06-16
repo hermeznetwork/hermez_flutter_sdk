@@ -5,7 +5,7 @@ class Token {
   String? ethereumAddress;
   final int? ethereumBlockNum;
   final String? fiatUpdate;
-  final int? id;
+  final int id;
   final int? itemId;
   final String? name;
   final String? symbol;
@@ -17,12 +17,16 @@ class Token {
     this.ethereumAddress,
     this.ethereumBlockNum,
     this.fiatUpdate,
-    this.id,
+    this.id = 0,
     this.itemId,
     this.name,
     this.symbol,
   });
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Token]
   factory Token.fromJson(Map<String, dynamic> json) {
     return Token(
         USD: json['USD'] != null ? json['USD'].toDouble() : 1.0,

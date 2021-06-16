@@ -7,6 +7,10 @@ class Forger {
 
   Forger({this.coordinator, this.period});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Forger]
   factory Forger.fromJson(Map<String, dynamic> json) {
     Coordinator coordinator = Coordinator.fromJson(json['coordinator']);
     Period period = Period.fromJson(json['period']);

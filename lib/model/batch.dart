@@ -30,6 +30,10 @@ class Batch {
       this.slotNum,
       this.forgedTransactions});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Batch]
   factory Batch.fromJson(Map<String, dynamic> json) {
     return Batch(
       itemId: json['itemId'],

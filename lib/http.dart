@@ -37,7 +37,7 @@ Future<http.Response> get(String baseAddress, String endpoint,
   }
 }
 
-Future<http.Response?> post(String baseAddress, String endpoint,
+Future<http.Response> post(String baseAddress, String endpoint,
     {Map<String, dynamic>? body}) async {
   var response;
   try {
@@ -61,38 +61,6 @@ Future<http.Response?> post(String baseAddress, String endpoint,
     return response;
   }
 }
-
-/*Future<http.Response> _put(dynamic task) async {
-  try {
-    final response = await http.put(
-      '$_baseAddress/todos/${task.id}',
-      body: json.encode(task.toJson()),
-      headers: {
-        HttpHeaders.acceptHeader: 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-    );
-
-    return returnResponseOrThrowException(response);
-  } on IOException {
-    throw NetworkException();
-  }
-}
-
-Future<http.Response> _delete(String id) async {
-  try {
-    final response = await http.delete(
-      '$_baseAddress/todos/$id',
-      headers: {
-        HttpHeaders.acceptHeader: 'application/json',
-      },
-    );
-
-    return returnResponseOrThrowException(response);
-  } on IOException {
-    throw NetworkException();
-  }
-}*/
 
 http.Response returnResponseOrThrowException(http.Response response) {
   if (response.statusCode == 404) {

@@ -6,6 +6,10 @@ class CoordinatorsResponse {
 
   CoordinatorsResponse({this.coordinators, this.pendingItems});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [CoordinatorsResponse]
   factory CoordinatorsResponse.fromJson(Map<String, dynamic> json) {
     List<Coordinator>? coordinators = (json['coordinators'] as List?)
         ?.map((item) => Coordinator.fromJson(item))

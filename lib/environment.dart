@@ -97,15 +97,17 @@ class ContractName {
 }
 
 /// Gets the current supported environments
-/// @returns {Object[]} Supported environments
+///
+/// @returns [Set<String>] Supported environments
 Set<String> getSupportedEnvironments() {
   return Env.supportedEnvironments;
 }
 
 /// Sets an environment from a supported environment configuration or from a custom environment object
-/// @param {String} env - Supported environment name
-/// @param {String} web3ApiKey - Web3 api key
-/// @param optional {EnvParams} envParams - Custom environment object, only used when env value is 'custom'
+///
+/// @param [String] env - Supported environment name
+/// @param [String] web3ApiKey - Web3 api key
+/// @param optional [EnvParams] envParams - Custom environment object, only used when [env] value is 'custom'
 void setEnvironment(String? env, String? web3ApiKey, {EnvParams? envParams}) {
   if (env == null) {
     throw new ArgumentError('A environment is required');
@@ -129,8 +131,9 @@ void setEnvironment(String? env, String? web3ApiKey, {EnvParams? envParams}) {
 }
 
 /// Returns the current environment
-/// @returns {Object} Contains contract addresses, Hermez API and Batch Explorer urls
-/// and the Etherscan URL por the provider
+///
+/// @returns {EnvParams} Contains contract addresses, Hermez API and Batch Explorer urls
+/// and the url of the web3 provider
 EnvParams? getCurrentEnvironment() {
   return params;
 }

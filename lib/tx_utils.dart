@@ -227,7 +227,7 @@ String getTransactionType(Map transaction) {
 ///
 /// @return {Number} nonce
 Future<num?> getNonce(
-    num? currentNonce, String? accountIndex, String? bjj, num? tokenId) async {
+    num? currentNonce, String? accountIndex, String bjj, num? tokenId) async {
   if (currentNonce != null) {
     return currentNonce;
   }
@@ -366,7 +366,7 @@ BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
 /// @return {Object} - Contains `transaction` and `encodedTransaction`. `transaction` is the object almost ready to be sent to the Coordinator. `encodedTransaction` is needed to sign the `transaction`
 
 Future<Set<Map<String, dynamic>>> generateL2Transaction(
-    Map tx, String? bjj, Token token) async {
+    Map tx, String bjj, Token token) async {
   final type = tx['type'] != null ? tx['type'] : getTransactionType(tx);
   final nonce = await getNonce(tx['nonce'], tx['from'], bjj, token.id);
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;

@@ -15,6 +15,10 @@ class Network {
       this.currentSlot,
       this.nextForgers});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Network]
   factory Network.fromJson(Map<String, dynamic> json) {
     Batch lastBatch = Batch.fromJson(json['lastBatch']);
     var forgersFromJson = json['nextForgers'] as List;

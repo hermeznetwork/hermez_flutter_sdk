@@ -18,6 +18,10 @@ class Account {
       this.nonce,
       this.token});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Account]
   factory Account.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
     return Account(

@@ -22,7 +22,7 @@ void main() {
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
-    final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // get account information
     final infoAccount =
@@ -35,7 +35,8 @@ void main() {
     final compressedAmount =
         HermezCompressedAmount.compressAmount(amountExit.toDouble());
 
-    forceExit(compressedAmount, infoAccount.accountIndex, tokenERC20, privKey1);
+    forceExit(
+        compressedAmount, infoAccount.accountIndex!, tokenERC20, privKey1);
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });
 }

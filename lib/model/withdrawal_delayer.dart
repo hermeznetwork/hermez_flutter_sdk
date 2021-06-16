@@ -2,8 +2,8 @@ class WithdrawalDelayer {
   final int? ethereumBlockNum;
   final String? ethereumGovernanceAddress;
   final String? emergencyCouncilAddress;
-  final int?
-      withdrawalDelay; // The time that everyone needs to wait until a withdrawal of the funds is allowed, in seconds.
+  // The time that everyone needs to wait until a withdrawal of the funds is allowed, in seconds.
+  final int? withdrawalDelay;
   final int? emergencyModeStartingBlock;
   final bool? emergencyMode;
 
@@ -15,6 +15,10 @@ class WithdrawalDelayer {
       this.emergencyModeStartingBlock,
       this.emergencyMode});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [WithdrawalDelayer]
   factory WithdrawalDelayer.fromJson(Map<String, dynamic> json) {
     return WithdrawalDelayer(
       ethereumBlockNum: json['ethereumBlockNum'],

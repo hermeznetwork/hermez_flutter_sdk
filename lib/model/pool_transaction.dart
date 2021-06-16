@@ -52,6 +52,10 @@ class PoolTransaction {
       this.token,
       this.type});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [PoolTransaction]
   factory PoolTransaction.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
     return PoolTransaction(

@@ -19,7 +19,7 @@ Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 ///
 /// @returns {List<Transaction>}
 Future<List<PoolTransaction?>> getPoolTransactions(
-    String? accountIndex, String? bJJ) async {
+    String? accountIndex, String bJJ) async {
   final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
@@ -111,10 +111,11 @@ void addPoolTransaction(String transaction, String? bJJ) async {
 }
 
 /// Removes a transaction from the transaction pool
-/// @param {string} bJJ - The account with which the transaction was originally made
+///
+/// @param [String] bJJ - The account with which the transaction was originally made
 /// @param {string} transactionId - The transaction identifier to remove from the pool
 /// @returns {void}
-void removePoolTransaction(String? bJJ, String? transactionId) async {
+void removePoolTransaction(String bJJ, String? transactionId) async {
   final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;

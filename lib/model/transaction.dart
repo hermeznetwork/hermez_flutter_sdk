@@ -48,6 +48,10 @@ class Transaction {
       this.rqNonce,
       this.tokenSymbol});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Transaction]
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       id: json['id'],

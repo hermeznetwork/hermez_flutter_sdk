@@ -14,6 +14,10 @@ class Bucket {
       this.rateWithdrawals,
       this.maxWithdrawals});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Bucket]
   factory Bucket.fromJson(Map<String, dynamic> json) {
     return Bucket(
       ceilUSD: json['ceilUSD'],

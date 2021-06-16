@@ -18,6 +18,10 @@ class MerkleProof {
       this.value,
       this.fnc});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [MerkleProof]
   factory MerkleProof.fromJson(Map<String, dynamic> json) {
     List<BigInt>? siblings =
         (json['siblings'] as List?)?.map((item) => BigInt.parse(item)).toList();

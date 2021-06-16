@@ -24,8 +24,9 @@ class HermezWallet {
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
-  /// @param {Uint8List} privateKey - 32 bytes buffer
-  /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum Address
+  ///
+  /// @param [Uint8List] privateKey - 32 bytes buffer
+  /// @param [String] hermezEthereumAddress - Hexadecimal string containing the public Ethereum Address
   HermezWallet(Uint8List privateKey, String hermezEthereumAddress) {
     if (privateKey.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
@@ -63,9 +64,10 @@ class HermezWallet {
   }*/
 
   /// To sign transaction with babyjubjub keys
-  /// @param {object} transaction - Transaction object
-  /// @param {Object} encodedTransaction - Transaction encoded object
-  /// @returns {object} The signed transaction object
+  ///
+  /// @param [Map<String, dynamic>] transaction - Transaction object
+  /// @param [Map<String, dynamic>] encodedTransaction - Transaction encoded object
+  /// @returns [Map<String, dynamic>] The signed transaction object
   Map<String, dynamic> signTransaction(Map<String, dynamic> transaction,
       Map<String, dynamic> encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
@@ -76,8 +78,9 @@ class HermezWallet {
   }
 
   /// Generates the signature necessary for /create-account-authorization endpoint
-  /// @param {String} privateKey - private key used to create the wallet
-  /// @returns {String} The generated signature
+  ///
+  /// @param [String] privateKey - private key used to create the wallet
+  /// @returns [String] The generated signature
   Future<String> signCreateAccountAuthorization(String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
 
@@ -88,8 +91,7 @@ class HermezWallet {
     final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId':
-          BigInt.from(getCurrentEnvironment()!.chainId) /*.toRadixString(16)*/,
+      'chainId': BigInt.from(getCurrentEnvironment()!.chainId),
       'verifyingContract':
           EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!)
     };
@@ -125,9 +127,11 @@ class HermezWallet {
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider
-  /// @param {String} privateKey - Signer data used to build a Signer to create the wallet
-  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromPrivateKey(String privateKey) async {
+  ///
+  /// @param [String] privateKey - private key used to create the wallet
+  /// @returns [List<dynamic>] Contains the `hermezWallet` as a [HermezWallet] instance and the `hermezEthereumAddress`
+  static Future<List<dynamic>> createWalletFromPrivateKey(
+      String privateKey) async {
     final prvKey = EthPrivateKey.fromHex(privateKey);
     final ethereumAddress = await prvKey.extractAddress();
     final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
@@ -141,12 +145,15 @@ class HermezWallet {
   }
 
   /// Creates a HermezWallet from Babyjubjub private key
+  ///
   /// This creates a wallet for an internal account
   /// An internal account has a Babyjubjub key and Ethereum account 0xFFFF...FFFF
   /// Random wallet is created if no private key is provided
-  /// @param {Uint8List} privateKey - 32 bytes buffer
-  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromBjjPvtKey(Uint8List? privateKey) async {
+  ///
+  /// @param [Uint8List] privateKey - 32 bytes buffer
+  /// @returns [List<dynamic>] Contains the `hermezWallet` as a [HermezWallet] instance and the `hermezEthereumAddress`
+  static Future<List<dynamic>> createWalletFromBjjPvtKey(
+      Uint8List? privateKey) async {
     Uint8List privateBjjKey = privateKey != null ? privateKey : Uint8List(32);
     if (privateKey == null) {
       privateBjjKey.fillRange(0, 32, 1);

@@ -6,6 +6,10 @@ class ExitsRequest {
   ExitsRequest(
       {this.hezEthereumAddress, this.onlyPendingWithdraws, this.tokenId});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ExitsRequest]
   factory ExitsRequest.fromJson(Map<String, dynamic> json) {
     return ExitsRequest(
         hezEthereumAddress: json['hezEthereumAddress'],

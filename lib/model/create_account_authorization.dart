@@ -7,6 +7,10 @@ class CreateAccountAuthorization {
   CreateAccountAuthorization(
       {this.hezEthereumAddress, this.bjj, this.signature, this.timestamp});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [CreateAccountAuthorization]
   factory CreateAccountAuthorization.fromJson(Map<String, dynamic> json) {
     return CreateAccountAuthorization(
         hezEthereumAddress: json['hezEthereumAddress'],
