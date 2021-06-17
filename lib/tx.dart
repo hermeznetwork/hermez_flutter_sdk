@@ -538,13 +538,13 @@ Future<BigInt> withdrawGasLimit(
 
   BigInt withdrawMaxGas = BigInt.zero;
   EthereumAddress from =
-      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress)!);
+      EthereumAddress.fromHex(getEthereumAddress(fromEthereumAddress));
   EthereumAddress to =
       EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!);
   //EtherAmount value = EtherAmount.zero();
 
   final transactionParameters = [
-    BigInt.from(token.id!),
+    BigInt.from(token.id),
     BigInt.from(amount),
     hexToInt(babyJubJub),
     BigInt.from(batchNumber),

@@ -56,7 +56,7 @@ Future<List<PoolTransaction?>> getPoolTransactions(
       if (historyTransaction != null) {
         // TODO: pool txs are unforged, is it needed??
         if (poolTransaction.info != null || poolTransaction.state == 'fged') {
-          removePoolTransaction(bJJ, poolTransaction.id);
+          removePoolTransaction(bJJ, poolTransaction.id!);
         } else {
           successfulTransactions.add(poolTransaction);
         }
@@ -66,7 +66,7 @@ Future<List<PoolTransaction?>> getPoolTransactions(
     } catch (e) {
       // on ItemNotFoundException {
       if (historyTransaction != null) {
-        removePoolTransaction(bJJ, transaction.id);
+        removePoolTransaction(bJJ, transaction.id!);
       }
     }
   }
@@ -78,8 +78,9 @@ Future<List<PoolTransaction?>> getPoolTransactions(
 ///
 /// @param {string} transaction - The transaction to add to the pool
 /// @param {string} bJJ - The account with which the transaction was made
-/// @returns {void}
-void addPoolTransaction(String transaction, String? bJJ) async {
+///
+/// @returns [bool] true if transaction was removed from the pool
+Future<bool> addPoolTransaction(String transaction, String? bJJ) async {
   final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
@@ -107,15 +108,17 @@ void addPoolTransaction(String transaction, String? bJJ) async {
   newTransactionPool.update(chainId, (value) => newChainIdTransactionPool,
       ifAbsent: () => newChainIdTransactionPool);
 
-  prefs.setString(TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
+  return await prefs.setString(
+      TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
 }
 
 /// Removes a transaction from the transaction pool
 ///
-/// @param [String] bJJ - The account with which the transaction was originally made
-/// @param {string} transactionId - The transaction identifier to remove from the pool
-/// @returns {void}
-void removePoolTransaction(String bJJ, String? transactionId) async {
+/// @param [String] bJJ - The hermez bjj address of the account with which the transaction was originally made
+/// @param [String] transactionId - The transaction identifier to remove from the pool
+///
+/// @returns [bool] true if transaction was removed from the pool
+Future<bool> removePoolTransaction(String bJJ, String transactionId) async {
   final chainId = getCurrentEnvironment()!.chainId.toString();
 
   final SharedPreferences prefs = await _prefs;
@@ -143,5 +146,6 @@ void removePoolTransaction(String bJJ, String? transactionId) async {
   newTransactionPool.update(chainId, (value) => newChainIdTransactionPool,
       ifAbsent: () => newChainIdTransactionPool);
 
-  prefs.setString(TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
+  return await prefs.setString(
+      TRANSACTION_POOL_KEY, json.encode(newTransactionPool));
 }
