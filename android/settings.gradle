@@ -1,1 +1,3 @@
 rootProject.name = 'hermez_sdk'
+/*setBinding(new Binding([gradle: this]))
+evaluate(new File(settingsDir, 'include_flutter.groovy'))*/

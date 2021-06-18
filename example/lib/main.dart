@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initPlatformState() {
+    //HermezSDK.initialize();
     HermezSDK.init("rinkeby", web3ApiKey: EXAMPLES_WEB3_API_KEY);
 
     /*
