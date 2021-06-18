@@ -2,7 +2,7 @@ import 'package:hermez_sdk/model/token.dart';
 
 class TokensResponse {
   final List<Token>? tokens;
-  final int? pendingItems;
+  final double? pendingItems;
 
   TokensResponse({this.tokens, this.pendingItems});
 
@@ -14,7 +14,7 @@ class TokensResponse {
     var tokensFromJson = parsedJson['tokens'] as List;
     List<Token> tokensList =
         tokensFromJson.map((i) => Token.fromJson(i)).toList();
-    final pendingItems = parsedJson['pendingItems'] as int?;
+    final pendingItems = parsedJson['pendingItems'] as double?;
     return TokensResponse(tokens: tokensList, pendingItems: pendingItems);
   }
 
