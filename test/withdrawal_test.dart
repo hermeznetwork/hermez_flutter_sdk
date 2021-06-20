@@ -28,7 +28,7 @@ void main() {
             .accounts![0];
 
     final exitInfoN =
-        (await getExits(infoAccount.hezEthereumAddress!, true, tokenERC20.id!))
+        (await getExits(infoAccount.hezEthereumAddress!, true, tokenERC20.id))
             .exits!;
     if (exitInfoN.length > 0) {
       final exitInfo = exitInfoN[exitInfoN.length - 1];

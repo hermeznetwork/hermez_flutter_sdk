@@ -1,3 +1,9 @@
+import 'dart:io';
+import 'dart:math';
+import 'dart:ui';
+
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hermez_sdk/environment.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
@@ -8,9 +14,10 @@ import 'package:web_socket_channel/io.dart';
 }*/
 
 class HermezSDK {
-  /*static MethodChannel get _channel {
-    MethodChannel newChannel = const MethodChannel("hermez_sdk");
-    _channel.setMethodCallHandler(nativeHandler);
+  static MethodChannel get _channel {
+    MethodChannel newChannel =
+        const MethodChannel("io.hermez.hermez_sdk/hermez_sdk");
+    //_channel.setMethodCallHandler(nativeHandler);
     return newChannel;
   }
 
@@ -18,12 +25,58 @@ class HermezSDK {
     _channel.setMethodCallHandler(nativeHandler);
   }
 
+  void initializeAndroidWidgets() {
+    if (Platform.isAndroid) {
+      // Intialize flutter
+      WidgetsFlutterBinding.ensureInitialized();
+
+      const MethodChannel channel =
+          MethodChannel('io.hermez.hermez_sdk/hermez_sdk');
+
+      final CallbackHandle? callback =
+          PluginUtilities.getCallbackHandle(onWidgetUpdate);
+      final handle = callback!.toRawHandle();
+
+      channel.invokeMethod('initialize', handle);
+    }
+  }
+
+  void onWidgetUpdate() {
+    // Intialize flutter
+    WidgetsFlutterBinding.ensureInitialized();
+
+    const MethodChannel channel =
+        MethodChannel('io.hermez.hermez_sdk/hermez_sdk');
+
+    // If you use dependency injection you will need to inject
+    // your objects before using them.
+
+    channel.setMethodCallHandler(
+      (call) async {
+        final id = call.arguments;
+
+        print('on Dart ${call.method}!');
+
+        // Do your stuff here...
+        final result = Random().nextDouble();
+
+        return {
+          // Pass back the id of the widget so we can
+          // update it later
+          'id': id,
+          // Some data
+          'value': result,
+        };
+      },
+    );
+  }
+
   //static AWEvents _handler;
 
-  static setEventHandler(AWEvents handler) {
+  /*static setEventHandler(AWEvents handler) {
     _channel.setMethodCallHandler(nativeHandler);
     //_handler = handler;
-  }
+  }*/
 
   static Future<dynamic> nativeHandler(MethodCall call) async {
     switch (call.method) {
@@ -34,7 +87,7 @@ class HermezSDK {
       //return 123.0;
       default:
         return init(call.arguments);
-        //throw MissingPluginException('notImplemented');
+      //throw MissingPluginException('notImplemented');
     }
   }
 
@@ -55,7 +108,7 @@ class HermezSDK {
       default:
         throw MissingPluginException('notImplemented');
     }
-  }*/
+  }
 
   static Web3Client? _web3Client;
   static EnvParams? _environment;

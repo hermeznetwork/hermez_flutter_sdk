@@ -3,6 +3,11 @@ package io.hermez.hermez_sdk
 import android.app.Activity
 import android.util.Log
 import androidx.annotation.NonNull
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -12,6 +17,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.view.FlutterMain
+import io.flutter.view.FlutterMain.findAppBundlePath
 
 /** HermezPlugin */
 class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -24,11 +31,70 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   //private lateinit var methodHandler: CustomMethodHandler
   private lateinit var mActivityBinding: ActivityPluginBinding
 
-  private fun initChannels(messenger: BinaryMessenger) {
+  /*private fun initChannels(messenger: BinaryMessenger) {
     channel = MethodChannel(messenger, "hermez_sdk"/*Channel.MY_METHOD_CHANNEL*/)
+    val entrypoint: DartExecutor.DartEntrypoint = DartEntrypoint("lib/hermez_sdk.dart", "initialize");
+    messengergetDartExecutor().executeDartEntrypoint(entrypoint)
     //methodHandler = CustomMethodHandler(null)
     channel.setMethodCallHandler(this/*authMethodHandler*/)
+  }*/
+
+  private fun initChannels(messenger: BinaryMessenger, engine: FlutterEngine) {
+    Log.d("HERMEZ_SDK", "initChannels")
+    //FlutterInjector.instance().flutterLoader().ensureInitializationComplete()
+    channel = MethodChannel(messenger, "io.hermez.hermez_sdk/hermez_sdk"/*Channel.MY_METHOD_CHANNEL*/)
+    Log.d("HERMEZ_SDK", "test2")
+    //val entrypoint: DartExecutor.DartEntrypoint = DartExecutor.DartEntrypoint.createDefault()
+    /*if (FlutterInjector.instance().flutterLoader().initialized()) {
+      val entrypoint: DartExecutor.DartEntrypoint =
+        DartExecutor.DartEntrypoint(
+          /*FlutterInjector.instance().flutterLoader().findAppBundlePath()*/
+          "lib/hermez_sdk.dart",
+          //"hermez_sdk",
+          "initializeAndroidWidgets"
+        )
+      //Log.w("HERMEZ_SDK", "Couldn't update widget because there is no handle stored!")
+      Log.d("HERMEZ_SDK", entrypoint.pathToBundle) // flutter_assets
+      Log.d("HERMEZ_SDK",entrypoint.dartEntrypointFunctionName) // main
+      //Log.d("HERMEZ_SDK",entrypoint.dartEntrypointLibrary!!)
+      engine.dartExecutor.executeDartEntrypoint(entrypoint)
+    }*/
+    Log.d("HERMEZ_SDK", "test")
+    //methodHandler = CustomMethodHandler(null)
+    channel.setMethodCallHandler(this/*authMethodHandler*/)
+    channel.invokeMethod("message", "Hello from Android native host")
   }
+
+  /*private fun initializeFlutter() {
+    if (channel == null) {
+      FlutterMain.startInitialization(context)
+      FlutterMain.ensureInitializationComplete(context, arrayOf())
+
+      val handle = WidgetHelper.getRawHandle(context)
+      if (handle == WidgetHelper.NO_HANDLE) {
+        Log.w(TAG, "Couldn't update widget because there is no handle stored!")
+        return
+      }
+
+      val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(handle)
+      // You could also use a hard coded value to save you from all
+      // the hassle with SharedPreferences, but alas when running your
+      // app in release mode this would fail.
+      val entryPointFunctionName = callbackInfo.callbackName
+
+      // Instantiate a FlutterEngine.
+      val engine = FlutterEngine(context.applicationContext)
+      val entryPoint = DartEntrypoint(FlutterMain.findAppBundlePath(), entryPointFunctionName)
+      engine.dartExecutor.executeDartEntrypoint(entryPoint)
+
+      // Register Plugins when in background. When there
+      // is already an engine running, this will be ignored (although there will be some
+      // warnings in the log).
+      GeneratedPluginRegistrant.registerWith(engine)
+
+      channel = MethodChannel(engine.dartExecutor.binaryMessenger, WidgetHelper.CHANNEL)
+    }
+  }*/
 
   private fun teardownChannels() {
     channel.setMethodCallHandler(null)
@@ -44,7 +110,9 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   }
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    initChannels(flutterPluginBinding.binaryMessenger)
+    //initChannels(flutterPluginBinding.binaryMessenger)
+    Log.d("HERMEZ_SDK", "Attached to Engine")
+    initChannels(flutterPluginBinding.binaryMessenger, flutterPluginBinding.flutterEngine)
     /*channel = MethodChannel(flutterPluginBinding.binaryMessenger,"hermez_sdk" )
     channel.setMethodCallHandler(this)*/
     /*channel.invokeMethod(
@@ -91,20 +159,27 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
 
   }
 
-  fun registerWith(registrar: Registrar) {
+  /*fun registerWith(registrar: Registrar) {
+    Log.d("HERMEZ_SDK", "registerWith")
     val myPlugin = HermezPlugin()
     myPlugin.initChannels(registrar.messenger())
     myPlugin.setupActivity(registrar.activity())
-  }
+  }*/
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    Log.d("HERMEZ_SDK", "MethodCall")
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    }else if (call.method == "init") {
+      if (call.arguments == null) return
+      result.success("Android ${call.arguments as Long}")
+      //WidgetHelper.setHandle(this, call.arguments as Long)
     } else if (call.method == "initSDK") {
       result.notImplemented()
     } else {
       result.notImplemented()
     }
+
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -131,7 +206,9 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   }
 
   fun init(environment: String) {
-    channel.invokeMethod("init", environment, object : Result {
+    Log.d("HERMEZ_SDK", (channel).toString())
+    //channel.invokeMethod("message", "Hello from Android native host")
+    channel.invokeMethod("message", environment, object : Result {
       override fun success(response: Any?) {
         val result : Boolean = response as Boolean
         Log.d("HERMEZ_SDK", "success: $result")
@@ -143,7 +220,7 @@ class HermezPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       }
 
       override fun notImplemented() {
-        Log.e("HERMEZ_SDK", "not implemented: init")
+        Log.e("HERMEZ_SDK", "not implemented: main")
       }
     })
   }
