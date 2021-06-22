@@ -1,11 +1,11 @@
 class Metrics {
-  final double? transactionsPerBatch;
-  final double? batchFrequency;
-  final double? transactionsPerSecond;
+  final num? transactionsPerBatch;
+  final num? batchFrequency;
+  final num? transactionsPerSecond;
   final int? tokenAccounts;
   final int? wallets;
-  final double? avgTransactionFee;
-  final double? estimatedTimeToForgeL1;
+  final num? avgTransactionFee;
+  final num? estimatedTimeToForgeL1;
 
   Metrics(
       {this.transactionsPerBatch,
@@ -22,13 +22,13 @@ class Metrics {
   /// @returns [Metrics]
   factory Metrics.fromJson(Map<String, dynamic> json) {
     return Metrics(
-        transactionsPerBatch: json['transactionsPerBatch'],
-        batchFrequency: json['batchFrequency'],
-        transactionsPerSecond: json['transactionsPerSecond'],
+        transactionsPerBatch: json['transactionsPerBatch'] as num?,
+        batchFrequency: json['batchFrequency'] as num?,
+        transactionsPerSecond: json['transactionsPerSecond'] as num?,
         tokenAccounts: json['tokenAccounts'],
         wallets: json['wallets'],
-        avgTransactionFee: json['avgTransactionFee'],
-        estimatedTimeToForgeL1: json['estimatedTimeToForgeL1']);
+        avgTransactionFee: json['avgTransactionFee'] as num?,
+        estimatedTimeToForgeL1: json['estimatedTimeToForgeL1'] as num?);
   }
 
   Map<String, dynamic> toJson() => {

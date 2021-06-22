@@ -53,7 +53,7 @@ Map<String, String> _getPageData(
     params.putIfAbsent('fromItem', () => fromItem.toString());
   }
   params.putIfAbsent('order', () => order.toString().split(".")[1]);
-  params.putIfAbsent('limit', () => DEFAULT_PAGE_SIZE.toString());
+  params.putIfAbsent('limit', () => limit.toString());
   return params;
 }
 

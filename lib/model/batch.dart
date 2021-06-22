@@ -1,6 +1,7 @@
 class Batch {
   final int? itemId;
   final int? batchNum;
+  final String? ethereumTxHash;
   final int? ethereumBlockNum;
   final String? ethereumBlockHash;
   final String? timestamp;
@@ -17,6 +18,7 @@ class Batch {
   Batch(
       {this.itemId,
       this.batchNum,
+      this.ethereumTxHash,
       this.ethereumBlockNum,
       this.ethereumBlockHash,
       this.timestamp,
@@ -38,6 +40,7 @@ class Batch {
     return Batch(
       itemId: json['itemId'],
       batchNum: json['batchNum'],
+      ethereumTxHash: json['ethereumTxHash'],
       ethereumBlockNum: json['ethereumBlockNum'],
       ethereumBlockHash: json['ethereumBlockHash'],
       timestamp: json['timestamp'],
@@ -57,6 +60,7 @@ class Batch {
   Map<String, dynamic> toJson() => {
         'itemId': itemId,
         'batchNum': batchNum,
+        'ethereumTxHash': ethereumTxHash,
         'ethereumBlockNum': ethereumBlockNum,
         'ethereumBlockHash': ethereumBlockHash,
         'timestamp': timestamp,
