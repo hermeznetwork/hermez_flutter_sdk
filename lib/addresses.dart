@@ -25,7 +25,7 @@ String getHermezAddress(String ethereumAddress) {
 ///
 /// @returns [String] - ethereum address
 String getEthereumAddress(String hezEthereumAddress) {
-  if (hezEthereumAddress.startsWith(hermezPrefix)) {
+  if (hezEthereumAddress != null && hezEthereumAddress.startsWith(hermezPrefix)) {
     return hezEthereumAddress.replaceFirst(hermezPrefix, '');
   } else {
     return hezEthereumAddress;
@@ -37,7 +37,7 @@ String getEthereumAddress(String hezEthereumAddress) {
 /// @param [String] test
 /// @returns [bool] - true if is an ethereum address
 bool isEthereumAddress(String test) {
-  if (ethereumAddressPattern.hasMatch(test)) {
+  if (test != null && ethereumAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -48,7 +48,7 @@ bool isEthereumAddress(String test) {
 /// @param [String] test
 /// @returns [bool] - true if is a Hermez address
 bool isHermezEthereumAddress(String test) {
-  if (hezEthereumAddressPattern.hasMatch(test)) {
+  if (test != null && hezEthereumAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -59,7 +59,7 @@ bool isHermezEthereumAddress(String test) {
 /// @param [String] test
 /// @returns [bool] - true if is a Hermez bjj address
 bool isHermezBjjAddress(String test) {
-  if (bjjAddressPattern.hasMatch(test)) {
+  if (test != null && bjjAddressPattern.hasMatch(test)) {
     return true;
   }
   return false;
@@ -83,7 +83,7 @@ num getAccountIndex(String? hezAccountIndex) {
 /// @param [String] test
 /// @returns [bool] - true if is a Hermez account index
 bool isHermezAccountIndex(String test) {
-  if (accountIndexPattern.hasMatch(test)) {
+  if (test != null && accountIndexPattern.hasMatch(test)) {
     return true;
   }
   return false;
