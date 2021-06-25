@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
+import 'dart:math';
 import 'dart:typed_data';
-
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
 
 /*final hash = eddsaBabyJub
     .hashPoseidon(Uint8ArrayUtils.toPointer(Uint8List.fromList([6, 8, 57])));*/
@@ -25,7 +23,7 @@ String bufToHex(Uint8List buf) {
 /// @param {Array} arr - inputs hash
 /// @returns {BigInt} - final hash
 BigInt multiHash(List<BigInt> arr) {
-  BigInt r = BigInt.zero;
+  //BigInt r = BigInt.zero;
   for (int i = 0; i < arr.length; i += 5) {
     const fiveElems = [];
     for (int j = 0; j < 5; j++) {
@@ -35,11 +33,13 @@ BigInt multiHash(List<BigInt> arr) {
         fiveElems.add(BigInt.zero);
       }
     }
-    Pointer<Uint8> ptr =
-        Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems));
+    //Pointer<Uint8> ptr =
+    //    Uint8ArrayUtils.toPointer(Uint8List.fromList(fiveElems as List<int>));
     //final ph = eddsaBabyJub.hashPoseidon(ptr);
     //r = F.add(r, ph);
   }
+  // TODO: fix this
+  return BigInt.zero;
   //return F.normalize(r);
 }
 
@@ -58,7 +58,7 @@ BigInt hashBuffer(Uint8List msgBuff) {
     final v = msgBuff.sublist(fullParts * n).toList();
     msgArray.addAll(v);
   }
-  return multiHash(msgArray);
+  return multiHash(msgArray as List<BigInt>);
 }
 
 /// Converts an amount in BigInt and decimals to a String with correct decimal point placement
@@ -73,12 +73,13 @@ String getTokenAmountString(String amountBigInt, int decimals) {
   //return ethers.utils.formatUnits(amountBigInt, decimals);
 }
 
-/// Converts an amount in Float with the appropriate decimals to a BigInt
-/// @param {String} amountString - String representing the amount as a Float
-/// @param {Number} decimals - Number of decimal points the amount has
+/// Converts an amount in double with the appropriate decimals to a BigInt
+/// @param {double} amount - representing the amount as a double
+/// @param {int} decimals - Number of decimal points the amount has
 /// @returns {BigInt}
 BigInt getTokenAmountBigInt(double amount, int decimals) {
-  return BigInt.from(amount * BigInt.from(10).pow(decimals).toDouble());
+  double tokenAmount = amount * pow(10, decimals);
+  return BigInt.from(tokenAmount);
 }
 
 Uint8List hexToBuffer(String source) {
@@ -91,7 +92,7 @@ Uint8List hexToBuffer(String source) {
       ')');
 
   // String (Dart uses UTF-16) to bytes
-  var list = new List<int>();
+  List<int> list = [];
   source.runes.forEach((rune) {
     if (rune >= 0x10000) {
       rune -= 0x10000;

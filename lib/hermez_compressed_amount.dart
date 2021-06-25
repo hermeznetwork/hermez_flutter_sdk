@@ -2,27 +2,31 @@ const HERMEZ_COMPRESSED_AMOUNT_TYPE = 'HermezCompressedAmount';
 
 /// Class representing valid amounts in the Hermez network
 class HermezCompressedAmount {
-  String type;
-  num value;
+  String? type;
+  late num value;
 
   /// Builds an instance of HermezCompressedAmount, a wrapper
   /// for compressed BigInts in 40 bits used within the Hermez network
-  /// @param {num} value - Compressed representation of a BigInt in a 40bit Number
+  ///
+  /// @param [num] value - Compressed representation of a BigInt in a 40bit Number
   HermezCompressedAmount(num value) {
     this.type = HERMEZ_COMPRESSED_AMOUNT_TYPE;
     this.value = value;
   }
 
+  /// Checks if HermezCompressedAmount representation is an instance of HermezCompressedAmount
   ///
-  /// @param {HermezCompressedAmount} instance
+  /// @param [HermezCompressedAmount] instance
+  /// @returns [bool] returns true if is HermezCompressedAmount
   static bool isHermezCompressedAmount(HermezCompressedAmount instance) {
     return instance.type == HERMEZ_COMPRESSED_AMOUNT_TYPE &&
         instance.runtimeType == HermezCompressedAmount;
   }
 
-  /// Convert a HermezCompressedAmount to a fix
-  /// @param {Scalar} fl - HermezCompressedAmount representation of the amount
-  /// @returns {Scalar} Scalar encoded in fix
+  /// Decompress a HermezCompressedAmount to a double amount
+  ///
+  /// @param [HermezCompressedAmount] hermezCompressedAmount - HermezCompressedAmount representation of the amount
+  /// @returns [double] decompressed double amount
   static double decompressAmount(
       HermezCompressedAmount hermezCompressedAmount) {
     if (!HermezCompressedAmount.isHermezCompressedAmount(
@@ -44,9 +48,10 @@ class HermezCompressedAmount {
     return res;
   }
 
-  /// Convert a fix to a float
-  /// @param {String} _f - Scalar encoded in fix
-  /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
+  /// Convert a double amount to a HermezCompressedAmount object
+  ///
+  /// @param [double] f - double amount
+  /// @returns [HermezCompressedAmount] HermezCompressedAmount representation of the amount
   static HermezCompressedAmount compressAmount(double f) {
     if (f.sign == 0) {
       return new HermezCompressedAmount(0);

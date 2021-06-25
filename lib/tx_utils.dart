@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:hermez_plugin/api.dart' as api;
-import 'package:hermez_plugin/utils.dart';
+import 'package:hermez_sdk/api.dart' as api;
+import 'package:hermez_sdk/utils.dart';
 import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'
@@ -12,7 +12,9 @@ import 'addresses.dart'
         getAccountIndex,
         getEthereumAddress,
         isHermezAccountIndex,
-        isHermezEthereumAddress;
+        isHermezEthereumAddress,
+        isHermezBjjAddress;
+import 'environment.dart';
 import 'fee_factors.dart' show feeFactors, feeFactorsAsBigInts;
 import 'hermez_compressed_amount.dart';
 import 'libs/circomlib.dart';
@@ -56,11 +58,10 @@ const bitsShiftPrecision = 60;
 ///
 /// @returns {Object} encodedTransaction
 Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
-    {String providerUrl}) {
+    {String? providerUrl}) {
   final Map<String, dynamic> encodedTransaction = Map.from(transaction);
 
-  //inal provider = getProvider(providerUrl, providerUrl);
-  encodedTransaction["chainId"] = 4;
+  encodedTransaction["chainId"] = getCurrentEnvironment()!.chainId;
 
   encodedTransaction["fromAccountIndex"] =
       getAccountIndex(transaction["fromAccountIndex"]);
@@ -179,15 +180,15 @@ int getFeeIndex(num fee, num amount) {
 }
 
 /// Compute fee in token value with an amount and a fee index
-/// @param {Number} amount - The amount of the transaction as a Scalar
 /// @param {Number} feeIndex - Fee selected among 0 - 255
+/// @param {Number} amount - The amount of the transaction as a Scalar
 /// @returns {BigInt} Resulting fee in token value
 BigInt getFeeValue(num feeIndex, num amount) {
   if (feeIndex < 192) {
-    final fee = BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
+    final fee = BigInt.from(amount * feeFactorsAsBigInts[feeIndex as int]);
     return fee >> bitsShiftPrecision;
   } else {
-    return BigInt.from(amount * feeFactorsAsBigInts[feeIndex]);
+    return BigInt.from(amount * feeFactorsAsBigInts[feeIndex as int]);
   }
 }
 
@@ -205,6 +206,10 @@ String getTransactionType(Map transaction) {
       return 'Transfer';
     } else if (isHermezEthereumAddress(transaction['to'])) {
       return 'TransferToEthAddr';
+    } else if (isHermezBjjAddress(transaction['to'])) {
+      return 'TransferToBJJ';
+    } else {
+      return 'Transfer';
     }
   } else {
     return 'Exit';
@@ -221,13 +226,13 @@ String getTransactionType(Map transaction) {
 /// @param {Number} tokenId - The token id of the token in the transaction
 ///
 /// @return {Number} nonce
-Future<num> getNonce(
-    num currentNonce, String accountIndex, String bjj, num tokenId) async {
+Future<num?> getNonce(
+    num? currentNonce, String? accountIndex, String bjj, num? tokenId) async {
   if (currentNonce != null) {
     return currentNonce;
   }
 
-  final accountData = await api.getAccount(accountIndex);
+  final accountData = await api.getAccount(accountIndex!);
   var nonce = accountData.nonce;
 
   final List<dynamic> poolTxs = await getPoolTransactions(accountIndex, bjj);
@@ -240,7 +245,7 @@ Future<num> getNonce(
   // return current nonce if no transactions are pending
   if (poolTxsNonces.length > 0) {
     while (poolTxsNonces.indexOf(nonce) != -1) {
-      nonce++;
+      nonce = nonce! + 1;
     }
   }
 
@@ -362,23 +367,32 @@ BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
 
 Future<Set<Map<String, dynamic>>> generateL2Transaction(
     Map tx, String bjj, Token token) async {
+  final type = tx['type'] != null ? tx['type'] : getTransactionType(tx);
   final nonce = await getNonce(tx['nonce'], tx['from'], bjj, token.id);
   final toAccountIndex = isHermezAccountIndex(tx['to']) ? tx['to'] : null;
   final decompressedAmount =
       HermezCompressedAmount.decompressAmount(tx['amount']);
-  final feeBigInt = getTokenAmountBigInt(tx['fee'], token.decimals);
+  final feeBigInt = getTokenAmountBigInt(tx['fee'], token.decimals!);
+
+  String? toHezEthereumAddress;
+  if (type == 'TransferToEthAddr') {
+    toHezEthereumAddress = tx['to'];
+  }
+  /* else if (type == 'TransferToBJJ') {
+    toHezEthereumAddress = tx['toAuxEthAddr'] != null
+        ? tx['toAuxEthAddr']
+        : INTERNAL_ACCOUNT_ETH_ADDR;
+  }*/
+
   Map<String, dynamic> transaction = {};
-  transaction.putIfAbsent('type', () => getTransactionType(tx));
+  transaction.putIfAbsent('type', () => type);
   transaction.putIfAbsent('tokenId', () => token.id);
   transaction.putIfAbsent('fromAccountIndex', () => tx['from']);
+  transaction.putIfAbsent('toAccountIndex',
+      () => type == 'Exit' ? 'hez:${token.symbol}:1' : toAccountIndex);
+  transaction.putIfAbsent('toHezEthereumAddress', () => toHezEthereumAddress);
   transaction.putIfAbsent(
-      'toAccountIndex',
-      () => getTransactionType(tx) == 'Exit'
-          ? 'hez:${token.symbol}:1'
-          : toAccountIndex);
-  transaction.putIfAbsent('toHezEthereumAddress',
-      () => isHermezEthereumAddress(tx['to']) ? tx['to'] : null);
-  transaction.putIfAbsent('toBjj', () => null);
+      'toBjj', () => type == 'TransferToBJJ' ? tx['to'] : null);
   // Corrects precision errors using the same system used in the Coordinator
   transaction.putIfAbsent(
       'amount', () => decompressedAmount.toString().replaceAll(".0", ""));
@@ -388,13 +402,12 @@ Future<Set<Map<String, dynamic>>> generateL2Transaction(
   transaction.putIfAbsent('requestFromAccountIndex', () => null);
   transaction.putIfAbsent('requestToAccountIndex', () => null);
   transaction.putIfAbsent('requestToHezEthereumAddress', () => null);
-  transaction.putIfAbsent('requestToBJJ', () => null);
+  transaction.putIfAbsent('requestToBjj', () => null);
   transaction.putIfAbsent('requestTokenId', () => null);
   transaction.putIfAbsent('requestAmount', () => null);
   transaction.putIfAbsent('requestFee', () => null);
   transaction.putIfAbsent('requestNonce', () => null);
-  Map<String, dynamic> encodedTransaction =
-      await encodeTransaction(transaction);
+  Map<String, dynamic> encodedTransaction = encodeTransaction(transaction);
   transaction.putIfAbsent(
       'id',
       () => getL2TxId(

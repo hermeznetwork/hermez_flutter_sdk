@@ -1,35 +1,32 @@
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:bip39/bip39.dart' as bip39;
-import 'package:hermez_plugin/addresses.dart';
-import 'package:hermez_plugin/utils/eip712.dart';
-import 'package:hermez_plugin/utils/uint8_list_utils.dart';
-import 'package:hex/hex.dart';
+import 'package:hermez_sdk/utils/eip712.dart';
+import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
 
+import 'addresses.dart';
 import 'constants.dart';
 import 'eddsa_babyjub.dart' as eddsaBabyJub;
+import 'environment.dart';
 import "tx_utils.dart" show buildTransactionHashMessage;
-import 'utils/hd_key.dart';
 
 /// @class
 /// Manage Babyjubjub keys
 /// Perform standard wallet actions
 class HermezWallet {
-  dynamic privateKey;
+  late dynamic privateKey;
   dynamic publicKey;
   dynamic publicKeyHex;
-  String publicKeyCompressed;
-  String publicKeyCompressedHex;
-  String publicKeyBase64;
+  String? publicKeyCompressed;
+  String? publicKeyCompressedHex;
+  String? publicKeyBase64;
   dynamic hermezEthereumAddress;
 
   /// Initialize Babyjubjub wallet from private key
-  /// @param {Uint8List} privateKey - 32 bytes buffer
-  /// @param {String} hermezEthereumAddress - Hexadecimal string containing the public Ethereum Address
+  ///
+  /// @param [Uint8List] privateKey - 32 bytes buffer
+  /// @param [String] hermezEthereumAddress - Hexadecimal string containing the public Ethereum Address
   HermezWallet(Uint8List privateKey, String hermezEthereumAddress) {
     if (privateKey.length != 32) {
       throw new ArgumentError('buf must be 32 bytes');
@@ -50,40 +47,9 @@ class HermezWallet {
         Uint8ArrayUtils.leBuff2int(publicKey.compress());
     this.publicKeyCompressed = compressedPublicKey.toString();
     this.publicKeyCompressedHex =
-        compressedPublicKey.toRadixString(16).padLeft(32, '0');
-    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex);
+        compressedPublicKey.toRadixString(16).padLeft(64, '0');
+    this.publicKeyBase64 = hexToBase64BJJ(publicKeyCompressedHex!);
     this.hermezEthereumAddress = hermezEthereumAddress;
-  }
-
-  /// Creates a Hermez Wallet and Ethereum Wallet from mnemonic phrase
-  /// @param {String} mnemonic - mnemonic phrase
-  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromMnemonic(String mnemonic) async {
-    //final Web3Client provider = getProvider();
-    String seed = bip39.mnemonicToSeedHex(mnemonic);
-    KeyData master = HDKey.getMasterKeyFromSeed(seed);
-
-    print(HEX.encode(master
-        .key)); // 171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012
-    print(HEX.encode(master
-        .chainCode)); // ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b
-    // "m/44'/60'/0'/0/0"
-    // m / purpose' / coin_type' / account' / change / address_index
-    KeyData data = HDKey.derivePath("m/0'/2147483647'", seed);
-    var pb = HDKey.getPublicKey(data.key);
-    print(HEX.encode(data
-        .key)); // ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4
-    print(HEX.encode(data
-        .chainCode)); // 138f0b2551bcafeca6ff2aa88ba8ed0ed8de070841f0c4ef0165df8181eaad7f
-    print(HEX.encode(
-        pb)); // 005ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d
-
-    final signer = EthPrivateKey.createRandom(Random.secure());
-    final ethereumAddress = await signer.extractAddress();
-    final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
-    final hermezWallet =
-        new HermezWallet(Uint8List.fromList(data.key), hermezEthereumAddress);
-    return {hermezWallet, hermezEthereumAddress};
   }
 
 /*/// Signs message with private key
@@ -98,9 +64,10 @@ class HermezWallet {
   }*/
 
   /// To sign transaction with babyjubjub keys
-  /// @param {object} transaction - Transaction object
-  /// @param {Object} encodedTransaction - Transaction encoded object
-  /// @returns {object} The signed transaction object
+  ///
+  /// @param [Map<String, dynamic>] transaction - Transaction object
+  /// @param [Map<String, dynamic>] encodedTransaction - Transaction encoded object
+  /// @returns [Map<String, dynamic>] The signed transaction object
   Map<String, dynamic> signTransaction(Map<String, dynamic> transaction,
       Map<String, dynamic> encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
@@ -111,22 +78,22 @@ class HermezWallet {
   }
 
   /// Generates the signature necessary for /create-account-authorization endpoint
-  /// @param {String} providerUrl - Network url (i.e, http://localhost:8545). Optional
-  /// @param {Object} signerData - Signer data used to build a Signer to create the walet
-  /// @returns {String} The generated signature
-  dynamic signCreateAccountAuthorization(
-      String chainId, String privateKey) async {
+  ///
+  /// @param [String] privateKey - private key used to create the wallet
+  /// @returns [String] The generated signature
+  Future<String> signCreateAccountAuthorization(String privateKey) async {
     final signer = EthPrivateKey.fromHex(privateKey);
 
-    final bJJ = this.publicKeyCompressedHex.startsWith('0x')
-        ? this.publicKeyCompressedHex
+    final bJJ = this.publicKeyCompressedHex!.startsWith('0x')
+        ? this.publicKeyCompressedHex!
         : '0x${this.publicKeyCompressedHex}';
 
     final Map<String, dynamic> domain = {
       'name': EIP_712_PROVIDER,
       'version': EIP_712_VERSION,
-      'chainId': BigInt.parse(chainId),
-      'verifyingContract': EthereumAddress.fromHex(contractAddresses['Hermez'])
+      'chainId': BigInt.from(getCurrentEnvironment()!.chainId),
+      'verifyingContract':
+          EthereumAddress.fromHex(getCurrentEnvironment()!.contracts['Hermez']!)
     };
 
     final Map<String, dynamic> message = {
@@ -160,9 +127,11 @@ class HermezWallet {
   }
 
   /// Creates a HermezWallet from one of the Ethereum wallets in the provider
-  /// @param {String} privateKey - Signer data used to build a Signer to create the wallet
-  /// @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
-  static dynamic createWalletFromPrivateKey(String privateKey) async {
+  ///
+  /// @param [String] privateKey - private key used to create the wallet
+  /// @returns [List<dynamic>] Contains the `hermezWallet` as a [HermezWallet] instance and the `hermezEthereumAddress`
+  static Future<List<dynamic>> createWalletFromPrivateKey(
+      String privateKey) async {
     final prvKey = EthPrivateKey.fromHex(privateKey);
     final ethereumAddress = await prvKey.extractAddress();
     final hermezEthereumAddress = getHermezAddress(ethereumAddress.hex);
@@ -173,6 +142,26 @@ class HermezWallet {
         new HermezWallet(hashedBufferSignature, hermezEthereumAddress);
 
     return List.from([hermezWallet, hermezEthereumAddress]);
+  }
+
+  /// Creates a HermezWallet from Babyjubjub private key
+  ///
+  /// This creates a wallet for an internal account
+  /// An internal account has a Babyjubjub key and Ethereum account 0xFFFF...FFFF
+  /// Random wallet is created if no private key is provided
+  ///
+  /// @param [Uint8List] privateKey - 32 bytes buffer
+  /// @returns [List<dynamic>] Contains the `hermezWallet` as a [HermezWallet] instance and the `hermezEthereumAddress`
+  static Future<List<dynamic>> createWalletFromBjjPvtKey(
+      Uint8List? privateKey) async {
+    Uint8List privateBjjKey = privateKey != null ? privateKey : Uint8List(32);
+    if (privateKey == null) {
+      privateBjjKey.fillRange(0, 32, 1);
+    }
+    final hermezWallet =
+        new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR);
+
+    return List.from([hermezWallet, INTERNAL_ACCOUNT_ETH_ADDR]);
   }
 }
 

@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hermez_plugin/api.dart';
-import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/tx.dart';
-import 'package:hermez_plugin/utils.dart';
+import 'package:hermez_sdk/api.dart';
+import 'package:hermez_sdk/hermez_wallet.dart';
+import 'package:hermez_sdk/tx.dart';
+import 'package:hermez_sdk/utils.dart';
 
 import 'setup_util.dart';
 
@@ -17,7 +17,7 @@ void main() {
     // load token to deposit information
     final tokenToDeposit = 0;
     final token = await getTokens();
-    final tokenERC20 = token.tokens[tokenToDeposit];
+    final tokenERC20 = token.tokens![tokenToDeposit];
 
     // load first account
     final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
@@ -27,17 +27,18 @@ void main() {
     // load second account
     final List wallet2 =
         await HermezWallet.createWalletFromPrivateKey(privKey2);
-    final HermezWallet hermezWallet2 = wallet2[0]; // hermezWallet
+    //final HermezWallet hermezWallet2 = wallet2[0]; // hermezWallet
     final String hermezEthereumAddress2 = wallet2[1]; // hermezEthereumAddress
 
     // get sender account information
     final infoAccountSender =
-        (await getAccounts(hermezEthereumAddress, [tokenERC20.id])).accounts[0];
+        (await getAccounts(hermezEthereumAddress, [tokenERC20.id]))
+            .accounts![0];
 
     // get receiver account information
     final infoAccountReceiver =
         (await getAccounts(hermezEthereumAddress2, [tokenERC20.id]))
-            .accounts[0];
+            .accounts![0];
 
     // set amount to transfer
     final amountTransfer = getTokenAmountBigInt(0.0001, 18);
@@ -54,7 +55,7 @@ void main() {
     };
 
     final transferResponse = await generateAndSendL2Tx(
-        l2TxTransfer, hermezWallet, infoAccountSender.token);
+        l2TxTransfer, hermezWallet, infoAccountSender.token!);
     print('transferResponse: $transferResponse');
     //expect(nativeGreeting("John Smith"), 'Hello John Smith');
   });

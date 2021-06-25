@@ -1,13 +1,13 @@
-import 'package:hermez_plugin/model/token.dart';
+import 'token.dart';
 
 class Account {
-  final String accountIndex;
-  final String balance;
-  final String bjj;
-  final String hezEthereumAddress;
-  final int itemId;
-  final int nonce;
-  final Token token;
+  final String? accountIndex;
+  final String? balance;
+  final String? bjj;
+  final String? hezEthereumAddress;
+  final int? itemId;
+  final int? nonce;
+  final Token? token;
 
   Account(
       {this.accountIndex,
@@ -18,6 +18,10 @@ class Account {
       this.nonce,
       this.token});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Account]
   factory Account.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
     return Account(
@@ -37,6 +41,6 @@ class Account {
         'hezEthereumAddress': hezEthereumAddress,
         'itemId': itemId,
         'nonce': nonce,
-        'token': token.toJson(),
+        'token': token!.toJson(),
       };
 }

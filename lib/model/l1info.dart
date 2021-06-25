@@ -1,11 +1,11 @@
 class L1Info {
-  final bool amountSuccess;
-  final String depositAmount;
-  final bool depositAmountSuccess;
-  final int ethereumBlockNum;
-  final double historicDepositAmountUSD;
-  final int toForgeL1TransactionsNum;
-  final bool userOrigin;
+  final bool? amountSuccess;
+  final String? depositAmount;
+  final bool? depositAmountSuccess;
+  final int? ethereumBlockNum;
+  final double? historicDepositAmountUSD;
+  final int? toForgeL1TransactionsNum;
+  final bool? userOrigin;
 
   L1Info(
       {this.amountSuccess,
@@ -16,19 +16,24 @@ class L1Info {
       this.toForgeL1TransactionsNum,
       this.userOrigin});
 
-  factory L1Info.fromJson(Map<String, dynamic> json) {
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [L1Info]
+  factory L1Info.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
       return L1Info(
         amountSuccess: json['amountSuccess'],
         depositAmount: json['depositAmount'],
         depositAmountSuccess: json['depositAmountSuccess'],
         ethereumBlockNum: json['ethereumBlockNum'],
-        historicDepositAmountUSD: json['historicDepositAmountUSD'],
+        historicDepositAmountUSD:
+            double.tryParse(json['historicDepositAmountUSD'].toString()) ?? 0.0,
         toForgeL1TransactionsNum: json['toForgeL1TransactionsNum'],
         userOrigin: json['userOrigin'],
       );
     } else {
-      return null;
+      return L1Info();
     }
   }
 

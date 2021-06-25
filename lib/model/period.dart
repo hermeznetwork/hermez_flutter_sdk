@@ -1,9 +1,9 @@
 class Period {
-  final int slotNum;
-  final int fromBlock;
-  final int toBlock;
-  final String fromTimestamp;
-  final String toTimestamp;
+  final int? slotNum;
+  final int? fromBlock;
+  final int? toBlock;
+  final String? fromTimestamp;
+  final String? toTimestamp;
 
   Period(
       {this.slotNum,
@@ -12,6 +12,10 @@ class Period {
       this.fromTimestamp,
       this.toTimestamp});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Period]
   factory Period.fromJson(Map<String, dynamic> json) {
     return Period(
         slotNum: json['slotNum'],

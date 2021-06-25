@@ -26,3 +26,5 @@ char *sign_poseidon(const char *private_key, const char *msg);
 char *verify_poseidon(const char *private_key,
                       const char *compressed_signature,
                       const char *message);
+
+void cstring_free(char *str);

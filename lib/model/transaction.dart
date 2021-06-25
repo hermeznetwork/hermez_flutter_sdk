@@ -1,27 +1,27 @@
 class Transaction {
-  final String id;
-  final String type;
-  final String fromAccountIndex;
-  final String toAccountIndex;
-  final String toEthereumAddress;
-  final String toBjj;
-  final int tokenId;
-  final String amount;
-  final int fee;
-  final int nonce;
-  final String state;
-  final String signature;
-  final String timestamp;
-  final int batchNum;
-  final String rqFromAccountIndex;
-  final String rqToAccountIndex;
-  final String rqToEthereumAddress;
-  final String rqToBJJ;
-  final int rqTokenId;
-  final String rqAmount;
-  final int rqFee;
-  final int rqNonce;
-  final String tokenSymbol;
+  final String? id;
+  final String? type;
+  final String? fromAccountIndex;
+  final String? toAccountIndex;
+  final String? toEthereumAddress;
+  final String? toBjj;
+  final int? tokenId;
+  final String? amount;
+  final int? fee;
+  final int? nonce;
+  final String? state;
+  final String? signature;
+  final String? timestamp;
+  final int? batchNum;
+  final String? rqFromAccountIndex;
+  final String? rqToAccountIndex;
+  final String? rqToEthereumAddress;
+  final String? rqToBJJ;
+  final int? rqTokenId;
+  final String? rqAmount;
+  final int? rqFee;
+  final int? rqNonce;
+  final String? tokenSymbol;
 
   Transaction(
       {this.id,
@@ -48,6 +48,10 @@ class Transaction {
       this.rqNonce,
       this.tokenSymbol});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Transaction]
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       id: json['id'],

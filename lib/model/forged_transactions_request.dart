@@ -1,9 +1,9 @@
 class ForgedTransactionsRequest {
-  final int tokenId;
-  final String ethereumAddress;
-  final String accountIndex;
-  final int batchNum;
-  final int fromItem;
+  final int? tokenId;
+  final String? ethereumAddress;
+  final String? accountIndex;
+  final int? batchNum;
+  final int? fromItem;
 
   ForgedTransactionsRequest(
       {this.tokenId,
@@ -12,6 +12,10 @@ class ForgedTransactionsRequest {
       this.batchNum,
       this.fromItem});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ForgedTransactionsRequest]
   factory ForgedTransactionsRequest.fromJson(Map<String, dynamic> json) {
     return ForgedTransactionsRequest(
       tokenId: json['tokenId'],

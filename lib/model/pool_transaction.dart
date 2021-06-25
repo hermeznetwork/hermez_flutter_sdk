@@ -1,30 +1,30 @@
-import 'package:hermez_plugin/model/token.dart';
+import 'package:hermez_sdk/model/token.dart';
 
 class PoolTransaction {
-  final String amount;
-  final int fee;
-  final String fromAccountIndex;
-  final String fromBJJ;
-  final String fromHezEthereumAddress;
-  final String id;
-  final String info;
-  final int nonce;
-  final String requestAmount;
-  final int requestFee;
-  final String requestFromAccountIndex;
-  final String requestNonce;
-  final String requestToAccountIndex;
-  final String requestToBJJ;
-  final String requestToHezEthereumAddress;
-  final String requestTokenId;
-  final String signature;
-  final String state;
-  final String timestamp;
-  final String toAccountIndex;
-  final String toBjj;
-  final String toHezEthereumAddress;
-  final Token token;
-  final String type;
+  final String? amount;
+  final int? fee;
+  final String? fromAccountIndex;
+  final String? fromBJJ;
+  final String? fromHezEthereumAddress;
+  final String? id;
+  final String? info;
+  final int? nonce;
+  final String? requestAmount;
+  final int? requestFee;
+  final String? requestFromAccountIndex;
+  final String? requestNonce;
+  final String? requestToAccountIndex;
+  final String? requestToBJJ;
+  final String? requestToHezEthereumAddress;
+  final String? requestTokenId;
+  final String? signature;
+  final String? state;
+  final String? timestamp;
+  final String? toAccountIndex;
+  final String? toBjj;
+  final String? toHezEthereumAddress;
+  final Token? token;
+  final String? type;
 
   PoolTransaction(
       {this.amount,
@@ -52,6 +52,10 @@ class PoolTransaction {
       this.token,
       this.type});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [PoolTransaction]
   factory PoolTransaction.fromJson(Map<String, dynamic> json) {
     Token token = Token.fromJson(json['token']);
     return PoolTransaction(
@@ -105,7 +109,7 @@ class PoolTransaction {
         'toAccountIndex': toAccountIndex,
         'toBjj': toBjj,
         'toHezEthereumAddress': toHezEthereumAddress,
-        'token': token.toJson(),
+        'token': token!.toJson(),
         'type': type
       };
 }

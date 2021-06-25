@@ -1,12 +1,16 @@
 class TokensRequest {
-  final List<int> ids;
-  final List<String> symbols;
-  final List<String> name;
-  final int offset;
-  final int limit;
+  final List<int>? ids;
+  final List<String>? symbols;
+  final List<String>? name;
+  final int? offset;
+  final int? limit;
 
   TokensRequest({this.ids, this.symbols, this.name, this.offset, this.limit});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [TokensRequest]
   factory TokensRequest.fromJson(Map<String, dynamic> json) {
     return TokensRequest(
         ids: json['ids'],

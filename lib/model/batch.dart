@@ -1,22 +1,24 @@
 class Batch {
-  final int itemId;
-  final int batchNum;
-  final int ethereumBlockNum;
-  final String ethereumBlockHash;
-  final String timestamp;
-  final String forgerAddr;
+  final int? itemId;
+  final int? batchNum;
+  final String? ethereumTxHash;
+  final int? ethereumBlockNum;
+  final String? ethereumBlockHash;
+  final String? timestamp;
+  final String? forgerAddr;
   final dynamic collectedFees;
-  final double historicTotalCollectedFeesUSD;
-  final String stateRoot;
-  final int numAccounts;
-  final String exitRoot;
-  final int forgeL1TransactionsNum;
-  final int slotNum;
-  final int forgedTransactions;
+  final double? historicTotalCollectedFeesUSD;
+  final String? stateRoot;
+  final int? numAccounts;
+  final String? exitRoot;
+  final int? forgeL1TransactionsNum;
+  final int? slotNum;
+  final int? forgedTransactions;
 
   Batch(
       {this.itemId,
       this.batchNum,
+      this.ethereumTxHash,
       this.ethereumBlockNum,
       this.ethereumBlockHash,
       this.timestamp,
@@ -30,10 +32,15 @@ class Batch {
       this.slotNum,
       this.forgedTransactions});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [Batch]
   factory Batch.fromJson(Map<String, dynamic> json) {
     return Batch(
       itemId: json['itemId'],
       batchNum: json['batchNum'],
+      ethereumTxHash: json['ethereumTxHash'],
       ethereumBlockNum: json['ethereumBlockNum'],
       ethereumBlockHash: json['ethereumBlockHash'],
       timestamp: json['timestamp'],
@@ -53,6 +60,7 @@ class Batch {
   Map<String, dynamic> toJson() => {
         'itemId': itemId,
         'batchNum': batchNum,
+        'ethereumTxHash': ethereumTxHash,
         'ethereumBlockNum': ethereumBlockNum,
         'ethereumBlockHash': ethereumBlockHash,
         'timestamp': timestamp,

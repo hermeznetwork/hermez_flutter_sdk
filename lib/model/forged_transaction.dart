@@ -1,31 +1,33 @@
-import 'package:hermez_plugin/model/token.dart';
+import 'package:hermez_sdk/model/token.dart';
 
 import 'l1info.dart';
 import 'l2info.dart';
 
 class ForgedTransaction {
-  final L1Info l1info;
-  final String L1orL2;
-  final L2Info l2info;
-  final String amount;
-  final int batchNum;
-  final String fromAccountIndex;
-  final String fromBJJ;
-  final String fromHezEthereumAddress;
-  final double historicUSD;
-  final String id;
-  final int itemId;
-  final int position;
-  final String timestamp;
-  final String toAccountIndex;
-  final String toBJJ;
-  final String toHezEthereumAddress;
-  final Token token;
-  final String type;
-  final String hash;
+  final L1Info? l1info;
+  // ignore: non_constant_identifier_names
+  final String? L1orL2;
+  final L2Info? l2info;
+  final String? amount;
+  final int? batchNum;
+  final String? fromAccountIndex;
+  final String? fromBJJ;
+  final String? fromHezEthereumAddress;
+  final double? historicUSD;
+  final String? id;
+  final int? itemId;
+  final int? position;
+  final String? timestamp;
+  final String? toAccountIndex;
+  final String? toBJJ;
+  final String? toHezEthereumAddress;
+  final Token? token;
+  final String? type;
+  final String? hash;
 
   ForgedTransaction(
       {this.l1info,
+      // ignore: non_constant_identifier_names
       this.L1orL2,
       this.l2info,
       this.amount,
@@ -45,6 +47,10 @@ class ForgedTransaction {
       this.type,
       this.hash});
 
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [ForgedTransaction]
   factory ForgedTransaction.fromJson(Map<String, dynamic> json) {
     L1Info l1Info = L1Info.fromJson(json['L1Info']);
     L2Info l2Info = L2Info.fromJson(json['L2Info']);
@@ -58,7 +64,7 @@ class ForgedTransaction {
       fromAccountIndex: json['fromAccountIndex'],
       fromBJJ: json['fromBJJ'],
       fromHezEthereumAddress: json['fromHezEthereumAddress'],
-      historicUSD: json['historicUSD'],
+      historicUSD: double.tryParse(json['historicUSD'].toString()) ?? 0.0,
       id: json['id'],
       itemId: json['itemId'],
       position: json['position'],
@@ -72,9 +78,9 @@ class ForgedTransaction {
   }
 
   Map<String, dynamic> toJson() => {
-        'l1info': l1info.toJson(),
+        'l1info': l1info!.toJson(),
         'L1orL2': L1orL2,
-        'l2info': l2info.toJson(),
+        'l2info': l2info!.toJson(),
         'amount': amount,
         'batchNum': batchNum,
         'fromAccountIndex': fromAccountIndex,
@@ -88,7 +94,7 @@ class ForgedTransaction {
         'toAccountIndex': toAccountIndex,
         'toBJJ': toBJJ,
         'toHezEthereumAddress': toHezEthereumAddress,
-        'token': token.toJson(),
+        'token': token!.toJson(),
         'type': type
       };
 }

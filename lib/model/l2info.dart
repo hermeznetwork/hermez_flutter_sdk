@@ -1,19 +1,24 @@
 class L2Info {
-  final int fee;
-  final double historicFeeUSD;
-  final int nonce;
+  final int? fee;
+  final double? historicFeeUSD;
+  final int? nonce;
 
   L2Info({this.fee, this.historicFeeUSD, this.nonce});
 
-  factory L2Info.fromJson(Map<String, dynamic> json) {
+  /// Creates an instance from the given json
+  ///
+  /// @param [Map<String, dynamic>] json
+  /// @returns [L2Info]
+  factory L2Info.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
       return L2Info(
         fee: json['fee'],
-        historicFeeUSD: json['historicFeeUSD'],
+        historicFeeUSD:
+            double.tryParse(json['historicFeeUSD'].toString()) ?? 0.0,
         nonce: json['nonce'],
       );
     } else {
-      return null;
+      return L2Info();
     }
   }
 

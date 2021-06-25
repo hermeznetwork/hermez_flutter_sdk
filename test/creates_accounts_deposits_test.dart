@@ -1,14 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hermez_plugin/api.dart';
-import 'package:hermez_plugin/hermez_wallet.dart';
-import 'package:hermez_plugin/utils.dart';
-
-import 'setup_util.dart';
 
 void main() {
   test('creates accounts deposits', () async {
-    final privKey1 = EXAMPLES_PRIVATE_KEY1;
-    final privKey2 = EXAMPLES_PRIVATE_KEY2;
+    //final privKey1 = EXAMPLES_PRIVATE_KEY1;
+    //final privKey2 = EXAMPLES_PRIVATE_KEY2;
 
     // initialize transaction pool
     //initializeTransactionPool();
@@ -16,23 +11,23 @@ void main() {
     // setProvider(EXAMPLES_WEB3_URL, EXAMPLES_WEB3_RDP_URL);
 
     // load token to deposit information
-    final tokenToDeposit = 0;
-    final token = await getTokens();
-    final tokenERC20 = token.tokens[tokenToDeposit];
+    //final tokenToDeposit = 0;
+    //final token = await getTokens();
+    //final tokenERC20 = token.tokens![tokenToDeposit];
 
     // load first account
-    final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
-    final HermezWallet hermezWallet = wallet[0]; // hermezWallet
-    final String hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
+    //final wallet = await HermezWallet.createWalletFromPrivateKey(privKey1);
+    //final HermezWallet? hermezWallet = wallet[0]; // hermezWallet
+    //final String? hermezEthereumAddress = wallet[1]; // hermezEthereumAddress
 
     // load second account
-    final List wallet2 =
-        await HermezWallet.createWalletFromPrivateKey(privKey2);
-    final HermezWallet hermezWallet2 = wallet2[0]; // hermezWallet
-    final String hermezEthereumAddress2 = wallet2[1]; // hermezEthereumAddress
+    //final List wallet2 =
+    //    await HermezWallet.createWalletFromPrivateKey(privKey2);
+    //final HermezWallet hermezWallet2 = wallet2[0]; // hermezWallet
+    //final String hermezEthereumAddress2 = wallet2[1]; // hermezEthereumAddress
 
     // set amount to transfer
-    final amountDeposit = getTokenAmountBigInt(0.1, 18);
+    //final amountDeposit = getTokenAmountBigInt(0.1, 18);
 
     // perform deposit account 1
     /*await deposit(
