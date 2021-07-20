@@ -151,16 +151,20 @@ class CircomLib {
     final ptr4 = rqTxCompressedDatav2!.toNativeUtf8();
     final ptr5 = rqToEthAddr!.toNativeUtf8();
     final ptr6 = rqToBjjAy!.toNativeUtf8();
-    final resultPtr = _hashPoseidon(ptr1, ptr2, ptr3, ptr4, ptr5, ptr6);
-    String resultString = resultPtr.toDartString();
-    resultString = resultString.replaceAll("Fr(", "");
-    resultString = resultString.replaceAll(")", "");
-    //print("- Response string:  $resultString");
-    // Free the string pointer, as we already have
-    // an owned String to return
-    //print("- Freeing the native char*");
-    cstringFree(resultPtr);
-    return resultString;
+    try {
+      final resultPtr = _hashPoseidon(ptr1, ptr2, ptr3, ptr4, ptr5, ptr6);
+      String resultString = resultPtr.toDartString();
+      resultString = resultString.replaceAll("Fr(", "");
+      resultString = resultString.replaceAll(")", "");
+      //print("- Response string:  $resultString");
+      // Free the string pointer, as we already have
+      // an owned String to return
+      //print("- Freeing the native char*");
+      cstringFree(resultPtr);
+      return resultString;
+    } catch(e) {
+      return "";
+    }
   }
 
   // privKey.signPoseidon -> signPoseidon
