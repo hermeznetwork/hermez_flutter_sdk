@@ -9,11 +9,14 @@ import 'package:web3dart/crypto.dart';
 
 import 'addresses.dart'
     show
+        base64ToHexBJJ,
         getAccountIndex,
+        getAySignFromBJJ,
         getEthereumAddress,
         isHermezAccountIndex,
-        isHermezEthereumAddress,
-        isHermezBjjAddress;
+        isHermezBjjAddress,
+        isHermezEthereumAddress;
+import 'constants.dart';
 import 'environment.dart';
 import 'fee_factors.dart' show feeFactors, feeFactorsAsBigInts;
 import 'hermez_compressed_amount.dart';
@@ -75,6 +78,15 @@ Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
   if (transaction["toHezEthereumAddress"] != null) {
     encodedTransaction["toEthereumAddress"] =
         getEthereumAddress(transaction["toHezEthereumAddress"]);
+  }
+
+  if (transaction["toBjj"] != null) {
+    final bjjHex = base64ToHexBJJ(transaction["toBjj"]);
+    final aySign = getAySignFromBJJ(bjjHex);
+    encodedTransaction["toBjjSign"] = aySign["sign"];
+    encodedTransaction["toBjjAy"] = aySign["ay"];
+    encodedTransaction["toEthereumAddress"] =
+        getEthereumAddress(INTERNAL_ACCOUNT_ETH_ADDR);
   }
 
   return encodedTransaction;
@@ -315,41 +327,44 @@ BigInt buildElement1(Map<String, dynamic> tx) {
 ///
 /// @returns {BigInt} message to sign
 BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
-  final BigInt txCompressedData = buildTxCompressedData(encodedTransaction);
-  final element1 = buildElement1(encodedTransaction);
-  final toBjjAy = encodedTransaction['toBjjAy'] != null
+  try {
+    final BigInt txCompressedData = buildTxCompressedData(encodedTransaction);
+    final element1 = buildElement1(encodedTransaction);
+    final toBjjAy = encodedTransaction['toBjjAy'] != null
       ? (encodedTransaction['toBjjAy'].startsWith('0x')
           ? encodedTransaction['toBjjAy'].substring(2)
           : encodedTransaction['toBjjAy'])
       : '0';
-  final rqTxCompressedDataV2 =
+    final rqTxCompressedDataV2 =
       encodedTransaction['rqTxCompressedDataV2'] != null
           ? (encodedTransaction['rqTxCompressedDataV2'].startsWith('0x')
               ? encodedTransaction['rqTxCompressedDataV2'].substring(2)
               : encodedTransaction['rqTxCompressedDataV2'])
           : '0';
-  final rqToEthAddr = encodedTransaction['rqToEthAddr'] != null
+    final rqToEthAddr = encodedTransaction['rqToEthAddr'] != null
       ? (encodedTransaction['rqToEthAddr'].startsWith('0x')
           ? encodedTransaction['rqToEthAddr'].substring(2)
           : encodedTransaction['rqToEthAddr'])
       : '0';
 
-  final rqToBjjAy = encodedTransaction['rqToBjjAy'] != null
+    final rqToBjjAy = encodedTransaction['rqToBjjAy'] != null
       ? (encodedTransaction['rqToBjjAy'].startsWith('0x')
           ? encodedTransaction['rqToBjjAy'].substring(2)
           : encodedTransaction['rqToBjjAy'])
       : '0';
-
-  CircomLib circomLib = CircomLib();
-  String hashPoseidon = circomLib.hashPoseidon(
-      txCompressedData.toString(),
-      element1.toString(),
-      toBjjAy,
-      rqTxCompressedDataV2,
-      rqToEthAddr,
-      rqToBjjAy);
-  BigInt h = hexToInt(hashPoseidon);
-  return h;
+    CircomLib circomLib = CircomLib();
+    String hashPoseidon = circomLib.hashPoseidon(
+        txCompressedData.toString(),
+        element1.toString(),
+        toBjjAy,
+        rqTxCompressedDataV2,
+        rqToEthAddr,
+        rqToBjjAy);
+    BigInt h = hexToInt(hashPoseidon);
+    return h;
+  } catch (e) {
+    return BigInt.from(-1);
+  }
 }
 
 /// Prepares a transaction to be ready to be sent to a Coordinator.
@@ -377,12 +392,11 @@ Future<Set<Map<String, dynamic>>> generateL2Transaction(
   String? toHezEthereumAddress;
   if (type == 'TransferToEthAddr') {
     toHezEthereumAddress = tx['to'];
-  }
-  /* else if (type == 'TransferToBJJ') {
+  } else if (type == 'TransferToBJJ') {
     toHezEthereumAddress = tx['toAuxEthAddr'] != null
         ? tx['toAuxEthAddr']
         : INTERNAL_ACCOUNT_ETH_ADDR;
-  }*/
+  }
 
   Map<String, dynamic> transaction = {};
   transaction.putIfAbsent('type', () => type);

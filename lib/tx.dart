@@ -759,8 +759,16 @@ Future<Map<String, dynamic>> generateAndSendL2Tx(
 
   wallet.signTransaction(l2Transaction, l2EncodedTransaction);
 
-  final l2TxResult =
-      await sendL2Transaction(l2Transaction, wallet.publicKeyCompressedHex);
+  if (l2Transaction["signature"] != null) {
+    final l2TxResult =
+    await sendL2Transaction(l2Transaction, wallet.publicKeyCompressedHex);
 
-  return l2TxResult;
+    return l2TxResult;
+  } else {
+    return {
+      "status": 400,
+      "id": "error generating signature",
+      "nonce": l2Transaction['nonce'],
+    };
+  }
 }

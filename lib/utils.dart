@@ -82,6 +82,17 @@ BigInt getTokenAmountBigInt(double amount, int decimals) {
   return BigInt.from(tokenAmount);
 }
 
+/// Mask and shift a BigInt
+///
+/// @param {BigInt} num - Input number
+/// @param {int} origin - Initial bit
+/// @param {int} len - Bit length of the mask
+/// @returns {BigInt} Scalar
+BigInt extract(BigInt num, int origin, int len) {
+  BigInt mask = (BigInt.one << len) - BigInt.one;
+  return (num >> origin) & mask;
+}
+
 Uint8List hexToBuffer(String source) {
   // Source
   print(source.length.toString() +

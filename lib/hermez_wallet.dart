@@ -71,9 +71,11 @@ class HermezWallet {
   Map<String, dynamic> signTransaction(Map<String, dynamic> transaction,
       Map<String, dynamic> encodedTransaction) {
     final hashMessage = buildTransactionHashMessage(encodedTransaction);
-    final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
-    final signature = privKey.sign(hashMessage);
-    transaction['signature'] = signature;
+    if (hashMessage != BigInt.from(-1)) {
+      final privKey = new eddsaBabyJub.PrivateKey(this.privateKey);
+      final signature = privKey.sign(hashMessage);
+      transaction['signature'] = signature;
+    }
     return transaction;
   }
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:hermez_sdk/utils.dart';
 import 'package:hermez_sdk/utils/uint8_list_utils.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -25,7 +26,8 @@ String getHermezAddress(String ethereumAddress) {
 ///
 /// @returns [String] - ethereum address
 String getEthereumAddress(String hezEthereumAddress) {
-  if (hezEthereumAddress != null && hezEthereumAddress.startsWith(hermezPrefix)) {
+  if (hezEthereumAddress != null &&
+      hezEthereumAddress.startsWith(hermezPrefix)) {
     return hezEthereumAddress.replaceFirst(hermezPrefix, '');
   } else {
     return hezEthereumAddress;
@@ -111,4 +113,34 @@ String hexToBase64BJJ(String bjjCompressedHex) {
   finalBuffBjj.addByte(sum);
 
   return 'hez:${base64Url.encode(finalBuffBjj.toBytes())}';
+}
+
+/// Gets the Babyjubjub hexadecimal from its base64 representation
+///
+/// @param {String} base64BJJ
+/// @returns {String} babyjubjub address in hex string
+String base64ToHexBJJ(String base64BJJ) {
+  if (base64BJJ.startsWith('hez:')) {
+    base64BJJ = base64BJJ.replaceFirst('hez:', '');
+  }
+  final bjjSwapBuffer = base64Url.decode(base64BJJ);
+  final bjjSwapBuff = bjjSwapBuffer.toList();
+  bjjSwapBuff.removeLast();
+  String bjjSwap =
+      bytesToHex(bjjSwapBuff, forcePadLength: 64, padToEvenLength: false);
+  Uint8List littleEndianBytes = hexToBytes(bjjSwap);
+  BigInt bjjScalar = Uint8ArrayUtils.bytesToBigInt(littleEndianBytes);
+  String bjjCompressedHex = bjjScalar.toRadixString(16);
+  return bjjCompressedHex;
+}
+
+/// Get Ay and Sign from Bjj compressed
+/// @param {String} fromBjjCompressed - Bjj compressed encoded as hexadecimal string
+/// @return {Object} Ay represented as hexadecimal string, Sign represented as BigInt
+dynamic getAySignFromBJJ(String fromBjjCompressed) {
+  BigInt bjjScalar = hexToInt(fromBjjCompressed);
+  String ay = extract(bjjScalar, 0, 254).toRadixString(16);
+  BigInt sign = extract(bjjScalar, 255, 1);
+
+  return {"ay": ay, "sign": sign};
 }
