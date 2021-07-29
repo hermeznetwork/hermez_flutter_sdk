@@ -61,10 +61,31 @@ bool isHermezEthereumAddress(String test) {
 /// @param [String] test
 /// @returns [bool] - true if is a Hermez bjj address
 bool isHermezBjjAddress(String test) {
-  if (test != null && bjjAddressPattern.hasMatch(test)) {
+  if (test != null && bjjAddressPattern.hasMatch(test) && isHermezBjjAddressValid(test)) {
     return true;
   }
   return false;
+}
+
+bool isHermezBjjAddressValid(String base64BJJ) {
+  String bjjCompressedHex = base64ToHexBJJ(base64BJJ);
+  BigInt bjjScalar = hexToInt(bjjCompressedHex);
+  Uint8List littleEndianBytes = Uint8ArrayUtils.bigIntToBytes(bjjScalar);
+  String bjjSwap =
+  bytesToHex(littleEndianBytes, forcePadLength: 64, padToEvenLength: false);
+  Uint8List bjjSwapBuffer = hexToBytes(bjjSwap);
+  var sum = 0;
+  for (var i = 0; i < bjjSwapBuffer.length; i++) {
+    sum += bjjSwapBuffer[i];
+    sum = sum % (pow(2, 8) as int);
+  }
+  if (base64BJJ.startsWith('hez:')) {
+    base64BJJ = base64BJJ.replaceFirst('hez:', '');
+  }
+  final bjjSwapBuffer2 = base64Url.decode(base64BJJ);
+  final bjjSwapBuff = bjjSwapBuffer2.toList();
+  final correctSum = bjjSwapBuff.removeLast();
+  return sum == correctSum;
 }
 
 /// Extracts the account index from the address with the hez prefix
