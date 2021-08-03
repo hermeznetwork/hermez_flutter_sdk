@@ -204,6 +204,51 @@ BigInt getFeeValue(num feeIndex, num amount) {
   }
 }
 
+/// Calculates the maximum amount that can be sent in an L2 tx
+/// so the account doesn't attempt to send more than its balance
+/// when the fee is applied
+/// @param {Scalar} minimumFee - The fee in token value
+/// @param {Scalar} amount - Amount in account balance
+/// @returns {Scalar} - Max amount that can be sent
+double getMaxAmountFromMinimumFee(double minimumFee, double balance) {
+  var maxAmount = balance;
+  var bestRemainingAmount = balance + 1;
+  var isNotBestRemainingAmount = true;
+  var i = 0;
+  while (isNotBestRemainingAmount) {
+    final feeIndex = getFeeIndex(minimumFee, maxAmount);
+    final fee = getFeeValue(feeIndex, maxAmount);
+
+    if (fee >= BigInt.from(maxAmount)) {
+      maxAmount = 0;
+      isNotBestRemainingAmount = false;
+      break;
+    }
+
+    final amountAndFee = BigInt.from(maxAmount) + fee;
+    if (amountAndFee > BigInt.from(balance)) {
+      // Equation: maxAmount - (maxAmount + fee - balance)
+      maxAmount = (BigInt.from(balance) - fee).toDouble();
+    } else {
+      final remainingAmount = (BigInt.from(balance) - amountAndFee).toDouble();
+      if (remainingAmount < bestRemainingAmount) {
+        bestRemainingAmount = remainingAmount;
+      } else if (remainingAmount == bestRemainingAmount) {
+        isNotBestRemainingAmount = false;
+        break;
+      }
+      maxAmount = maxAmount + remainingAmount;
+
+      // If it doesn't converge in 100 iterations, return
+      if (i == 100) {
+        isNotBestRemainingAmount = false;
+      }
+      i++;
+    }
+  }
+  return maxAmount;
+}
+
 /// Gets the transaction type depending on the information in the transaction object
 /// If an account index is used, it will be 'Transfer'
 /// If a Hermez address is used, it will be 'TransferToEthAddr'
@@ -331,27 +376,27 @@ BigInt buildTransactionHashMessage(Map<String, dynamic> encodedTransaction) {
     final BigInt txCompressedData = buildTxCompressedData(encodedTransaction);
     final element1 = buildElement1(encodedTransaction);
     final toBjjAy = encodedTransaction['toBjjAy'] != null
-      ? (encodedTransaction['toBjjAy'].startsWith('0x')
-          ? encodedTransaction['toBjjAy'].substring(2)
-          : encodedTransaction['toBjjAy'])
-      : '0';
+        ? (encodedTransaction['toBjjAy'].startsWith('0x')
+            ? encodedTransaction['toBjjAy'].substring(2)
+            : encodedTransaction['toBjjAy'])
+        : '0';
     final rqTxCompressedDataV2 =
-      encodedTransaction['rqTxCompressedDataV2'] != null
-          ? (encodedTransaction['rqTxCompressedDataV2'].startsWith('0x')
-              ? encodedTransaction['rqTxCompressedDataV2'].substring(2)
-              : encodedTransaction['rqTxCompressedDataV2'])
-          : '0';
+        encodedTransaction['rqTxCompressedDataV2'] != null
+            ? (encodedTransaction['rqTxCompressedDataV2'].startsWith('0x')
+                ? encodedTransaction['rqTxCompressedDataV2'].substring(2)
+                : encodedTransaction['rqTxCompressedDataV2'])
+            : '0';
     final rqToEthAddr = encodedTransaction['rqToEthAddr'] != null
-      ? (encodedTransaction['rqToEthAddr'].startsWith('0x')
-          ? encodedTransaction['rqToEthAddr'].substring(2)
-          : encodedTransaction['rqToEthAddr'])
-      : '0';
+        ? (encodedTransaction['rqToEthAddr'].startsWith('0x')
+            ? encodedTransaction['rqToEthAddr'].substring(2)
+            : encodedTransaction['rqToEthAddr'])
+        : '0';
 
     final rqToBjjAy = encodedTransaction['rqToBjjAy'] != null
-      ? (encodedTransaction['rqToBjjAy'].startsWith('0x')
-          ? encodedTransaction['rqToBjjAy'].substring(2)
-          : encodedTransaction['rqToBjjAy'])
-      : '0';
+        ? (encodedTransaction['rqToBjjAy'].startsWith('0x')
+            ? encodedTransaction['rqToBjjAy'].substring(2)
+            : encodedTransaction['rqToBjjAy'])
+        : '0';
     CircomLib circomLib = CircomLib();
     String hashPoseidon = circomLib.hashPoseidon(
         txCompressedData.toString(),

@@ -77,4 +77,29 @@ class HermezCompressedAmount {
 
     return new HermezCompressedAmount(res);
   }
+
+  /// Convert a float to a fix, always rounding down
+  /// @param {Scalar} fl - Scalar encoded in fix
+  /// @returns {HermezCompressedAmount} HermezCompressedAmount representation of the amount
+  static HermezCompressedAmount floorCompressAmount(double f) {
+    if (f.sign == 0) {
+      return new HermezCompressedAmount(0);
+    }
+
+    var m = f;
+    var e = 0;
+
+    while ((m / 0x800000000).floor().sign != 0) {
+      m = m / 10;
+      e++;
+    }
+
+    if (e > 31) {
+      throw new ArgumentError("number too big");
+    }
+
+    final res = m + (e * 0x800000000);
+
+    return new HermezCompressedAmount(res);
+  }
 }
