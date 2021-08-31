@@ -7,7 +7,8 @@ class Account {
   final String? hezEthereumAddress;
   final int? itemId;
   final int? nonce;
-  final Token? token;
+  //final Token? token;
+  final int? tokenId;
 
   Account(
       {this.accountIndex,
@@ -16,7 +17,8 @@ class Account {
       this.hezEthereumAddress,
       this.itemId,
       this.nonce,
-      this.token});
+        //this.token,
+      this.tokenId});
 
   /// Creates an instance from the given json
   ///
@@ -31,7 +33,8 @@ class Account {
         hezEthereumAddress: json['hezEthereumAddress'],
         itemId: json['itemId'],
         nonce: json['nonce'],
-        token: token);
+        //token: token,
+        tokenId: token.id);
   }
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +44,7 @@ class Account {
         'hezEthereumAddress': hezEthereumAddress,
         'itemId': itemId,
         'nonce': nonce,
-        'token': token!.toJson(),
+        //'token' : token.toJson(),
+        'tokenId': tokenId,
       };
 }

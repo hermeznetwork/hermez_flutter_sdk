@@ -12,7 +12,8 @@ class Exit {
   final int? instantWithdraw;
   int? delayedWithdrawRequest;
   final int? delayedWithdraw;
-  final Token? token;
+  //final Token? token;
+  final int? tokenId;
   final String? bjj;
   final String? hezEthereumAddress;
 
@@ -25,7 +26,7 @@ class Exit {
       this.instantWithdraw,
       this.delayedWithdrawRequest,
       this.delayedWithdraw,
-      this.token,
+      this.tokenId,
       this.bjj,
       this.hezEthereumAddress});
 
@@ -45,7 +46,7 @@ class Exit {
         instantWithdraw: json['instantWithdraw'],
         delayedWithdrawRequest: json['delayedWithdrawRequest'],
         delayedWithdraw: json['delayedWithdraw'],
-        token: token,
+        tokenId: token.id,
         bjj: json['bjj'],
         hezEthereumAddress: json['hezEthereumAddress']);
   }
@@ -62,7 +63,7 @@ class Exit {
       //instantWithdraw: json['instantWithdraw'],
       //delayedWithdrawRequest: json['delayedWithdrawRequest'],
       //delayedWithdraw: json['delayedWithdraw'],
-      token: token,
+      tokenId: token.id,
       //bjj: json['bjj'],
       //hezEthereumAddress: json['hezEthereumAddress']
     );
@@ -80,7 +81,7 @@ class Exit {
       //instantWithdraw: json['instantWithdraw'],
       //delayedWithdrawRequest: json['delayedWithdrawRequest'],
       //delayedWithdraw: json['delayedWithdraw'],
-      token: transaction.token,
+      tokenId: transaction.token.id,
       //bjj: json['bjj'],
       //hezEthereumAddress: json['hezEthereumAddress']
     );
