@@ -88,6 +88,8 @@ Map<String, dynamic> encodeTransaction(Map<String, dynamic> transaction,
     encodedTransaction["toEthereumAddress"] =
         getEthereumAddress(INTERNAL_ACCOUNT_ETH_ADDR);
   }
+  
+  // TODO: Token swap add req info
 
   return encodedTransaction;
 }

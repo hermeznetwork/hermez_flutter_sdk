@@ -37,24 +37,28 @@ class Batch {
   /// @param [Map<String, dynamic>] json
   /// @returns [Batch]
   factory Batch.fromJson(Map<String, dynamic> json) {
-    return Batch(
-      itemId: json['itemId'],
-      batchNum: json['batchNum'],
-      ethereumTxHash: json['ethereumTxHash'],
-      ethereumBlockNum: json['ethereumBlockNum'],
-      ethereumBlockHash: json['ethereumBlockHash'],
-      timestamp: json['timestamp'],
-      forgerAddr: json['forgerAddr'],
-      collectedFees: json['collectedFees'],
-      historicTotalCollectedFeesUSD:
-          json['historicTotalCollectedFeesUSD'].toDouble(),
-      stateRoot: json['stateRoot'],
-      numAccounts: json['numAccounts'],
-      exitRoot: json['exitRoot'],
-      forgeL1TransactionsNum: json['forgeL1TransactionsNum'],
-      slotNum: json['slotNum'],
-      forgedTransactions: json['forgedTransactions'],
-    );
+    if (json != null) {
+      return Batch(
+        itemId: json['itemId'],
+        batchNum: json['batchNum'],
+        ethereumTxHash: json['ethereumTxHash'],
+        ethereumBlockNum: json['ethereumBlockNum'],
+        ethereumBlockHash: json['ethereumBlockHash'],
+        timestamp: json['timestamp'],
+        forgerAddr: json['forgerAddr'],
+        collectedFees: json['collectedFees'],
+        historicTotalCollectedFeesUSD:
+        json['historicTotalCollectedFeesUSD'].toDouble(),
+        stateRoot: json['stateRoot'],
+        numAccounts: json['numAccounts'],
+        exitRoot: json['exitRoot'],
+        forgeL1TransactionsNum: json['forgeL1TransactionsNum'],
+        slotNum: json['slotNum'],
+        forgedTransactions: json['forgedTransactions'],
+      );
+    } else {
+      return Batch();
+    }
   }
 
   Map<String, dynamic> toJson() => {

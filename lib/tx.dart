@@ -737,7 +737,7 @@ Future<Map<String, dynamic>> sendL2Transaction(
 
   return {
     "status": result.statusCode,
-    "id": result.body,
+    "id": result.body.replaceAll("\"", ""),
     "nonce": transaction['nonce'],
   };
 }
