@@ -339,10 +339,15 @@ Future<Token> getToken(int tokenId) async {
 ///
 /// @returns [StateResponse] Response data with the current state of the coordinator
 Future<StateResponse> getState() async {
-  final response = await extractJSON(await get(baseApiUrl, STATE_URL));
-  final StateResponse stateResponse =
-      StateResponse.fromJson(json.decode(response));
-  return stateResponse;
+  final response = await get(baseApiUrl, STATE_URL);
+  if (response.statusCode == 200) {
+  final jsonResponse = await extractJSON(response);
+    final StateResponse stateResponse =
+    StateResponse.fromJson(json.decode(jsonResponse));
+    return stateResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /batches endpoint. Returns a filtered list of batches
