@@ -35,7 +35,7 @@ class Exit {
   /// @param [Map<String, dynamic>] json
   /// @returns [Exit]
   factory Exit.fromJson(Map<String, dynamic> json) {
-    Token token = Token.fromJson(json['token']);
+    Token? token = Token.fromJson(json['token']);
     MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
     return Exit(
         batchNum: json['batchNum'],
@@ -52,7 +52,7 @@ class Exit {
   }
 
   factory Exit.fromL1Transaction(dynamic transaction) {
-    Token token = Token.fromJson(transaction['token']);
+    Token? token = Token.fromJson(transaction['token']);
     //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
     return Exit(
       //batchNum: json['batchNum'],
@@ -69,19 +69,19 @@ class Exit {
     );
   }
 
-  factory Exit.fromTransaction(PoolTransaction transaction) {
+  factory Exit.fromTransaction(PoolTransaction? transaction) {
     //Token token = Token.fromJson(json['token']);
     //MerkleProof merkleProof = MerkleProof.fromJson(json['merkleProof']);
     return Exit(
       //batchNum: json['batchNum'],
-      accountIndex: transaction.fromAccountIndex,
+      accountIndex: transaction!.fromAccountIndex,
       //itemId: transaction.id,
       //merkleProof: merkleProof,
       balance: transaction.amount,
       //instantWithdraw: json['instantWithdraw'],
       //delayedWithdrawRequest: json['delayedWithdrawRequest'],
       //delayedWithdraw: json['delayedWithdraw'],
-      tokenId: transaction.token.id,
+      tokenId: transaction.token!.id,
       //bjj: json['bjj'],
       //hezEthereumAddress: json['hezEthereumAddress']
     );
