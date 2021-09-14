@@ -96,7 +96,7 @@ class Exit {
         'instantWithdrawn': instantWithdraw,
         'delayedWithdrawRequest': delayedWithdrawRequest,
         'delayedWithdrawn': delayedWithdraw,
-        'token': token!.toJson(),
+        'token': tokenId,
         'bjj': bjj,
         'hezEthereumAddress': hezEthereumAddress
       };
