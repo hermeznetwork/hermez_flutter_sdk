@@ -20,10 +20,12 @@ class Network {
   /// @param [Map<String, dynamic>] json
   /// @returns [Network]
   factory Network.fromJson(Map<String, dynamic> json) {
-    Batch lastBatch = Batch.fromJson(json['lastBatch']);
+    Batch? lastBatch = json['lastBatch'] != null ? Batch.fromJson(json['lastBatch']) : null;
     var forgersFromJson = json['nextForgers'] as List;
-    List<Forger> forgersList =
-        forgersFromJson.map((i) => Forger.fromJson(i)).toList();
+    List<Forger>? forgersList = null;
+    if (forgersFromJson != null) {
+      forgersList = forgersFromJson.map((i) => Forger.fromJson(i)).toList();
+    }
     return Network(
       lastEthereumBlock: json['lastEthereumBlock'],
       lastSynchedBlock: json['lastSynchedBlock'],
