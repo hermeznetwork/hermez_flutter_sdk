@@ -61,13 +61,13 @@ bool isHermezEthereumAddress(String test) {
 /// @param [String] test
 /// @returns [bool] - true if is a Hermez bjj address
 bool isHermezBjjAddress(String test) {
-  if (test != null && bjjAddressPattern.hasMatch(test) && isHermezBjjAddressValid(test)) {
+  if (test != null && bjjAddressPattern.hasMatch(test) && _isHermezBjjAddressValid(test)) {
     return true;
   }
   return false;
 }
 
-bool isHermezBjjAddressValid(String base64BJJ) {
+bool _isHermezBjjAddressValid(String base64BJJ) {
   String bjjCompressedHex = base64ToHexBJJ(base64BJJ);
   BigInt bjjScalar = hexToInt(bjjCompressedHex);
   Uint8List littleEndianBytes = Uint8ArrayUtils.bigIntToBytes(bjjScalar);

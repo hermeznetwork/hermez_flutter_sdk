@@ -21,6 +21,7 @@ class Transaction {
   final String? rqAmount;
   final int? rqFee;
   final int? rqNonce;
+  
   final String? tokenSymbol;
 
   Transaction(

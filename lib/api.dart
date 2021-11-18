@@ -313,11 +313,16 @@ Future<TokensResponse> getTokens(
     params.putIfAbsent(
         'ids', () => tokenIds.isNotEmpty ? tokenIds.join(',') : '');
   params.addAll(_getPageData(fromItem, order, limit));
-  final response = await extractJSON(
-      await get(baseApiUrl, TOKENS_URL, queryParameters: params));
-  final TokensResponse tokensResponse =
-      TokensResponse.fromJson(json.decode(response));
-  return tokensResponse;
+  final response = await
+      await get(baseApiUrl, TOKENS_URL, queryParameters: params);
+  if (response != null && response.statusCode == 200) {
+    final jsonResponse = await extractJSON(response);
+    final tokensResponse =
+    TokensResponse.fromJson(json.decode(jsonResponse));
+    return tokensResponse;
+  } else {
+    throw ('Error: $response.statusCode');
+  }
 }
 
 /// GET request to the /tokens/:tokenId endpoint. Returns a specific token
@@ -326,7 +331,7 @@ Future<TokensResponse> getTokens(
 /// @returns [Token] Response data with a specific token
 Future<Token> getToken(int tokenId) async {
   final response = await get(baseApiUrl, TOKENS_URL + '/' + tokenId.toString());
-  if (response.statusCode == 200) {
+  if (response != null && response.statusCode == 200) {
     final jsonResponse = await extractJSON(response);
     final tokenResponse = Token.fromJson(json.decode(jsonResponse));
     return tokenResponse;

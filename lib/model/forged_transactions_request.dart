@@ -1,12 +1,12 @@
 class ForgedTransactionsRequest {
-  final int? tokenId;
+  final List<int>? tokenIds;
   final String? ethereumAddress;
   final String? accountIndex;
   final int? batchNum;
   final int? fromItem;
 
   ForgedTransactionsRequest(
-      {this.tokenId,
+      {this.tokenIds,
       this.ethereumAddress,
       this.accountIndex,
       this.batchNum,
@@ -18,7 +18,7 @@ class ForgedTransactionsRequest {
   /// @returns [ForgedTransactionsRequest]
   factory ForgedTransactionsRequest.fromJson(Map<String, dynamic> json) {
     return ForgedTransactionsRequest(
-      tokenId: json['tokenId'],
+      tokenIds: json['tokenIds'],
       ethereumAddress: json['ethereumAddress'],
       accountIndex: json['accountIndex'],
       batchNum: json['batchNum'],
@@ -27,7 +27,7 @@ class ForgedTransactionsRequest {
   }
 
   Map<String, dynamic> toJson() => {
-        'tokenId': tokenId,
+        'tokenIds': tokenIds,
         'ethereumAddress': ethereumAddress,
         'accountIndex': accountIndex,
         'batchNum': batchNum,
