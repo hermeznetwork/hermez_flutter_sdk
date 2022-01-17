@@ -1,15 +1,17 @@
 import 'dart:ffi';
-import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+
+import 'rustlib.dart';
 
 typedef CStringFree = void Function(Pointer<Utf8>);
 typedef CStringFreeFFI = Void Function(Pointer<Utf8>);
 
 class CircomLib {
-  final DynamicLibrary lib = Platform.isAndroid
+  final DynamicLibrary lib =
+      load(); /*Platform.isAndroid
       ? DynamicLibrary.open("libbabyjubjub.so")
-      : DynamicLibrary.process();
+      : DynamicLibrary.process();*/
 
   late CStringFree cstringFree;
 
@@ -162,7 +164,7 @@ class CircomLib {
       //print("- Freeing the native char*");
       cstringFree(resultPtr);
       return resultString;
-    } catch(e) {
+    } catch (e) {
       return "";
     }
   }
