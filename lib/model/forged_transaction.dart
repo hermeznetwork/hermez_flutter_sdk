@@ -4,25 +4,26 @@ import 'l1info.dart';
 import 'l2info.dart';
 
 class ForgedTransaction {
+  final String? id;
+  final String? type;
+  final String? fromAccountIndex;
+  final String? fromBJJ;
+  final String? fromHezEthereumAddress;
+  final String? toAccountIndex;
+  final String? toBJJ;
+  final String? toHezEthereumAddress;
   final L1Info? l1info;
   // ignore: non_constant_identifier_names
   final String? L1orL2;
   final L2Info? l2info;
   final String? amount;
   final int? batchNum;
-  final String? fromAccountIndex;
-  final String? fromBJJ;
-  final String? fromHezEthereumAddress;
-  final double? historicUSD;
-  final String? id;
-  final int? itemId;
   final int? position;
   final String? timestamp;
-  final String? toAccountIndex;
-  final String? toBJJ;
-  final String? toHezEthereumAddress;
+
+  final double? historicUSD;
+  final int? itemId;
   final Token? token;
-  final String? type;
   final String? hash;
 
   ForgedTransaction(

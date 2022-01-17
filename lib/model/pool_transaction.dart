@@ -1,13 +1,16 @@
 import 'package:hermez_sdk/model/token.dart';
 
 class PoolTransaction {
-  final String? amount;
-  final int? fee;
+  final String? id;
+  final String? type;
   final String? fromAccountIndex;
   final String? fromBJJ;
   final String? fromHezEthereumAddress;
-  final String? id;
-  final String? info;
+  final String? toAccountIndex;
+  final String? toBjj;
+  final String? toHezEthereumAddress;
+  final String? amount;
+  final int? fee;
   final int? nonce;
   final String? requestAmount;
   final int? requestFee;
@@ -20,11 +23,9 @@ class PoolTransaction {
   final String? signature;
   final String? state;
   final String? timestamp;
-  final String? toAccountIndex;
-  final String? toBjj;
-  final String? toHezEthereumAddress;
+
+  final String? info;
   final Token? token;
-  final String? type;
 
   PoolTransaction(
       {this.amount,
